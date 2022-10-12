@@ -14,26 +14,14 @@
             <input
             type="text"
             class="form-control border-0 shadow-none"
-            placeholder="Search..."
-            aria-label="Search..."
+            placeholder="Search Employee"
+            aria-label="Search Employee"
             />
         </div>
         </div>
         <!-- /Search -->
 
         <ul class="navbar-nav flex-row align-items-center ms-auto">
-        <!-- Place this tag where you want the button to render. -->
-        <li class="nav-item lh-1 me-3">
-            <a
-            class="github-button"
-            href="https://github.com/themeselection/sneat-html-admin-template-free"
-            data-icon="octicon-star"
-            data-size="large"
-            data-show-count="true"
-            aria-label="Star themeselection/sneat-html-admin-template-free on GitHub"
-            >Star</a
-            >
-        </li>
 
         <!-- User -->
         <li class="nav-item navbar-dropdown dropdown-user dropdown">
@@ -52,7 +40,7 @@
                     </div>
                     </div>
                     <div class="flex-grow-1">
-                    <span class="fw-semibold d-block">John Doe</span>
+                    <span class="fw-semibold d-block">{{ auth()->user()->name }}</span>
                     <small class="text-muted">Admin</small>
                     </div>
                 </div>
@@ -62,7 +50,7 @@
                 <div class="dropdown-divider"></div>
             </li>
             <li>
-                <a class="dropdown-item" href="#">
+                <a class="dropdown-item" href="{{ route('account') }}">
                 <i class="bx bx-user me-2"></i>
                 <span class="align-middle">My Profile</span>
                 </a>
