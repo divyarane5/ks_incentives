@@ -19,9 +19,7 @@ class CreateUsersTable extends Migration
             $table->string('password');
             $table->string('employee_code')->unique()->index();
             $table->string('entity');
-            $table->string('first_name');
-            $table->string('middle_name')->nullable();
-            $table->string('last_name');
+            $table->string('name');
             $table->string('gender')->nullable();
             $table->date('dob')->nullable();
             $table->unsignedBigInteger('location_id')->nullable()->index();
@@ -35,6 +33,7 @@ class CreateUsersTable extends Migration
             $table->tinyInteger('status')->default(1);
             $table->dateTime('last_login')->nullable();
             $table->unsignedBigInteger('created_by');
+            $table->string('photo')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

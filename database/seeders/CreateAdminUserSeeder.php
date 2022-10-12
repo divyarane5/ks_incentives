@@ -21,8 +21,7 @@ class CreateAdminUserSeeder extends Seeder
             'password' => bcrypt('123456'),
             'employee_code' => 'VSH_OP_001',
             'entity' => 'Homebazaar',
-            'first_name' => 'Homebazaar',
-            'last_name' => 'Admin',
+            'name' => 'Homebazaar Admin',
             'created_by' => 1
         ]);
 

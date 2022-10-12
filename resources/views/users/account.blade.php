@@ -13,7 +13,7 @@
         <div class="card-body">
             <div class="d-flex align-items-start align-items-sm-center gap-4">
             <img
-                src="{{ asset("assets/img/avatars/1.png") }}"
+                src="{{ (auth()->user()->photo != "") ? asset(auth()->user()->photo) : asset("assets/img/avatars/profile.png") }}"
                 alt="user-avatar"
                 class="d-block rounded"
                 height="100"
@@ -24,20 +24,14 @@
                 <label for="upload" class="btn btn-primary me-2 mb-4" tabindex="0">
                 <span class="d-none d-sm-block">Upload new photo</span>
                 <i class="bx bx-upload d-block d-sm-none"></i>
-                <input
-                    type="file"
-                    id="upload"
-                    class="account-file-input"
-                    hidden
-                    accept="image/png, image/jpeg"
-                />
+                <input type="file" id="upload" class="account-file-input" hidden accept="image/png, image/jpeg, image/jpg" />
                 </label>
                 <button type="button" class="btn btn-outline-secondary account-image-reset mb-4">
                 <i class="bx bx-reset d-block d-sm-none"></i>
                 <span class="d-none d-sm-block">Reset</span>
                 </button>
 
-                <p class="text-muted mb-0">Allowed JPG, GIF or PNG. Max size of 800K</p>
+                <p class="text-muted mb-0">Allowed JPG, JPEG or PNG. Max size of 800K</p>
             </div>
             </div>
         </div>
@@ -46,40 +40,44 @@
             <form id="formAccountSettings" method="POST" onsubmit="return false">
             <div class="row">
                 <div class="mb-3 col-md-6">
-                <label for="firstName" class="form-label">First Name</label>
-                <input
-                    class="form-control"
-                    type="text"
-                    id="firstName"
-                    name="firstName"
-                    value="John"
-                    autofocus
-                />
+                    <label for="name" class="form-label">Name</label>
+                    <input class="form-control" type="text" id="name" name="name" value="{{ auth()->user()->name }}" autofocus />
+                    @error('name')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
                 </div>
                 <div class="mb-3 col-md-6">
-                <label for="lastName" class="form-label">Last Name</label>
-                <input class="form-control" type="text" name="lastName" id="lastName" value="Doe" />
+                    <label for="email" class="form-label">E-mail</label>
+                    <input class="form-control" type="text" id="email" name="email" value="{{ auth()->user()->email }}" placeholder="john.doe@example.com" />
+                    @error('email')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
                 </div>
                 <div class="mb-3 col-md-6">
-                <label for="email" class="form-label">E-mail</label>
-                <input
-                    class="form-control"
-                    type="text"
-                    id="email"
-                    name="email"
-                    value="john.doe@example.com"
-                    placeholder="john.doe@example.com"
-                />
+                    <label for="gender" class="form-label">Gender</label>
+                    <select id="gender" class="select2 form-select">
+                        @php
+                            $genders = config('constants.GENDER_OPTIONS');
+                        @endphp
+                        <option value="">Select Gender</option>
+                        @foreach ($genders as $key => $gender)
+                            <option value="{{ $key }}">{{ $gender }}</option>
+                        @endforeach
+                    </select>
                 </div>
                 <div class="mb-3 col-md-6">
-                <label for="organization" class="form-label">Organization</label>
-                <input
-                    type="text"
-                    class="form-control"
-                    id="organization"
-                    name="organization"
-                    value="Homebazaar"
-                />
+                    <label for="organization" class="form-label">Organization</label>
+                    <input
+                        type="text"
+                        class="form-control"
+                        id="organization"
+                        name="organization"
+                        value="Homebazaar"
+                    />
                 </div>
                 <div class="mb-3 col-md-6">
                 <label class="form-label" for="phoneNumber">Phone Number</label>
@@ -143,16 +141,7 @@
                     <option value="United States">United States</option>
                 </select>
                 </div>
-                <div class="mb-3 col-md-6">
-                <label for="language" class="form-label">Language</label>
-                <select id="language" class="select2 form-select">
-                    <option value="">Select Language</option>
-                    <option value="en">English</option>
-                    <option value="fr">French</option>
-                    <option value="de">German</option>
-                    <option value="pt">Portuguese</option>
-                </select>
-                </div>
+
                 <div class="mb-3 col-md-6">
                 <label for="timeZones" class="form-label">Timezone</label>
                 <select id="timeZones" class="select2 form-select">
