@@ -107,3 +107,21 @@
     text-align: center;
     margin-top: 1rem;
 }
+.border-right {
+    border-right: 1px solid #d9dee3;
+}
+.alert {
+    margin: 12px 24px;
+}
+
+div.table-responsive>div.dataTables_wrapper>div.row:first-child {
+    margin: 0 22px;
+}
+div.table-responsive>div.dataTables_wrapper>div.row:last-child {
+    margin: 0 22px 8px 22px;
+}
+
+.dataTables_paginate .paginate_button a {
+    margin: 0 !important;
+    height: 100%;
+}

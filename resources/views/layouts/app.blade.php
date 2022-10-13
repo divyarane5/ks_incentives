@@ -43,6 +43,9 @@
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js") }} in the <head> section -->
     <!--? Config:  Mandatory theme config file contain global vars & default theme options, Set your preferred theme option in this file.  -->
     <script src="{{ asset("assets/js/config.js") }}"></script>
+    {{-- <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"/> --}}
+    {{-- <link href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css" rel="stylesheet"> --}}
+    <link href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css" rel="stylesheet">
 </head>
 <body>
     <!-- Layout wrapper -->
@@ -55,7 +58,18 @@
             <!-- Layout container -->
             <div class="layout-page">
                 @include('include.topnav')
-
+                @if (\Session::has('success'))
+                    <div class="alert alert-success alert-dismissible" role="alert">
+                        {!! \Session::get('success') !!}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
+                @if (\Session::has('error'))
+                    <div class="alert alert-danger  alert-dismissible" role="alert">
+                        {!! \Session::get('error') !!}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
                 @yield('content')
 
                 <!-- Footer -->
@@ -86,6 +100,10 @@
 
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
 
     @yield('script')
 

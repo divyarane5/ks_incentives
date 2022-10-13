@@ -8205,11 +8205,11 @@ button:focus {
 }
 
 .invalid-feedback {
-    display: none;
-    width: 100%;
-    margin-top: 0.3rem;
-    font-size: 85%;
-    color: #ff3e1d;
+  /* display: none; */
+  width: 100%;
+  margin-top: 0.3rem;
+  font-size: 85%;
+  color: #ff3e1d;
 }
 
 .invalid-tooltip {

@@ -9,6 +9,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+use Auth;
 
 class User extends Authenticatable
 {
@@ -20,9 +21,19 @@ class User extends Authenticatable
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
         'email',
         'password',
+        'employee_code',
+        'entity',
+        'name',
+        'gender',
+        'dob',
+        'location_id',
+        'department_id',
+        'designation_id',
+        'reporting_user_id',
+        'status',
+        'last_login'
     ];
 
     /**
@@ -35,12 +46,32 @@ class User extends Authenticatable
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
-    protected $casts = [
-        'email_verified_at' => 'datetime',
-    ];
+    protected static function boot() {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
+        });
+    }
+
+    public function location()
+    {
+        return $this->belongsTo(Location::class, 'location_id', 'id');
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id', 'id');
+    }
+
+    public function designation()
+    {
+        return $this->belongsTo(Designation::class, 'designation_id', 'id');
+    }
+
+    public function reportingTo()
+    {
+        return $this->belongsTo(User::class, 'reporting_user_id', 'id');
+    }
+
 }
