@@ -53,4 +53,25 @@ class User extends Authenticatable
             $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
         });
     }
+
+    public function location()
+    {
+        return $this->belongsTo(Location::class, 'location_id', 'id');
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id', 'id');
+    }
+
+    public function designation()
+    {
+        return $this->belongsTo(Designation::class, 'designation_id', 'id');
+    }
+
+    public function reportingTo()
+    {
+        return $this->belongsTo(User::class, 'reporting_user_id', 'id');
+    }
+
 }
