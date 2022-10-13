@@ -22,6 +22,7 @@ class CreateUsersTable extends Migration
             $table->string('name');
             $table->string('gender')->nullable();
             $table->date('dob')->nullable();
+            $table->date('joining_date')->nullable();
             $table->unsignedBigInteger('location_id')->nullable()->index();
             $table->foreign('location_id')->references('id')->on('locations');
             $table->unsignedBigInteger('department_id')->nullable()->index();
