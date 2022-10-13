@@ -23,6 +23,8 @@ Route::group(['middleware' => 'auth'], function() {
 
     //dashboard
     Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/account', [App\Http\Controllers\DashboardController::class, 'account'])->name('account');
+    Route::resource('users', App\Http\Controllers\UserController::class);
 
     //profile
     Route::get('/account', [App\Http\Controllers\UserController::class, 'account'])->name('account');

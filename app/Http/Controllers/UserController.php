@@ -8,6 +8,15 @@ use Illuminate\Http\Request;
 
 class UserController extends Controller
 {
+    public function index()
+    {
+        $data['users'] = User::orderBy('id','desc')->paginate(5);
+        return view('users.index', $data);
+    }
+    public function create()
+    {
+        return view('users.create');
+    }
     public function account()
     {
         return view('users.account');
