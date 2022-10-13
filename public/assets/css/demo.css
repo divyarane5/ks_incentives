@@ -125,3 +125,6 @@ div.table-responsive>div.dataTables_wrapper>div.row:last-child {
     margin: 0 !important;
     height: 100%;
 }
+.pull-right {
+    float: right;
+}
