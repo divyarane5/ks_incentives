@@ -48,7 +48,7 @@ class RoleController extends Controller
 
                     if (auth()->user()->can('role-delete')) {
                         $onclickAction = "event.preventDefault(); document.getElementById('".$row->id."').submit()";
-                        $actions .= '<button class="dropdown-item" onclick="'.$onclickAction.'"
+                        $actions .= '<button class="dropdown-item" onclick="deleteRole('.$row->id.')"
                                         ><i class="bx bx-trash me-1"></i> Delete</button>
                                     <form id="'.$row->id.'" action="'.route('role.destroy', $row->id).'" method="POST" class="d-none">
                                         '.csrf_field().'
@@ -96,7 +96,7 @@ class RoleController extends Controller
         $permissions = $request->input('permissions');
         $role->syncPermissions($permissions);
 
-        return redirect()->route('role.index');
+        return redirect()->route('role.index')->with('success', 'Role Created Successfully');
     }
 
     /**
@@ -129,7 +129,7 @@ class RoleController extends Controller
         $permissions = $request->input('permissions');
         $role->syncPermissions($permissions);
 
-        return redirect()->route('role.index');
+        return redirect()->route('role.index')->with('success', 'Role Updated Successfully');
     }
 
     /**
@@ -141,6 +141,6 @@ class RoleController extends Controller
     public function destroy($id)
     {
         Role::where('id', $id)->delete();
-        return redirect()->route('role.index');
+        return redirect()->route('role.index')->with('success', 'Role Deleted Successfully');
     }
 }

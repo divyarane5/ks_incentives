@@ -7,7 +7,9 @@
     <div class="row">
         <h4 class="fw-bold py-3 mb-4 col-md-6"><span class="text-muted fw-light">Users /</span> List</h4>
         <div class="col-md-6 ">
+            @can('user-create')
             <a href="{{ route('users.create') }}" type="button" class="btn btn-primary pull-right my-3 mb-4 ">Add User</a>
+            @endcan
         </div>
     </div>
 
@@ -44,6 +46,7 @@
 @section('script')
 <script type="text/javascript">
     $(document).ready(function () {
+        //listing
         var table = $('#user-datatable').DataTable({
             processing: true,
             serverSide: true,
@@ -59,7 +62,30 @@
                 {data: 'action', 'sortable': false},
             ]
         });
+
     });
+
+    function deleteUser(id)
+    {
+        $.confirm({
+            title: 'Delete User',
+            content: 'Are you sure you want to delete user?',
+            type: 'red',
+            typeAnimated: true,
+            buttons: {
+                tryAgain: {
+                    text: 'Yes',
+                    btnClass: 'btn-red',
+                    action: function(){
+                        event.preventDefault();
+                        document.getElementById(id).submit()
+                    }
+                },
+                close: function () {
+                }
+            }
+        });
+    }
 
 </script>
 @endsection
