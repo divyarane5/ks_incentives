@@ -7,7 +7,7 @@
     <div class="row">
         <h4 class="fw-bold py-3 mb-4 col-md-6"><span class="text-muted fw-light">Users /</span> List</h4>
         <div class="col-md-6 ">
-            <a href="{{ route('role.create') }}" type="button" class="btn btn-primary pull-right my-3 mb-4 ">Add User</a>
+            <a href="{{ route('users.create') }}" type="button" class="btn btn-primary pull-right my-3 mb-4 ">Add User</a>
         </div>
     </div>
 
