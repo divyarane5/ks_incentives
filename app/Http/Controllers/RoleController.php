@@ -37,7 +37,7 @@ class RoleController extends Controller
                     return date("d-m-Y", strtotime($row->created_at));
                 })
                 ->addColumn('updated_at', function ($row) {
-                    return date("d-m-Y", strtotime($row->updated_at));
+                    return ($row->updated_at != "") ? date("d-m-Y", strtotime($row->updated_at)) : '-';
                 })
                 ->addColumn('action', function ($row) {
                     $actions = '';
@@ -47,7 +47,6 @@ class RoleController extends Controller
                     }
 
                     if (auth()->user()->can('role-delete')) {
-                        $onclickAction = "event.preventDefault(); document.getElementById('".$row->id."').submit()";
                         $actions .= '<button class="dropdown-item" onclick="deleteRole('.$row->id.')"
                                         ><i class="bx bx-trash me-1"></i> Delete</button>
                                     <form id="'.$row->id.'" action="'.route('role.destroy', $row->id).'" method="POST" class="d-none">

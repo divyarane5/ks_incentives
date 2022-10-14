@@ -55,7 +55,6 @@ class PermissionTableSeeder extends Seeder
             'role-create',
             'role-edit',
             'role-delete',
-            'role-permission',
             'project-view',
             'developer-view',
             'intend-view-all',

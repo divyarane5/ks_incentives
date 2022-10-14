@@ -17,8 +17,8 @@
             <div class="card-body">
                 <div class="row">
                     <div class="mb-3 col-md-6">
-                        <label class="form-label" for="name">Name</label>
-                        <input name="name" class="form-control" id="name" value="{{ (old('name') != "") ? old('name') : $location->name }}" />
+                        <label class="form-label" for="name">Name<span class="start-mark">*</span></label>
+                        <input name="name" class="form-control" id="name" value="{{ (old('name') != "") ? old('name') : $location->name }}" required />
                         @error('name')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>

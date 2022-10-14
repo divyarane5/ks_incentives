@@ -1,5 +1,8 @@
 @extends('layouts.app')
+
 @section('content')
+<!-- Content -->
+
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="row">
         <h4 class="fw-bold py-3 mb-4 col-md-6"><span class="text-muted fw-light">Users /</span> List</h4>
@@ -32,8 +35,6 @@
             </tbody>
             </table>
         </div>
-        </div>
-        <!--/ Striped Rows -->
     </div>
     <!--/ Striped Rows -->
 </div>
