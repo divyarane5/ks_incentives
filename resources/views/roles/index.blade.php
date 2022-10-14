@@ -2,7 +2,13 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Roles /</span> List</h4>
+    <div class="row">
+        <h4 class="fw-bold py-3 mb-4 col-md-6"><span class="text-muted fw-light">Roles /</span> List</h4>
+        <div class="col-md-6">
+            <a href="{{ route('role.create') }}" type="button" class="btn btn-primary pull-right my-3 mb-4 ">Add Role</a>
+        </div>
+    </div>
+
     <!-- Striped Rows -->
     <div class="card">
         <h5 class="card-header">Roles</h5>
@@ -29,15 +35,15 @@
 <script type="text/javascript">
     $(document).ready(function () {
       var table = $('#role-datatable').DataTable({
-          processing: true,
-          serverSide: true,
-          ajax: "{{ route('role.index') }}",
-          columns: [
-              {data: 'name', name: 'name'},
-              {data: 'created_at', name: 'created_at'},
-              {data: 'updated_at', name: 'updated_at'},
-              {data: 'action', 'sortable': false},
-          ]
+            processing: true,
+            serverSide: true,
+            ajax: "{{ route('role.index') }}",
+            columns: [
+                {data: 'name', name: 'name'},
+                {data: 'created_at', name: 'created_at'},
+                {data: 'updated_at', name: 'updated_at'},
+                {data: 'action', 'sortable': false},
+            ]
       });
 
     });
