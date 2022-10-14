@@ -14,187 +14,37 @@
         </div>
 
         <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data">
-                @csrf
-            <div class="row">
-                
-                <div class="col-md-6">
-                <div class="card-body">
-                    <form>
-                    <div class="mb-3">
-                        <label class="form-label" for="basic-icon-default-fullname">Full Name</label>
-                        <div class="input-group input-group-merge">
-                        <span id="basic-icon-default-fullname2" class="input-group-text"
-                            ><i class="bx bx-user"></i
-                        ></span>
-                        
-                        <input
-                            name="name"
-                            class="form-control"
-                            id="basic-icon-default-fullname"
-                            placeholder="John Doe"
-                            aria-label="John Doe"
-                            aria-describedby="basic-icon-default-fullname2"
-                        />
+            @csrf
+            <div class="card-body">
+                <div class="row">
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label" for="name">Name</label>
+                        <input name="name" class="form-control" id="name" value="{{ old('name') }}" />
                         @error('name')
-                        <div class="alert alert-danger mt-1 mb-1">{{ $message }}</div>
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
                         @enderror
-                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="basic-icon-default-company">Company</label>
-                        <div class="input-group input-group-merge">
-                        <span id="basic-icon-default-company2" class="input-group-text"
-                            ><i class="bx bx-buildings"></i
-                        ></span>
-                        <input
-                            type="text"
-                            id="basic-icon-default-company"
-                            class="form-control"
-                            placeholder="ACME Inc."
-                            aria-label="ACME Inc."
-                            aria-describedby="basic-icon-default-company2"
-                        />
-                        </div>
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label" for="employee_code">Employee Code</label>
+                        <input name="employee_code" class="form-control" id="employee_code" value="{{ old('employee_code') }}" />
+                        @error('employee_code')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="basic-icon-default-email">Email</label>
-                        <div class="input-group input-group-merge">
-                        <span class="input-group-text"><i class="bx bx-envelope"></i></span>
-                        <input
-                            type="text"
-                            id="basic-icon-default-email"
-                            class="form-control"
-                            placeholder="john.doe"
-                            aria-label="john.doe"
-                            aria-describedby="basic-icon-default-email2"
-                        />
-                        <span id="basic-icon-default-email2" class="input-group-text">@example.com</span>
-                        </div>
-                        <div class="form-text">You can use letters, numbers & periods</div>
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label" for="email">Email</label>
+                        <input name="email" class="form-control" id="email" value="{{ old('email') }}" />
+                        @error('email')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="basic-icon-default-phone">Phone No</label>
-                        <div class="input-group input-group-merge">
-                        <span id="basic-icon-default-phone2" class="input-group-text"
-                            ><i class="bx bx-phone"></i
-                        ></span>
-                        <input
-                            type="text"
-                            id="basic-icon-default-phone"
-                            class="form-control phone-mask"
-                            placeholder="658 799 8941"
-                            aria-label="658 799 8941"
-                            aria-describedby="basic-icon-default-phone2"
-                        />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="basic-icon-default-message">Message</label>
-                        <div class="input-group input-group-merge">
-                        <span id="basic-icon-default-message2" class="input-group-text"
-                            ><i class="bx bx-comment"></i
-                        ></span>
-                        <textarea
-                            id="basic-icon-default-message"
-                            class="form-control"
-                            placeholder="Hi, Do you have a moment to talk Joe?"
-                            aria-label="Hi, Do you have a moment to talk Joe?"
-                            aria-describedby="basic-icon-default-message2"
-                        ></textarea>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Send</button>
-                    </form>
                 </div>
-                
-                </div>
-                <div class="col-md-6">
-                <div class="card-body">
-                    <form>
-                    <div class="mb-3">
-                        <label class="form-label" for="basic-icon-default-fullname">Full Name</label>
-                        <div class="input-group input-group-merge">
-                        <span id="basic-icon-default-fullname2" class="input-group-text"
-                            ><i class="bx bx-user"></i
-                        ></span>
-                        <input
-                            type="text"
-                            class="form-control"
-                            id="basic-icon-default-fullname"
-                            placeholder="John Doe"
-                            aria-label="John Doe"
-                            aria-describedby="basic-icon-default-fullname2"
-                        />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="basic-icon-default-company">Company</label>
-                        <div class="input-group input-group-merge">
-                        <span id="basic-icon-default-company2" class="input-group-text"
-                            ><i class="bx bx-buildings"></i
-                        ></span>
-                        <input
-                            type="text"
-                            id="basic-icon-default-company"
-                            class="form-control"
-                            placeholder="ACME Inc."
-                            aria-label="ACME Inc."
-                            aria-describedby="basic-icon-default-company2"
-                        />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="basic-icon-default-email">Email</label>
-                        <div class="input-group input-group-merge">
-                        <span class="input-group-text"><i class="bx bx-envelope"></i></span>
-                        <input
-                            type="text"
-                            id="basic-icon-default-email"
-                            class="form-control"
-                            placeholder="john.doe"
-                            aria-label="john.doe"
-                            aria-describedby="basic-icon-default-email2"
-                        />
-                        <span id="basic-icon-default-email2" class="input-group-text">@example.com</span>
-                        </div>
-                        <div class="form-text">You can use letters, numbers & periods</div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="basic-icon-default-phone">Phone No</label>
-                        <div class="input-group input-group-merge">
-                        <span id="basic-icon-default-phone2" class="input-group-text"
-                            ><i class="bx bx-phone"></i
-                        ></span>
-                        <input
-                            type="text"
-                            id="basic-icon-default-phone"
-                            class="form-control phone-mask"
-                            placeholder="658 799 8941"
-                            aria-label="658 799 8941"
-                            aria-describedby="basic-icon-default-phone2"
-                        />
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label" for="basic-icon-default-message">Message</label>
-                        <div class="input-group input-group-merge">
-                        <span id="basic-icon-default-message2" class="input-group-text"
-                            ><i class="bx bx-comment"></i
-                        ></span>
-                        <textarea
-                            id="basic-icon-default-message"
-                            class="form-control"
-                            placeholder="Hi, Do you have a moment to talk Joe?"
-                            aria-label="Hi, Do you have a moment to talk Joe?"
-                            aria-describedby="basic-icon-default-message2"
-                        ></textarea>
-                        </div>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Send</button>
-                    </form>
-                </div>
-                </div>
-                
             </div>
         </form>
     </div>
