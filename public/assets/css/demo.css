@@ -128,3 +128,12 @@ div.table-responsive>div.dataTables_wrapper>div.row:last-child {
 .pull-right {
     float: right;
 }
+.permission_tabs.nav-align-top .nav-pills{
+    background: #f9f9f9;
+}
+.permission_tabs ul li {
+    border-bottom: 1px solid #d9dee3;
+}
+.mr-12 {
+    margin-right: 12px;
+}

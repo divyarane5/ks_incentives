@@ -24,6 +24,8 @@ Route::group(['middleware' => 'auth'], function() {
     //dashboard
     Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
     Route::get('/account', [App\Http\Controllers\DashboardController::class, 'account'])->name('account');
+
+    //User
     Route::resource('users', App\Http\Controllers\UserController::class);
 
     //profile
@@ -31,7 +33,7 @@ Route::group(['middleware' => 'auth'], function() {
     Route::post('/update_profile', [App\Http\Controllers\UserController::class, 'updateProfile'])->name('update_profile');
 
     //roles and permissions
-    Route::resource('role', App\Http\Controllers\RoleController::class);
+    Route::resource('role', App\Http\Controllers\RoleController::class)->except(['show']);
 
 });
 

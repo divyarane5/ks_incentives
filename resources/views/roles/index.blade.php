@@ -35,15 +35,15 @@
 <script type="text/javascript">
     $(document).ready(function () {
       var table = $('#role-datatable').DataTable({
-          processing: true,
-          serverSide: true,
-          ajax: "{{ route('role.index') }}",
-          columns: [
-              {data: 'name', name: 'name'},
-              {data: 'created_at', name: 'created_at'},
-              {data: 'updated_at', name: 'updated_at'},
-              {data: 'action', 'sortable': false},
-          ]
+            processing: true,
+            serverSide: true,
+            ajax: "{{ route('role.index') }}",
+            columns: [
+                {data: 'name', name: 'name'},
+                {data: 'created_at', name: 'created_at'},
+                {data: 'updated_at', name: 'updated_at'},
+                {data: 'action', 'sortable': false},
+            ]
       });
 
     });
