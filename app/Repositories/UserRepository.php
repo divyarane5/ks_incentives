@@ -21,8 +21,7 @@ class UserRepository implements UserRepositoryInterface
             ])
             ->leftJoin('designations', 'users.designation_id', '=', 'designations.id')
             ->leftJoin('departments', 'users.department_id', '=', 'departments.id')
-            ->leftJoin('locations', 'users.location_id', '=', 'locations.id')
-            ->orderBy('id','desc');
+            ->leftJoin('locations', 'users.location_id', '=', 'locations.id');
         return $user;
     }
 
