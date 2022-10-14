@@ -20,7 +20,7 @@ class DepartmentController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Department::latest();
+            $data = Department::all();
             return DataTables::of($data)
                 ->addColumn('name', function ($row) {
                     return $row->name;
@@ -32,7 +32,7 @@ class DepartmentController extends Controller
                     return date("d-m-Y", strtotime($row->created_at));
                 })
                 ->addColumn('updated_at', function ($row) {
-                    return date("d-m-Y", strtotime($row->updated_at));
+                    return ($row->updated_at != "") ? date("d-m-Y", strtotime($row->updated_at)) : '-';
                 })
                 ->addColumn('action', function ($row) {
                     $actions = '';
@@ -42,8 +42,7 @@ class DepartmentController extends Controller
                     }
 
                     if (auth()->user()->can('department-delete')) {
-                        $onclickAction = "event.preventDefault(); document.getElementById('".$row->id."').submit()";
-                        $actions .= '<button class="dropdown-item" onclick="'.$onclickAction.'"
+                        $actions .= '<button class="dropdown-item" onclick="deleteDepartment('.$row->id.')"
                                         ><i class="bx bx-trash me-1"></i> Delete</button>
                                     <form id="'.$row->id.'" action="'.route('department.destroy', $row->id).'" method="POST" class="d-none">
                                         '.csrf_field().'

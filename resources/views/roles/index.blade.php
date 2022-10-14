@@ -5,7 +5,7 @@
     <div class="row">
         <h4 class="fw-bold py-3 mb-4 col-md-6"><span class="text-muted fw-light">Roles /</span> List</h4>
         <div class="col-md-6">
-            @can('user-create')
+            @can('role-create')
             <a href="{{ route('role.create') }}" type="button" class="btn btn-primary pull-right my-3 mb-4 ">Add Role</a>
             @endcan
         </div>

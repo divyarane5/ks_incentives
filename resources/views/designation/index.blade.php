@@ -5,7 +5,9 @@
     <div class="row">
         <h4 class="fw-bold py-3 mb-4 col-md-6"><span class="text-muted fw-light">Designation /</span> List</h4>
         <div class="col-md-6">
+            @can('designation-create')
             <a href="{{ route('designation.create') }}" type="button" class="btn btn-primary pull-right my-3 mb-4 ">Add Designation</a>
+            @endcan
         </div>
     </div>
 
@@ -47,5 +49,27 @@
       });
 
     });
+
+    function deleteDesignation(id)
+    {
+        $.confirm({
+            title: 'Delete Designation',
+            content: 'Are you sure you want to delete designation?',
+            type: 'red',
+            typeAnimated: true,
+            buttons: {
+                tryAgain: {
+                    text: 'Yes',
+                    btnClass: 'btn-red',
+                    action: function(){
+                        event.preventDefault();
+                        document.getElementById(id).submit()
+                    }
+                },
+                close: function () {
+                }
+            }
+        });
+    }
 </script>
 @endsection
