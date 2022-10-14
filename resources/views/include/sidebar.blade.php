@@ -19,8 +19,8 @@
             <div data-i18n="Analytics">Dashboard</div>
         </a>
     </li>
-    @canany(['role-view'])
-        <li class="menu-item {{ in_array(Request::segment(1), ['role']) ? 'active open': '' }}">
+    @canany(['role-view','location-view','department-view','designation-view'])
+        <li class="menu-item {{ in_array(Request::segment(1), ['role','location','department','designation']) ? 'active open': '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle ">
                 <i class="menu-icon tf-icons bx bx-layout"></i>
                 <div data-i18n="Layouts">Masters</div>
@@ -30,6 +30,33 @@
                     <li class="menu-item {{ ((Request::segment(1) == 'role')) ? 'active': '' }}">
                         <a href="{{ route('role.index') }}" class="menu-link">
                             <div data-i18n="Without menu">Role</div>
+                        </a>
+                    </li>
+                @endcan
+            </ul>
+            <ul class="menu-sub ">
+                @can('location-view')
+                    <li class="menu-item {{ ((Request::segment(1) == 'location')) ? 'active': '' }}">
+                        <a href="{{ route('location.index') }}" class="menu-link">
+                            <div data-i18n="Without menu">Location</div>
+                        </a>
+                    </li>
+                @endcan
+            </ul>
+            <ul class="menu-sub ">
+                @can('department-view')
+                    <li class="menu-item {{ ((Request::segment(1) == 'department')) ? 'active': '' }}">
+                        <a href="{{ route('department.index') }}" class="menu-link">
+                            <div data-i18n="Without menu">Department</div>
+                        </a>
+                    </li>
+                @endcan
+            </ul>
+            <ul class="menu-sub ">
+                @can('designation-view')
+                    <li class="menu-item {{ ((Request::segment(1) == 'designation')) ? 'active': '' }}">
+                        <a href="{{ route('designation.index') }}" class="menu-link">
+                            <div data-i18n="Without menu">Designation</div>
                         </a>
                     </li>
                 @endcan

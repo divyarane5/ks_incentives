@@ -28,6 +28,15 @@ Route::group(['middleware' => 'auth'], function() {
     //User
     Route::resource('users', App\Http\Controllers\UserController::class);
 
+    //Location
+    Route::resource('location', App\Http\Controllers\LocationController::class);
+
+    //Department
+    Route::resource('department', App\Http\Controllers\DepartmentController::class);
+
+    //Designation
+    Route::resource('designation', App\Http\Controllers\DesignationController::class);
+
     //profile
     Route::get('/account', [App\Http\Controllers\UserController::class, 'account'])->name('account');
     Route::post('/update_profile', [App\Http\Controllers\UserController::class, 'updateProfile'])->name('update_profile');
