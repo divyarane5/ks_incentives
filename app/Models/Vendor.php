@@ -7,5 +7,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class Vendor extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
+
+    protected static function boot() {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
+        });
+    }
+
+    protected $fillable = [
+        'name',
+    ];
 }

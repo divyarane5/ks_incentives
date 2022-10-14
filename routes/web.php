@@ -37,6 +37,12 @@ Route::group(['middleware' => 'auth'], function() {
     //Designation
     Route::resource('designation', App\Http\Controllers\DesignationController::class);
 
+    //Expense
+    Route::resource('expense', App\Http\Controllers\ExpenseController::class);
+
+    //Expense
+    Route::resource('vendors', App\Http\Controllers\VendorController::class);
+
     //profile
     Route::get('/account', [App\Http\Controllers\UserController::class, 'account'])->name('account');
     Route::post('/update_profile', [App\Http\Controllers\UserController::class, 'updateProfile'])->name('update_profile');

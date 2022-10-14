@@ -1,26 +1,26 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Expense;
-use App\Http\Requests\ExpenseRequest;
+use App\Models\Vendor;
+use App\Http\Requests\VendorRequest;
 use DataTables;
 use Illuminate\Http\Request;
 
-class ExpenseController extends Controller
+class VendorController extends Controller
 {
     function __construct()
     {
-        $this->middleware('permission:expense-view', ['only' => ['index']]);
-        $this->middleware('permission:expense-create', ['only' => ['create','store']]);
-        $this->middleware('permission:expense-edit', ['only' => ['edit','update']]);
-        $this->middleware('permission:expense-delete', ['only' => ['destroy']]);
+        $this->middleware('permission:vendor-view', ['only' => ['index']]);
+        $this->middleware('permission:vendor-create', ['only' => ['create','store']]);
+        $this->middleware('permission:vendor-edit', ['only' => ['edit','update']]);
+        $this->middleware('permission:vendor-delete', ['only' => ['destroy']]);
 
     }
 
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Expense::latest();
+            $data = Vendor::latest();
             return DataTables::of($data)
                 ->addColumn('name', function ($row) {
                     return $row->name;
@@ -36,16 +36,16 @@ class ExpenseController extends Controller
                 })
                 ->addColumn('action', function ($row) {
                     $actions = '';
-                    if (auth()->user()->can('expense-edit')) {
-                        $actions .= '<a class="dropdown-item" href="'.route('expense.edit', $row->id).'"
+                    if (auth()->user()->can('vendor-edit')) {
+                        $actions .= '<a class="dropdown-item" href="'.route('vendor.edit', $row->id).'"
                                         ><i class="bx bx-edit-alt me-1"></i> Edit</a>';
                     }
 
-                    if (auth()->user()->can('expense-delete')) {
+                    if (auth()->user()->can('vendor-delete')) {
                         $onclickAction = "event.preventDefault(); document.getElementById('".$row->id."').submit()";
                         $actions .= '<button class="dropdown-item" onclick="'.$onclickAction.'"
                                         ><i class="bx bx-trash me-1"></i> Delete</button>
-                                    <form id="'.$row->id.'" action="'.route('expense.destroy', $row->id).'" method="POST" class="d-none">
+                                    <form id="'.$row->id.'" action="'.route('vendor.destroy', $row->id).'" method="POST" class="d-none">
                                         '.csrf_field().'
                                         '.method_field('delete').'
                                     </form>';
@@ -65,42 +65,43 @@ class ExpenseController extends Controller
                 ->rawColumns(['action'])
                 ->make(true);
         }
-        return view('expense.index');
+        return view('vendor.index');
     }
 
     public function create()
     {
-        return view('expense.create');
+        return view('vendor.create');
     }
 
-    public function store(ExpenseRequest $request)
+    public function store(VendorRequest $request)
     {
         //create location
-        $expense = new Expense();
-        $expense->name = $request->input('name');
-        $expense->save();
+        $vendor = new Vendor();
+        $vendor->name = $request->input('name');
+        $vendor->save();
 
-        return redirect()->route('expense.index')->with('success', 'Expense Added Successfully');
+        return redirect()->route('vendor.index')->with('success', 'Vendor Added Successfully');
     }
 
     public function edit($id)
     {
-        $expense = Expense::find($id);
-        return view('expense.edit', compact('id', 'expense'));
+        $vendor = Vendor::find($id);
+        return view('vendor.edit', compact('id', 'vendor'));
     }
 
-    public function update(ExpenseRequest $request, $id)
+    public function update(VendorRequest $request, $id)
     {
-        $expense = Expense::find($id);
-        $expense->name = $request->input('name');
-        $expense->save();
+        $vendor = Vendor::find($id);
+        $vendor->name = $request->input('name');
+        $vendor->save();
 
-        return redirect()->route('expense.index')->with('success', 'Expense Updated Successfully');
+        return redirect()->route('vendor.index')->with('success', 'Vendor Updated Successfully');
     }
 
     public function destroy($id)
     {
-        Expense::where('id', $id)->delete();
-        return redirect()->route('expense.index')->with('success', 'Expense Deleted Successfully');
+        Vendor::where('id', $id)->delete();
+        return redirect()->route('vendor.index')->with('success', 'Vendor Deleted Successfully');
     }
+
 }
