@@ -13,7 +13,7 @@ use Auth;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, HasFactory, Notifiable, HasRoles;
+    use HasApiTokens, HasFactory, Notifiable, HasRoles, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -33,9 +33,10 @@ class User extends Authenticatable
         'designation_id',
         'reporting_user_id',
         'status',
-        'last_login'
+        'last_login',
+        'joining_date',
+        'photo'
     ];
-
     /**
      * The attributes that should be hidden for serialization.
      *

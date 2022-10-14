@@ -25,7 +25,7 @@ class UserProfileRequest extends FormRequest
     {
         return [
             'name' => 'required|regex:/^[\pL\s\-]+$/u',
-            'email' => 'email',
+            'email' => 'email|unique:users,email'.(($this->request->has('id')) ? ','.$this->request->get('id') : ''),
             'dob' => 'nullable|date|before:-18 years',
             'photo' => 'image'
         ];

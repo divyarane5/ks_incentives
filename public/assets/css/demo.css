@@ -137,3 +137,8 @@ div.table-responsive>div.dataTables_wrapper>div.row:last-child {
 .mr-12 {
     margin-right: 12px;
 }
+.start-mark {
+    color: red;
+    font-size: 15px;
+    padding-left: 3px;
+}

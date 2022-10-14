@@ -3,10 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Http\Requests\UserProfileRequest;
+use App\Http\Requests\UserRequest;
 use App\Interfaces\UserRepositoryInterface;
+use App\Models\Department;
+use App\Models\Designation;
+use App\Models\Location;
 use App\Models\User;
 use Illuminate\Http\Request;
 use DataTables;
+use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
@@ -35,8 +40,7 @@ class UserController extends Controller
                     }
 
                     if (auth()->user()->can('user-delete')) {
-                        $onclickAction = "event.preventDefault(); document.getElementById('".$row->id."').submit()";
-                        $actions .= '<button class="dropdown-item" onclick="'.$onclickAction.'"
+                        $actions .= '<button class="dropdown-item" onclick="deleteUser('.$row->id.')"
                                         ><i class="bx bx-trash me-1"></i> Delete</button>
                                     <form id="'.$row->id.'" action="'.route('users.destroy', $row->id).'" method="POST" class="d-none">
                                         '.csrf_field().'
@@ -60,10 +64,68 @@ class UserController extends Controller
         }
         return view('users.index');
     }
+
     public function create()
     {
-        return view('users.create');
+        $locations = Location::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        $departments = Department::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        $designations = Designation::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        $reportingUsers = User::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        $roles = Role::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        return view('users.create', compact('locations', 'departments', 'designations', 'reportingUsers', 'roles'));
     }
+
+    public function store(UserRequest $request)
+    {
+        //store user
+        $user = new User();
+        $this->userRepository->updateUser($user, $request);
+
+        //profile photo
+        if ($request->has('photo')) {
+            $user->photo = uploadFile($request->file('photo'), config('uploadfilepath.USER_PROFILE_PHOTO'));
+            $user->save();
+        }
+
+        return redirect()->route('users.index')->with('success', 'User Added Successfully');
+    }
+
+    public function edit($id)
+    {
+        $user = User::find($id);
+        $locations = Location::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        $departments = Department::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        $designations = Designation::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        $reportingUsers = User::select(['id', 'name'])->where('id', '!=', $id)->orderBy('name', 'asc')->get();
+        $roles = Role::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        return view('users.edit', compact('user', 'locations', 'departments', 'designations', 'reportingUsers', 'roles'));
+    }
+
+    public function update(UserRequest $request, $id)
+    {
+        //store user
+        $user = User::find($id);
+        $this->userRepository->updateUser($user, $request);
+
+        //profile photo
+        if ($request->has('photo')) {
+            if ($user->photo != "") {
+                unlink(storage_path('app/'.$user->photo));
+            }
+            $user->photo = uploadFile($request->file('photo'), config('uploadfilepath.USER_PROFILE_PHOTO'));
+            $user->save();
+        }
+
+        return redirect()->route('users.index')->with('success', 'User Updated Successfully');
+    }
+
+    public function destroy($id)
+    {
+        User::where('id', $id)->delete();
+        return redirect()->route('users.index')->with('success', 'User Deleted Successfully');
+    }
+
+    //profile section
     public function account()
     {
         return view('users.account');
@@ -80,6 +142,9 @@ class UserController extends Controller
 
         //profile photo
         if ($request->has('photo')) {
+            if (auth()->user()->photo != "") {
+                unlink(storage_path('app/'.auth()->user()->photo));
+            }
             $user->photo = uploadFile($request->file('photo'), config('uploadfilepath.USER_PROFILE_PHOTO'));
             $user->save();
         }
