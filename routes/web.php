@@ -40,8 +40,14 @@ Route::group(['middleware' => 'auth'], function() {
     //Expense
     Route::resource('expense', App\Http\Controllers\ExpenseController::class);
 
-    //Expense
-    Route::resource('vendors', App\Http\Controllers\VendorController::class);
+    //Vendor
+    Route::resource('vendor', App\Http\Controllers\VendorController::class);
+
+    //Business Unit
+    Route::resource('business_unit', App\Http\Controllers\BusinessUnitController::class);
+
+    //Payment Method
+    Route::resource('payment_method', App\Http\Controllers\PaymentMethodController::class);
 
     //profile
     Route::get('/account', [App\Http\Controllers\UserController::class, 'account'])->name('account');
