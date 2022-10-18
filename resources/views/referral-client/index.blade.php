@@ -3,19 +3,19 @@
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="row">
-        <h4 class="fw-bold py-3 mb-4 col-md-6"><span class="text-muted fw-light">Referral /</span> List</h4>
+        <h4 class="fw-bold py-3 mb-4 col-md-6"><span class="text-muted fw-light">Location /</span> List</h4>
         <div class="col-md-6">
-            @can('referral-template-create')
-            <a href="{{ route('template.create') }}" type="button" class="btn btn-primary pull-right my-3 mb-4 ">Add Template</a>
+            @can('location-create')
+            <a href="{{ route('location.create') }}" type="button" class="btn btn-primary pull-right my-3 mb-4 ">Add Location</a>
             @endcan
         </div>
     </div>
 
     <!-- Striped Rows -->
     <div class="card">
-        <h5 class="card-header">Template</h5>
+        <h5 class="card-header">Locations</h5>
         <div class="table-responsive text-nowrap">
-            <table id="template-datatable" class="table table-striped" width="100%">
+            <table id="location-datatable" class="table table-striped" width="100%">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -36,10 +36,10 @@
 @section('script')
 <script type="text/javascript">
     $(document).ready(function () {
-      var table = $('#template-datatable').DataTable({
+      var table = $('#location-datatable').DataTable({
             processing: true,
             serverSide: true,
-            ajax: "{{ route('template.index') }}",
+            ajax: "{{ route('location.index') }}",
             columns: [
                 {data: 'name', name: 'name'},
                 {data: 'created_at', name: 'created_at'},
@@ -53,8 +53,8 @@
     function deleteLocation(id)
     {
         $.confirm({
-            title: 'Delete Template',
-            content: 'Are you sure you want to delete Template?',
+            title: 'Delete Location',
+            content: 'Are you sure you want to delete location?',
             type: 'red',
             typeAnimated: true,
             buttons: {

@@ -49,6 +49,12 @@ Route::group(['middleware' => 'auth'], function() {
     //Payment Method
     Route::resource('payment_method', App\Http\Controllers\PaymentMethodController::class);
 
+    //Template
+    Route::resource('template', App\Http\Controllers\TemplateController::class);
+
+    //Template
+    Route::resource('referral_client', App\Http\Controllers\ReferralClientController::class);
+
     //profile
     Route::get('/account', [App\Http\Controllers\UserController::class, 'account'])->name('account');
     Route::post('/update_profile', [App\Http\Controllers\UserController::class, 'updateProfile'])->name('update_profile');
