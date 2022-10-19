@@ -91,7 +91,7 @@ class TemplateController extends Controller
     public function edit($id)
     {
         $template = Template::find($id);
-        return view('template.edit', compact('id', 'Template'));
+        return view('template.edit', compact('id', 'template'));
     }
 
     public function update(TemplateRequest $request, $id)
