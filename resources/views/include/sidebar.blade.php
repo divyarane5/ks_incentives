@@ -19,7 +19,7 @@
             <div data-i18n="Analytics">Dashboard</div>
         </a>
     </li>
-    @canany(['role-view','location-view','department-view','designation-view','expense-view','vendor-view','business_unit-view','payment_method-view','template-view'])
+    @canany(['role-view','location-view','department-view','designation-view','expense-view','vendor-view','business_unit-view','payment_method-view'])
         <li class="menu-item {{ in_array(Request::segment(1), ['role','location','department','designation','expense','vendor','business_unit','payment_method','template']) ? 'active open': '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle ">
                 <i class="menu-icon tf-icons bx bx-layout"></i>
@@ -97,11 +97,29 @@
                     </li>
                 @endcan
             </ul>
+            
+        </li>
+    @endcanany
+    @canany(['template-view','referral-client-view'])
+        <li class="menu-item {{ in_array(Request::segment(1), ['template','referral-client']) ? 'active open': '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle ">
+                <i class="menu-icon tf-icons bx bx-layout"></i>
+                <div data-i18n="Layouts">Referral Program</div>
+            </a>
             <ul class="menu-sub ">
                 @can('referral-template-view')
                     <li class="menu-item {{ ((Request::segment(1) == 'template')) ? 'active': '' }}">
                         <a href="{{ route('template.index') }}" class="menu-link">
                             <div data-i18n="Without menu">Template</div>
+                        </a>
+                    </li>
+                @endcan
+            </ul>
+            <ul class="menu-sub ">
+                @can('referral-client-view')
+                    <li class="menu-item {{ ((Request::segment(1) == 'referral-client')) ? 'active': '' }}">
+                        <a href="{{ route('referral-client.index') }}" class="menu-link">
+                            <div data-i18n="Without menu">Referral Client</div>
                         </a>
                     </li>
                 @endcan
