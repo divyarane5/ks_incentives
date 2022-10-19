@@ -42,7 +42,6 @@ class TemplateController extends Controller
                     }
 
                     if (auth()->user()->can('referral-template-delete')) {
-                        $onclickAction = "event.preventDefault(); document.getElementById('".$row->id."').submit()";
                         $actions .= '<button class="dropdown-item" onclick="deleteTemplate('.$row->id.')"
                                         ><i class="bx bx-trash me-1"></i> Delete</button>
                                     <form id="'.$row->id.'" action="'.route('template.destroy', $row->id).'" method="POST" class="d-none">
