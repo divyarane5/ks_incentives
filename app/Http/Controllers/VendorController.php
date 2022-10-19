@@ -20,7 +20,7 @@ class VendorController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Vendor::latest();
+            $data = Vendor::all();
             return DataTables::of($data)
                 ->addColumn('name', function ($row) {
                     return $row->name;
