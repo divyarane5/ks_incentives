@@ -50,11 +50,11 @@
 
     });
 
-    function deleteLocation(id)
+    function deleteBusinessUnit(id)
     {
         $.confirm({
             title: 'Delete Business Unit',
-            content: 'Are you sure you want to delete Business Unit?',
+            content: 'Are you sure you want to delete business unit?',
             type: 'red',
             typeAnimated: true,
             buttons: {

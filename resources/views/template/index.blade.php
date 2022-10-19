@@ -50,7 +50,7 @@
 
     });
 
-    function deleteLocation(id)
+    function deleteTemplate(id)
     {
         $.confirm({
             title: 'Delete Template',

@@ -50,11 +50,11 @@
 
     });
 
-    function deleteLocation(id)
+    function deletePaymentMethod(id)
     {
         $.confirm({
             title: 'Delete Payment Method',
-            content: 'Are you sure you want to delete Payment Method?',
+            content: 'Are you sure you want to delete payment method?',
             type: 'red',
             typeAnimated: true,
             buttons: {

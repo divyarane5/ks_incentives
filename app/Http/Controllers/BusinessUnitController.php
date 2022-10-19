@@ -42,8 +42,7 @@ class BusinessUnitController extends Controller
                     }
 
                     if (auth()->user()->can('business_unit-delete')) {
-                        $onclickAction = "event.preventDefault(); document.getElementById('".$row->id."').submit()";
-                        $actions .= '<button class="dropdown-item" onclick="'.$onclickAction.'"
+                        $actions .= '<button class="dropdown-item" onclick="deleteBusinessUnit('.$row->id.')"
                                         ><i class="bx bx-trash me-1"></i> Delete</button>
                                     <form id="'.$row->id.'" action="'.route('business_unit.destroy', $row->id).'" method="POST" class="d-none">
                                         '.csrf_field().'

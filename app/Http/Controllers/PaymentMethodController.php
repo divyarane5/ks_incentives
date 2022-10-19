@@ -42,8 +42,7 @@ class PaymentMethodController extends Controller
                     }
 
                     if (auth()->user()->can('payment_method-delete')) {
-                        $onclickAction = "event.preventDefault(); document.getElementById('".$row->id."').submit()";
-                        $actions .= '<button class="dropdown-item" onclick="'.$onclickAction.'"
+                        $actions .= '<button class="dropdown-item" onclick="deletePaymentMethod('.$row->id.')"
                                         ><i class="bx bx-trash me-1"></i> Delete</button>
                                     <form id="'.$row->id.'" action="'.route('payment_method.destroy', $row->id).'" method="POST" class="d-none">
                                         '.csrf_field().'
