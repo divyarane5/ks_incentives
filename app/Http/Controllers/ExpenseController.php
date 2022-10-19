@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 use App\Models\Expense;
 use App\Http\Requests\ExpenseRequest;
+use App\Models\ExpenseVendorMapping;
+use App\Models\Vendor;
 use DataTables;
+use Exception;
 use Illuminate\Http\Request;
 
 class ExpenseController extends Controller
@@ -69,30 +72,69 @@ class ExpenseController extends Controller
 
     public function create()
     {
-        return view('expense.create');
+        $vendors = Vendor::orderBy('name', 'asc')->get();
+        return view('expense.create', compact('vendors'));
     }
 
     public function store(ExpenseRequest $request)
     {
-        //create location
-        $expense = new Expense();
-        $expense->name = $request->input('name');
-        $expense->save();
+        try {
+            //create location
+            $expense = new Expense();
+            $expense->name = $request->input('name');
+            $expense->save();
 
+            //mapping
+            $expenseVendorMapping = [];
+            $vendors = $request->input('vendors');
+            if (!empty($vendors)) {
+                foreach ($vendors as $vendor) {
+                    $expenseVendorMapping[] = [
+                        'expense_id' => $expense->id,
+                        'vendor_id' => $vendor
+                    ];
+                }
+                ExpenseVendorMapping::insert($expenseVendorMapping);
+            }
+        } catch (Exception $e) {
+            return redirect()->route('expense.index')->with('error', 'Failed To Add Expense.');
+        }
         return redirect()->route('expense.index')->with('success', 'Expense Added Successfully');
     }
 
     public function edit($id)
     {
         $expense = Expense::find($id);
-        return view('expense.edit', compact('id', 'expense'));
+        $vendors = Vendor::orderBy('name', 'asc')->get();
+        $expenseVendors = ExpenseVendorMapping::select('vendor_id')->where('expense_id', $id)->get()->pluck('vendor_id')->toArray();
+        return view('expense.edit', compact('id', 'expense', 'vendors', 'expenseVendors'));
     }
 
     public function update(ExpenseRequest $request, $id)
     {
-        $expense = Expense::find($id);
-        $expense->name = $request->input('name');
-        $expense->save();
+        // try {
+            $expense = Expense::find($id);
+            $expense->name = $request->input('name');
+            $expense->save();
+
+            //mapping
+            $expenseVendorMapping = [];
+            $vendors = $request->input('vendors');
+            ExpenseVendorMapping::where('expense_id', $id)->forceDelete();
+            if (!empty($vendors)) {
+                foreach ($vendors as $vendor) {
+                    if ($vendor != "") {
+                        $expenseVendorMapping[] = [
+                            'expense_id' => $expense->id,
+                            'vendor_id' => $vendor
+                        ];
+                    }
+                }
+                ExpenseVendorMapping::insert($expenseVendorMapping);
+            }
+        // } catch (Exception $e) {
+        //     return redirect()->route('expense.index')->with('error', 'Failed To Update Expense.');
+        // }
 
         return redirect()->route('expense.index')->with('success', 'Expense Updated Successfully');
     }

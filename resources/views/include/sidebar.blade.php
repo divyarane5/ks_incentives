@@ -62,19 +62,19 @@
                 @endcan
             </ul>
             <ul class="menu-sub ">
-                @can('expense-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'expense')) ? 'active': '' }}">
-                        <a href="{{ route('expense.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Expense</div>
+                @can('vendor-view')
+                    <li class="menu-item {{ ((Request::segment(1) == 'vendor')) ? 'active': '' }}">
+                        <a href="{{ route('vendor.index') }}" class="menu-link">
+                            <div data-i18n="Without menu">Vendor</div>
                         </a>
                     </li>
                 @endcan
             </ul>
             <ul class="menu-sub ">
-                @can('vendor-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'vendor')) ? 'active': '' }}">
-                        <a href="{{ route('vendor.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Vendor</div>
+                @can('expense-view')
+                    <li class="menu-item {{ ((Request::segment(1) == 'expense')) ? 'active': '' }}">
+                        <a href="{{ route('expense.index') }}" class="menu-link">
+                            <div data-i18n="Without menu">Expense</div>
                         </a>
                     </li>
                 @endcan
@@ -106,7 +106,7 @@
                     </li>
                 @endcan
             </ul>
-            
+
         </li>
     @endcanany
     @can('user-view')

@@ -7,21 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Auth;
 
-class Expense extends Model
+class ExpenseVendorMapping extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'expense_vendor_mapping';
+
     protected $fillable = [
-        'name',
+        'expense_id',
+        'vendor_id'
     ];
-
-    protected static function boot() {
-        parent::boot();
-
-        static::creating(function ($model) {
-            $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
-        });
-    }
 
 
 }

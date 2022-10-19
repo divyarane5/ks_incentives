@@ -26,7 +26,18 @@
                             </span>
                         @enderror
                     </div>
-                   
+                    <div class="mb-3 col-md-6">
+                        <label for="vendors" class="form-label">Vendors</label>
+                        <select name="vendors[]" multiple class="form-select" id="vendors" aria-label="Vendors">
+                          <option value="" >Select Vendors</option>
+                          @if(!empty($vendors))
+                            @foreach ($vendors as $vendor)
+                                <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
+                            @endforeach
+                          @endif
+
+                        </select>
+                    </div>
                     <div>
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </div>

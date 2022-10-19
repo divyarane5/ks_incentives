@@ -24,7 +24,8 @@ class ExpenseRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|regex:/^[\pL\s\-]+$/u'
+            'name' => 'required|regex:/^[\pL\s\-]+$/u',
+            'vendors' => 'required'
         ];
     }
 }

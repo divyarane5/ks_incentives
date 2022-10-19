@@ -15,7 +15,12 @@ class CreateExpenseVendorMappingTable extends Migration
     {
         Schema::create('expense_vendor_mapping', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('expense_id')->index();
+            $table->foreign('expense_id')->references('id')->on('expenses');
+            $table->unsignedBigInteger('vendor_id')->index();
+            $table->foreign('vendor_id')->references('id')->on('vendors');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
