@@ -5,6 +5,7 @@ use App\Models\Vendor;
 use App\Http\Requests\VendorRequest;
 use DataTables;
 use Illuminate\Http\Request;
+use Auth;
 
 class VendorController extends Controller
 {
@@ -14,7 +15,6 @@ class VendorController extends Controller
         $this->middleware('permission:vendor-create', ['only' => ['create','store']]);
         $this->middleware('permission:vendor-edit', ['only' => ['edit','update']]);
         $this->middleware('permission:vendor-delete', ['only' => ['destroy']]);
-
     }
 
     public function index(Request $request)
@@ -42,8 +42,7 @@ class VendorController extends Controller
                     }
 
                     if (auth()->user()->can('vendor-delete')) {
-                        $onclickAction = "event.preventDefault(); document.getElementById('".$row->id."').submit()";
-                        $actions .= '<button class="dropdown-item" onclick="'.$onclickAction.'"
+                        $actions .= '<button class="dropdown-item" onclick="deleteVendor('.$row->id.')"
                                         ><i class="bx bx-trash me-1"></i> Delete</button>
                                     <form id="'.$row->id.'" action="'.route('vendor.destroy', $row->id).'" method="POST" class="d-none">
                                         '.csrf_field().'

@@ -13,7 +13,7 @@
     <div class="card">
         <h5 class="card-header">Expenses</h5>
         <div class="table-responsive text-nowrap">
-            <table id="expense-datatable" class="table table-striped" width="100%">
+            <table id="vendor-datatable" class="table table-striped" width="100%">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -47,5 +47,27 @@
       });
 
     });
+
+    function deleteVendor(id)
+    {
+        $.confirm({
+            title: 'Delete Vendor',
+            content: 'Are you sure you want to delete vendor?',
+            type: 'red',
+            typeAnimated: true,
+            buttons: {
+                tryAgain: {
+                    text: 'Yes',
+                    btnClass: 'btn-red',
+                    action: function(){
+                        event.preventDefault();
+                        document.getElementById(id).submit()
+                    }
+                },
+                close: function () {
+                }
+            }
+        });
+    }
 </script>
 @endsection

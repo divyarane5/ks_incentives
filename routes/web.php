@@ -41,7 +41,9 @@ Route::group(['middleware' => 'auth'], function() {
     Route::resource('expense', App\Http\Controllers\ExpenseController::class);
 
     //Vendor
-    Route::resource('vendor', App\Http\Controllers\VendorController::class);
+    Route::resource('vendor', App\Http\Controllers\VendorController::class)->except(['show', 'index', 'store']);
+    Route::get('vendor/index', [App\Http\Controllers\VendorController::class, 'index'])->name('vendor.index');
+    Route::post('vendor/store', [App\Http\Controllers\VendorController::class, 'store'])->name('vendor.store');
 
     //Business Unit
     Route::resource('business_unit', App\Http\Controllers\BusinessUnitController::class);
