@@ -15,6 +15,7 @@
         <form action="{{ route('indent_configuration.update', $id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('put')
+            @form_hidden('id', $id)
             <div class="card-body">
                 <div class="row">
                     <div class="mb-3 col-md-6">

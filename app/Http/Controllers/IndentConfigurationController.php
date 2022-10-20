@@ -62,14 +62,14 @@ class IndentConfigurationController extends Controller
                 ->rawColumns(['action'])
                 ->make(true);
         }
-        return view('intend_configuration.index');
+        return view('indend_configuration.index');
     }
 
     public function create()
     {
         $users = User::select(['id', 'name'])->orderBy('name', 'asc')->get();
         $expenses = Expense::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        return view('intend_configuration.create', compact('users', 'expenses'));
+        return view('indend_configuration.create', compact('users', 'expenses'));
     }
 
     public function store(IndentConfigurationRequest $request)
@@ -96,7 +96,7 @@ class IndentConfigurationController extends Controller
         $users = User::select(['id', 'name'])->orderBy('name', 'asc')->get();
         $expenses = Expense::select(['id', 'name'])->orderBy('name', 'asc')->get();
         $intendConfiguration = IndentConfiguration::find($id);
-        return view('intend_configuration.edit', compact('users', 'expenses', 'intendConfiguration', 'id'));
+        return view('indend_configuration.edit', compact('users', 'expenses', 'intendConfiguration', 'id'));
     }
 
     public function update(IndentConfigurationRequest $request, $id)
