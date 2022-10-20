@@ -34,8 +34,12 @@
                                 <option value="{{ $vendor->id }}" {{ in_array($vendor->id, $expenseVendors) ? 'selected' : '' }}>{{ $vendor->name }}</option>
                             @endforeach
                           @endif
-
                         </select>
+                        @error('vendors')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
                     </div>
 
                     <div>

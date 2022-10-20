@@ -4,7 +4,7 @@
 <!-- Content -->
 
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Expense/</span> Add Expense</h4>
+    <h4 class="fw-bold py-3 mb-4"><a href="{{ route('expense.index') }}" class="text-muted fw-light">Expense/</a> Add Expense</h4>
 
     <!-- Basic Layout -->
     <div class="card mb-4">
@@ -32,11 +32,15 @@
                           <option value="" >Select Vendors</option>
                           @if(!empty($vendors))
                             @foreach ($vendors as $vendor)
-                                <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
+                                <option value="{{ $vendor->id }}"  {{ (!empty(old('vendors')) && in_array($vendor->id, old('vendors'))) ? 'selected' : '' }}>{{ $vendor->name }}</option>
                             @endforeach
                           @endif
-
                         </select>
+                        @error('vendors')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
                     </div>
                     <div>
                         <button type="submit" class="btn btn-primary">Submit</button>

@@ -4,7 +4,7 @@
 <!-- Content -->
 
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Payment Method/</span> Add Payment Method</h4>
+    <h4 class="fw-bold py-3 mb-4"><a href="{{ route('payment_method.index') }}" class="text-muted fw-light">Payment Method/</a> Add Payment Method</h4>
 
     <!-- Basic Layout -->
     <div class="card mb-4">

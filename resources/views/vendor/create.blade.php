@@ -4,7 +4,7 @@
 <!-- Content -->
 
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Vendor/</span> Add Vendor</h4>
+    <h4 class="fw-bold py-3 mb-4"><a  href="{{ route('vendor.index') }}" class="text-muted fw-light">Vendor/</a> Add Vendor</h4>
 
     <!-- Basic Layout -->
     <div class="card mb-4">
@@ -26,7 +26,7 @@
                             </span>
                         @enderror
                     </div>
-                   
+
                     <div>
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </div>

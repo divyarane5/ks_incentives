@@ -142,3 +142,10 @@ div.table-responsive>div.dataTables_wrapper>div.row:last-child {
     font-size: 15px;
     padding-left: 3px;
 }
+.approver {
+    width: 20%;
+}
+.approver-flex {
+    margin-left: -0.5rem;
+    padding-right: 0;
+}
