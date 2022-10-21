@@ -22,7 +22,6 @@ class CreateIndentApproveLogsTable extends Migration
             $table->unsignedFloat('status')->comment('0-pending, 1-approved, 2-rejected, 1.1-approve1, 1.2-approve2, 1.3-approve3, 1.4-approve4, 1.5-approve5');
             $table->longText('description')->nullable();
             $table->date('submission_date');
-            $table->date('created_by');
             $table->timestamps();
             $table->softDeletes();
         });

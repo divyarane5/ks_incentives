@@ -11,6 +11,10 @@ class Vendor extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $fillable = [
+        'name',
+    ];
+
     protected static function boot() {
         parent::boot();
 
@@ -18,8 +22,4 @@ class Vendor extends Model
             $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
         });
     }
-
-    protected $fillable = [
-        'name',
-    ];
 }
