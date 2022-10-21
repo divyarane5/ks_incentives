@@ -30,4 +30,24 @@ class Indent extends Model
             $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
         });
     }
+
+    public function indentItems()
+    {
+        return $this->hasMany(IndentItem::class);
+    }
+
+    public function indentPayment()
+    {
+        return $this->hasMany(IndentPayment::class);
+    }
+
+    public function indentComments()
+    {
+        return $this->hasMany(IndentComment::class);
+    }
+
+    public function indentApproveLogs()
+    {
+        return $this->hasMany(IndentApproveLog::class);
+    }
 }
