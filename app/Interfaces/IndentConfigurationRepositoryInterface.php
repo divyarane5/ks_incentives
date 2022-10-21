@@ -3,5 +3,5 @@ namespace App\Interfaces;
 
 interface IndentConfigurationRepositoryInterface
 {
-    public function getIndentConfigurations();
+    public function getIndentConfigurations($userId = "");
 }

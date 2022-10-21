@@ -47,6 +47,9 @@ class UserController extends Controller
                                         '.method_field('delete').'
                                     </form>';
                     }
+                    if (auth()->user()->can('configuration-view')) {
+                        $actions .= '<a class="dropdown-item" href="'.route('indent_configuration.index').'?user_id='.$row->id.'"><i class="bx bx-list-ul me-1"></i> Indent Configuration</a>';
+                    }
                     if (!empty($actions)) {
                         return '<div class="dropdown">
                                         <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">

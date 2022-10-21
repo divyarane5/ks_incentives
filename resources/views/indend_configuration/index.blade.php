@@ -6,7 +6,7 @@
         <h4 class="fw-bold py-3 mb-4 col-md-6"><span class="text-muted fw-light">Indent Configuration /</span> List</h4>
         <div class="col-md-6">
             @can('configuration-create')
-            <a href="{{ route('indent_configuration.create') }}" type="button" class="btn btn-primary pull-right my-3 mb-4 ">Add Indent Configuration</a>
+            <a href="{{ route('indent_configuration.create').(($userId != "") ? '?user_id='.$userId : '') }}" type="button" class="btn btn-primary pull-right my-3 mb-4 ">Add Indent Configuration</a>
             @endcan
         </div>
     </div>
@@ -41,7 +41,12 @@
       var table = $('#indent-configuration-datatable').DataTable({
             processing: true,
             serverSide: true,
-            ajax: "{{ route('indent_configuration.index') }}",
+            ajax: {
+                url: "{{ route('indent_configuration.index') }}",
+                data: function (d) {
+                    d.user_id = "{{ $userId }}";
+                }
+            },
             columns: [
                 {data: 'user', name: 'users.name'},
                 {data: 'expense', name: 'expenses.name'},

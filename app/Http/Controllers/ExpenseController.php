@@ -23,10 +23,15 @@ class ExpenseController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Expense::all();
+            $data = Expense::get();
+
             return DataTables::of($data)
                 ->addColumn('name', function ($row) {
                     return $row->name;
+                })
+                ->addColumn('vendors', function ($row) {
+                    $vendors = $row->vendors->pluck('name')->toArray();
+                    return (!empty($vendors) ? implode(", ", $vendors) : '');
                 })
                 ->addColumn('status', function ($row) {
                     return $row->status;
@@ -112,7 +117,7 @@ class ExpenseController extends Controller
 
     public function update(ExpenseRequest $request, $id)
     {
-        // try {
+        try {
             $expense = Expense::find($id);
             $expense->name = $request->input('name');
             $expense->save();
@@ -132,9 +137,9 @@ class ExpenseController extends Controller
                 }
                 ExpenseVendorMapping::insert($expenseVendorMapping);
             }
-        // } catch (Exception $e) {
-        //     return redirect()->route('expense.index')->with('error', 'Failed To Update Expense.');
-        // }
+        } catch (Exception $e) {
+            return redirect()->route('expense.index')->with('error', 'Failed To Update Expense.');
+        }
 
         return redirect()->route('expense.index')->with('success', 'Expense Updated Successfully');
     }
