@@ -64,6 +64,9 @@ Route::group(['middleware' => 'auth'], function() {
     //roles and permissions
     Route::resource('role', App\Http\Controllers\RoleController::class)->except(['show']);
 
+    //Indent
+    Route::resource('indent_configuration', App\Http\Controllers\IndentConfigurationController::class)->except(['show']);
+
 });
 
 

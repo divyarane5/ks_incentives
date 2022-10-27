@@ -20,7 +20,7 @@ class BusinessUnitController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = BusinessUnit::latest();
+            $data = BusinessUnit::all();
             return DataTables::of($data)
                 ->addColumn('name', function ($row) {
                     return $row->name;

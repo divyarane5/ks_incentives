@@ -23,7 +23,7 @@ class ExpenseController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Expense::latest();
+            $data = Expense::all();
             return DataTables::of($data)
                 ->addColumn('name', function ($row) {
                     return $row->name;
