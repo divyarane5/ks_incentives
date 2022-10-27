@@ -110,16 +110,16 @@
                 @can('referral-template-view')
                     <li class="menu-item {{ ((Request::segment(1) == 'template')) ? 'active': '' }}">
                         <a href="{{ route('template.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Template</div>
+                            <div data-i18n="Without menu">Templates</div>
                         </a>
                     </li>
                 @endcan
             </ul>
             <ul class="menu-sub ">
                 @can('referral-client-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'referral-client')) ? 'active': '' }}">
-                        <a href="{{ route('referral-client.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Referral Client</div>
+                    <li class="menu-item {{ ((Request::segment(1) == 'client')) ? 'active': '' }}">
+                        <a href="{{ route('client.index') }}" class="menu-link">
+                            <div data-i18n="Without menu"> Clients</div>
                         </a>
                     </li>
                 @endcan

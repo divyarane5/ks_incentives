@@ -55,7 +55,7 @@ Route::group(['middleware' => 'auth'], function() {
     Route::resource('template', App\Http\Controllers\TemplateController::class);
 
     //Template
-    Route::resource('referral-client', App\Http\Controllers\ReferralClientController::class);
+    Route::resource('client', App\Http\Controllers\ClientController::class);
 
     //profile
     Route::get('/account', [App\Http\Controllers\UserController::class, 'account'])->name('account');
