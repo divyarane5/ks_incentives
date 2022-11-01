@@ -18,8 +18,15 @@
             <div class="card-body">
                 <div class="row">
                     <div class="mb-3 col-md-6">
-                        <label class="form-label" for="template_id">Template Name<span class="start-mark">*</span></label>
-                        <input name="template_id" class="form-control" id="template_id" value="{{ old('template_id') }}" required/>
+                        <label class="form-label" for="template_id">Template<span class="start-mark">*</span></label>
+                        <select id="template_id" name="template_id" class="form-select" @error('template_id') autofocus @enderror required>
+                            <!-- <option>Select Template</option> -->
+                            @if (!empty($template))
+                                @foreach ($template as $key => $temp)
+                                    <option value="{{ $temp->id }}" {{ ($temp->id == old('template_id') ? 'selected' : '') }}>{{ $temp->name }}</option>
+                                @endforeach
+                            @endif
+                        </select>
                         @error('template_id')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>

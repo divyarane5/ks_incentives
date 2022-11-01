@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 use App\Models\Client;
 use App\Models\Template;
+use App\Models\User;
 use App\Http\Requests\ClientRequest;
 use DataTables;
 use Illuminate\Http\Request;
+use App\Models\ClientReference;
+use App\Models\ReferralClient;
 
 class ClientController extends Controller
 {
@@ -23,9 +26,9 @@ class ClientController extends Controller
         if ($request->ajax()) {
             $data = Client::all();
             return DataTables::of($data)
-                ->addColumn('template_name', function ($row) {
-                    return $row->template_name;
-                })
+                // ->addColumn('template_name', function ($row) {
+                //     return $row->template_name;
+                // })
                 ->addColumn('sales_person', function ($row) {
                     return $row->sales_person;
                 })
@@ -63,7 +66,7 @@ class ClientController extends Controller
                                     </form>';
                     }
                     if (auth()->user()->can('referral-client-view')) {
-                        $actions .= '<a class="dropdown-item" href="'.route('client.show', $row->id).'"
+                        $actions .= '<a class="dropdown-item" target=”_blank”  href="'.route('client.show', $row->id).'"
                                         ><i class="bx bx-edit-alt me-1"></i> View</a>';
                     }
                     if (!empty($actions)) {
@@ -107,7 +110,8 @@ class ClientController extends Controller
     public function edit($id)
     {
         $client = Client::find($id);
-        return view('client.edit', compact('id', 'client'));
+        $template = Template::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        return view('client.edit', compact('id', 'client','template'));
     }
 
     public function update(ClientRequest $request, $id)
@@ -131,11 +135,118 @@ class ClientController extends Controller
 
     public function show($id)
     {
+       
         $client=$this->_Client->getAllData($id);
        // $client = Client::find($id);
         return view('client.show', compact('id', 'client'));
         //return view('client.show', ['client' => $client]);
 
     }
+
+    public function reference($id)
+    {
+       
+        $client=$this->_Client->getAllData($id);
+        
+        // $user = User::find($client->u_id);
+        // print_r($user); exit;
+        return view('client.reference', compact('id', 'client'));
+        //return view('client.show', ['client' => $client]);
+
+    }
+    public function rthankyou(ClientRequest $request)
+    {
+       //echo $client_name1; 
+      
+        $rclient = new ReferralClient();
+        $rclient->name = $request->input('name_inquiry');
+        $rclient->email = $request->input('email_inquiry');
+        $rclient->mobile = $request->input('mobileno');
+        $rclient->userid = $request->input('userid');
+        $rclient->form_type = $request->input('referrals');
+        $rclient->save();
+        
+        if(!empty($request->input('client_name1'))){
+            $crclient = new ClientReference();
+            $crclient->referral_client_id = $rclient->id;
+            $crclient->client_name = $request->input('client_name1');
+            $crclient->client_mobile = $request->input('client_mobile1');
+            $crclient->client_email = $request->input('client_email1');
+            $crclient->save();
+        }
+        if(!empty($request->input('client_name2'))){
+            $crclient = new ClientReference();
+            $crclient->referral_client_id = $rclient->id;
+            $crclient->client_name = $request->input('client_name2');
+            $crclient->client_mobile = $request->input('client_mobile2');
+            $crclient->client_email = $request->input('client_email2');
+            $crclient->save();
+        }
+        if(!empty($request->input('client_name3'))){
+            $crclient = new ClientReference();
+            $crclient->referral_client_id = $rclient->id;
+            $crclient->client_name = $request->input('client_name3');
+            $crclient->client_mobile = $request->input('client_mobile3');
+            $crclient->client_email = $request->input('client_email3');
+            $crclient->save();
+        }
+        if(!empty($request->input('client_name4'))){
+            $crclient = new ClientReference();
+            $crclient->referral_client_id = $rclient->id;
+            $crclient->client_name = $request->input('client_name4');
+            $crclient->client_mobile = $request->input('client_mobile4');
+            $crclient->client_email = $request->input('client_email4');
+            $crclient->save();
+        }
+        if(!empty($request->input('client_name5'))){
+            $crclient = new ClientReference();
+            $crclient->referral_client_id = $rclient->id;
+            $crclient->client_name = $request->input('client_name5');
+            $crclient->client_mobile = $request->input('client_mobile5');
+            $crclient->client_email = $request->input('client_email5');
+            $crclient->save();
+        }
+        $name = $request->input('name_inquiry');
+      return view('client.rthankyou',compact('name'));
+     //  return redirect()->route('client.rthankyou')->with('success', 'abcd');
+
+    }
     
+    public function service($id,$sname)
+    {
+      // echo $id; echo $sname; exit;
+        $client=$this->_Client->getAllData($id);
+        
+        // $user = User::find($client->u_id);
+        // print_r($user); exit;
+        return view('client.service', compact('id', 'client','sname'));
+        //return view('client.show', ['client' => $client]);
+
+    }
+    
+    public function sthankyou(ClientRequest $request)
+    {
+       //echo $client_name1; 
+      
+       $rclient = new ReferralClient();
+       $rclient->name = $request->input('name_inquiry');
+       $rclient->email = $request->input('email_inquiry');
+       $rclient->mobile = $request->input('mobileno');
+       $rclient->userid = $request->input('userid');
+       $rclient->form_type = $request->input('form_type');
+       $rclient->loanamount = $request->input('loanamount');
+       $rclient->preferredbank = $request->input('preferredbank');
+       $rclient->remarks = $request->input('remarks');
+       $rclient->address = $request->input('address');
+       $rclient->assistance = $request->input('assistance');
+       $rclient->save();
+       
+        $name = $request->input('name_inquiry');
+      return view('client.thankyou',compact('name'));
+     //  return redirect()->route('client.rthankyou')->with('success', 'abcd');
+
+    }
+
+        
+        
 }

@@ -140,6 +140,22 @@
                         </a>
                     </li>
                 @endcan
+                @can('response-view')
+                    <li class="menu-item {{ ((Request::segment(1) == 'client_response')) ? 'active': '' }}">
+                        <a href="{{ route('client_response.index') }}" class="menu-link">
+                            <div data-i18n="Without menu"> Referral Response</div>
+                        </a>
+                    </li>
+                @endcan
+                @can('response-view')
+                    <li class="menu-item {{ ((Request::segment(1) == 'client_response_service')) ? 'active': '' }}">
+                        <a href="{{ url('/client_response_service') }}" class="menu-link">
+                            <div data-i18n="Without menu"> Service Response</div>
+                        </a>
+                    </li>
+                @endcan
+                
+                
             </ul>
 
         </li>

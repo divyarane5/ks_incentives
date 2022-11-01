@@ -19,7 +19,7 @@
             <thead>
                 <tr>
                    
-                    <th>Template Name</th>
+                    <!-- <th>Template Name</th> -->
                     <th>Sales Person</th>
                     <th>Client Name</th>
                     <th>Client Email</th>
@@ -46,7 +46,7 @@
             serverSide: true,
             ajax: "{{ route('client.index') }}",
             columns: [
-                {data: 'template_id', name: 'template_id'},
+                // {data: 'template_id', name: 'template_id'},
                 {data: 'sales_person', name: 'sales_person'},
                 {data: 'client_name', name: 'client_name'},
                 {data: 'client_email', name: 'client_email'},

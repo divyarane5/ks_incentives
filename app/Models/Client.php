@@ -27,7 +27,7 @@ class Client extends Model
     public function getAllData($id)
 	{
 	    return DB::table('clients')
-                    ->select('users.name as u_name','designations.name as d_name','clients.client_name','clients.client_email','clients.sales_person','clients.created_by','templates.content','clients.id')
+                    ->select('users.name as u_name','users.id as u_id','designations.name as d_name','clients.client_name','clients.client_email','clients.sales_person','clients.created_by','templates.content','clients.id')
                    ->join('templates', 'clients.template_id','=','templates.id')
                    ->join('users', 'clients.created_by','=','users.id')
                    ->join('designations', 'users.designation_id','=','designations.id','inner')
