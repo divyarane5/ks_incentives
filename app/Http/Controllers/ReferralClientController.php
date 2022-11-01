@@ -50,13 +50,13 @@ class ReferralClientController extends Controller
                 })
                 ->addColumn('action', function ($row) {
                     $actions = '';
-                    if (auth()->user()->can('response-edit')) {
-                        $actions .= '<a class="dropdown-item" href="'.route('client_response.edit', $row->id).'"
-                                        ><i class="bx bx-edit-alt me-1"></i> Edit</a>';
-                    }
+                    // if (auth()->user()->can('response-edit')) {
+                    //     $actions .= '<a class="dropdown-item" href="'.route('client_response.edit', $row->id).'"
+                    //                     ><i class="bx bx-edit-alt me-1"></i> Edit</a>';
+                    // }
                     if (auth()->user()->can('response-view')) {
                         $actions .= '<a class="dropdown-item" href="'.route('client_response.show', $row->id).'"
-                                        ><i class="bx bx-edit-alt me-1"></i> View References</a>';
+                                        ><i class="bx bx-edit-alt me-1"></i> View Details</a>';
                     }
        
                     if (!empty($actions)) {
@@ -78,19 +78,21 @@ class ReferralClientController extends Controller
     }
 
    
-    public function edit($id)
-    {
-        $location = Location::find($id);
-        return view('location.edit', compact('id', 'location'));
-    }
+    // public function edit($id)
+    // {
+    //     $location = Location::find($id);
+    //     return view('location.edit', compact('id', 'location'));
+    // }
 
-    public function update(LocationRequest $request, $id)
+    public function update(ReferralClientRequest $request, $id)
     {
-        $location = Location::find($id);
-        $location->name = $request->input('name');
-        $location->save();
-
-        return redirect()->route('location.index')->with('success', 'Location Updated Successfully');
+        $rclient = ReferralClient::find($id);
+        $rclient->status = $request->input('status');
+        $rclient->save();
+   
+        return redirect()->back()->with(['success' => 'Status Updated Successfully']);
+       
+        
     }
 
     public function show($id)
@@ -150,10 +152,10 @@ class ReferralClientController extends Controller
                 })
                 ->addColumn('action', function ($row) {
                     $actions = '';
-                    if (auth()->user()->can('response-edit')) {
-                        $actions .= '<a class="dropdown-item" href="'.route('client_response.edit', $row->id).'"
-                                        ><i class="bx bx-edit-alt me-1"></i> Edit</a>';
-                    }
+                    // if (auth()->user()->can('response-edit')) {
+                    //     $actions .= '<a class="dropdown-item" href="'.route('client_response.edit', $row->id).'"
+                    //                     ><i class="bx bx-edit-alt me-1"></i> Edit</a>';
+                    // }
                     if (auth()->user()->can('response-view')) {
                         $actions .= '<a class="dropdown-item" href="'.route('client_response.show', $row->id).'"
                                         ><i class="bx bx-edit-alt me-1"></i> View Details</a>';

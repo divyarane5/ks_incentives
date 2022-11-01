@@ -35,6 +35,7 @@ class CreateUsersTable extends Migration
             $table->dateTime('last_login')->nullable();
             $table->unsignedBigInteger('created_by');
             $table->string('photo')->nullable();
+            $table->string('mobile')->nullable();
             $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();

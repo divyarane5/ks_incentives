@@ -242,7 +242,7 @@ class ClientController extends Controller
        $rclient->save();
        
         $name = $request->input('name_inquiry');
-      return view('client.thankyou',compact('name'));
+      return view('client.sthankyou',compact('name'));
      //  return redirect()->route('client.rthankyou')->with('success', 'abcd');
 
     }
