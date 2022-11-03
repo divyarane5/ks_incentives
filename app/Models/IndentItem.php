@@ -17,7 +17,8 @@ class IndentItem extends Model
         'vendor_id',
         'quantity',
         'unit_price',
-        'total'
+        'total',
+        'next_approver_id'
     ];
 
     protected static function boot() {
@@ -26,5 +27,15 @@ class IndentItem extends Model
         static::creating(function ($model) {
             $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
         });
+    }
+
+    public function expense()
+    {
+        return $this->belongsTo(Expense::class);
+    }
+
+    public function vendor()
+    {
+        return $this->belongsTo(Vendor::class);
     }
 }

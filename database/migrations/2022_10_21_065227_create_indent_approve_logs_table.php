@@ -15,13 +15,12 @@ class CreateIndentApproveLogsTable extends Migration
     {
         Schema::create('indent_approve_logs', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('indent_id')->index();
-            $table->foreign('indent_id')->references('id')->on('indents')->onDelete('cascade');
+            $table->unsignedBigInteger('indent_item_id')->index();
+            $table->foreign('indent_item_id')->references('id')->on('indent_items')->onDelete('cascade');
             $table->unsignedBigInteger('user_id')->index();
             $table->foreign('user_id')->references('id')->on('users');
-            $table->unsignedFloat('status')->comment('0-pending, 1-approved, 2-rejected, 1.1-approve1, 1.2-approve2, 1.3-approve3, 1.4-approve4, 1.5-approve5');
+            $table->enum('status', ['pending', 'approved', 'rejected', 'approve1', 'approve2', 'approve3', 'approve4', 'approve5']);
             $table->longText('description')->nullable();
-            $table->date('submission_date');
             $table->timestamps();
             $table->softDeletes();
         });

@@ -19,6 +19,7 @@
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Status</th>
                     <th>Created On</th>
                     <th>Modified On</th>
                     <th>Actions</th>
@@ -42,10 +43,12 @@
             ajax: "{{ route('vendor.index') }}",
             columns: [
                 {data: 'name', name: 'name'},
+                {data: 'status', name: 'status'},
                 {data: 'created_at', name: 'created_at'},
                 {data: 'updated_at', name: 'updated_at'},
                 {data: 'action', 'sortable': false},
-            ]
+            ],
+            order: [[2, 'desc']],
       });
 
     });
@@ -68,6 +71,29 @@
                 },
                 close: function () {
                 }
+            }
+        });
+    }
+
+    function updateVendorStatus(element, vendorId)
+    {
+        var status = $(element).is(':checked') ? 1 : 0;
+        $.ajax({
+            type: 'POST',
+            url: "{{ route('vendor.update_status') }}",
+            headers: {
+                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
+                        "content"
+                    ),
+            },
+            data: {status: status, vendor_id: vendorId},
+            success: function (res) {
+                $.alert({
+                    title: 'Success!',
+                    content: 'Vendor status updated successfully',
+                    type: 'green',
+                    typeAnimated: true,
+                });
             }
         });
     }

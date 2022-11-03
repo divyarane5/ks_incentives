@@ -31,14 +31,29 @@ class Indent extends Model
         });
     }
 
+    public function location()
+    {
+        return $this->belongsTo(Location::class);
+    }
+
+    public function businessUnit()
+    {
+        return $this->belongsTo(BusinessUnit::class);
+    }
+
     public function indentItems()
     {
         return $this->hasMany(IndentItem::class);
     }
 
-    public function indentPayment()
+    public function indentPayments()
     {
         return $this->hasMany(IndentPayment::class);
+    }
+
+    public function indentAttachments()
+    {
+        return $this->hasMany(IndentAttachment::class);
     }
 
     public function indentComments()
@@ -48,6 +63,6 @@ class Indent extends Model
 
     public function indentApproveLogs()
     {
-        return $this->hasMany(IndentApproveLog::class);
+        return $this->hasManyThrough(IndentApproveLog::class, IndentItem::class);
     }
 }

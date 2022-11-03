@@ -18,6 +18,11 @@ class IndentPayment extends Model
         'amount'
     ];
 
+    public function paymentMethod()
+    {
+        return $this->belongsTo(PaymentMethod::class);
+    }
+
     protected static function boot() {
         parent::boot();
 

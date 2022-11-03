@@ -18,5 +18,4 @@ class ExpenseVendorMapping extends Model
         'vendor_id'
     ];
 
-
 }

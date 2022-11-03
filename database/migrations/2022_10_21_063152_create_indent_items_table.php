@@ -24,6 +24,8 @@ class CreateIndentItemsTable extends Migration
             $table->unsignedInteger('quantity');
             $table->unsignedInteger('unit_price');
             $table->unsignedInteger('total');
+            $table->enum('status', ['pending', 'approved', 'rejected', 'approve1', 'approve2', 'approve3', 'approve4', 'approve5'])->default('pending');
+            $table->unsignedBigInteger('next_approver_id')->default(0);
             $table->unsignedInteger('created_by');
             $table->timestamps();
             $table->softDeletes();

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Models\Expense;
 use App\Http\Requests\ExpenseRequest;
+use App\Interfaces\ExpenseRepositoryInterface;
 use App\Models\ExpenseVendorMapping;
 use App\Models\Vendor;
 use DataTables;
@@ -11,13 +12,14 @@ use Illuminate\Http\Request;
 
 class ExpenseController extends Controller
 {
-    function __construct()
+    private $expenseRepository;
+    function __construct(ExpenseRepositoryInterface $expenseRepository)
     {
         $this->middleware('permission:expense-view', ['only' => ['index']]);
         $this->middleware('permission:expense-create', ['only' => ['create','store']]);
         $this->middleware('permission:expense-edit', ['only' => ['edit','update']]);
         $this->middleware('permission:expense-delete', ['only' => ['destroy']]);
-
+        $this->expenseRepository = $expenseRepository;
     }
 
     public function index(Request $request)
@@ -84,23 +86,8 @@ class ExpenseController extends Controller
     public function store(ExpenseRequest $request)
     {
         try {
-            //create location
-            $expense = new Expense();
-            $expense->name = $request->input('name');
-            $expense->save();
-
-            //mapping
-            $expenseVendorMapping = [];
-            $vendors = $request->input('vendors');
-            if (!empty($vendors)) {
-                foreach ($vendors as $vendor) {
-                    $expenseVendorMapping[] = [
-                        'expense_id' => $expense->id,
-                        'vendor_id' => $vendor
-                    ];
-                }
-                ExpenseVendorMapping::insert($expenseVendorMapping);
-            }
+            $request = $request->only(['name', 'vendors']);
+            $this->expenseRepository->addExpense($request);
         } catch (Exception $e) {
             return redirect()->route('expense.index')->with('error', 'Failed To Add Expense.');
         }
@@ -148,5 +135,18 @@ class ExpenseController extends Controller
     {
         Expense::where('id', $id)->delete();
         return redirect()->route('expense.index')->with('success', 'Expense Deleted Successfully');
+    }
+
+    public function ajaxStore(Request $request) {
+        try {
+            //create expense
+            $expense = new Expense();
+            $expense->name = $request->input('name');
+            $expense->status = 0;
+            $expense->save();
+        } catch (Exception $e) {
+            return response()->json(['status' => 0]);
+        }
+        return response()->json(['status' => 1, 'expense' => $expense]);
     }
 }

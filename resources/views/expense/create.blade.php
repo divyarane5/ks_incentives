@@ -13,7 +13,7 @@
             <small class="text-muted float-end"><a class="btn btn-primary" href="{{ route('expense.index') }}"> Back</a></small>
         </div>
 
-        <form action="{{ route('expense.store') }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route('expense.store') }}" method="POST">
             @csrf
             <div class="card-body">
                 <div class="row">

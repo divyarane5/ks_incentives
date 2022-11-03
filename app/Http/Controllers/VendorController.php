@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 use App\Models\Vendor;
 use App\Http\Requests\VendorRequest;
-use DataTables;
+use App\Models\Expense;
+use App\Models\ExpenseVendorMapping;
+use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
 use Auth;
 
@@ -20,13 +22,18 @@ class VendorController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Vendor::all();
+            if (isset($request->order[0]) && !empty($request->order[0])) {
+                $orderColumn = $request->columns[$request->order[0]['column']]['name'];
+            }
+            $data = Vendor::select('vendors.*');
             return DataTables::of($data)
                 ->addColumn('name', function ($row) {
                     return $row->name;
                 })
                 ->addColumn('status', function ($row) {
-                    return $row->status;
+                    return '<div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" value="1" id="flexSwitchCheckDefault" '.(($row->status == 1) ? "checked" : "").' onclick="updateVendorStatus(this, '.$row->id.');">
+                            </div>';
                 })
                 ->addColumn('created_at', function ($row) {
                     return date("d-m-Y", strtotime($row->created_at));
@@ -61,7 +68,8 @@ class VendorController extends Controller
                     }
                     return '';
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['action', 'status'])
+                ->orderColumn($orderColumn, $orderColumn.' $1')
                 ->make(true);
         }
         return view('vendor.index');
@@ -101,6 +109,52 @@ class VendorController extends Controller
     {
         Vendor::where('id', $id)->delete();
         return redirect()->route('vendor.index')->with('success', 'Vendor Deleted Successfully');
+    }
+
+    public function getVendorDropdown($expenseId)
+    {
+        $vendors = Expense::find($expenseId)->vendors;
+        $str = '<option value="">Select Vendor</option>';
+        if (!empty($vendors)) {
+            foreach ($vendors as $vendor) {
+                $str .= '<option value="'.$vendor->id.'">'.$vendor->name.'</option>';
+            }
+        }
+        return $str;
+    }
+
+    public function ajaxStore(Request $request)
+    {
+        try {
+            //create location
+            $vendor = new Vendor();
+            $vendor->name = $request->input('name');
+            $vendor->status = 0;
+            $vendor->save();
+
+            //mapping
+            $expenseId = $request->input('expense_id');
+            $expenseVendorMapping = [
+                'expense_id' => $expenseId,
+                'vendor_id' => $vendor->id
+            ];
+
+            ExpenseVendorMapping::create($expenseVendorMapping);
+        } catch (Exception $e) {
+            return response()->json(['status' => 0]);
+        }
+
+        return response()->json(['status' => 1, 'vendor' => $vendor]);
+    }
+
+    public function updateStatus(Request $request)
+    {
+        $vendorId = $request->vendor_id;
+        $status = $request->status;
+
+        Vendor::where('id', $vendorId)->update(['status' => $status]);
+
+        return response()->json(['message' => 'The vendor status updated successfully']);
     }
 
 }

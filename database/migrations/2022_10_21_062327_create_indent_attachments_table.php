@@ -17,6 +17,7 @@ class CreateIndentAttachmentsTable extends Migration
             $table->id();
             $table->unsignedBigInteger('indent_id')->index();
             $table->foreign('indent_id')->references('id')->on('indents')->onDelete('cascade');
+            $table->string('file_path');
             $table->string('file_name');
             $table->unsignedInteger('created_by');
             $table->timestamps();
