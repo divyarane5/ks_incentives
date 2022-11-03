@@ -15,7 +15,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 Auth::routes();
-
+Route::get('reference/{id}', [App\Http\Controllers\ClientController::class, 'reference'])->name('client.reference');
+Route::post('rthankyou', [App\Http\Controllers\ClientController::class, 'rthankyou'])->name('client.rthankyou');
+Route::get('service/{id}/{sname}', [App\Http\Controllers\ClientController::class, 'service'])->name('client.service');
+Route::post('sthankyou', [App\Http\Controllers\ClientController::class, 'sthankyou'])->name('client.sthankyou');
+  
 Route::group(['middleware' => 'auth'], function() {
     Route::get('/', function () {
         return view('dashboard');
@@ -58,8 +62,12 @@ Route::group(['middleware' => 'auth'], function() {
     //Template
     Route::resource('template', App\Http\Controllers\TemplateController::class);
 
-    //Template
-    Route::resource('referral-client', App\Http\Controllers\ReferralClientController::class);
+    //Client
+    Route::resource('client', App\Http\Controllers\ClientController::class);
+
+    //Client Response
+    Route::resource('client_response', App\Http\Controllers\ReferralClientController::class);
+    Route::get('client_response_service', [App\Http\Controllers\ReferralClientController::class, 'sresponse']);
 
     //profile
     Route::get('/account', [App\Http\Controllers\UserController::class, 'account'])->name('account');

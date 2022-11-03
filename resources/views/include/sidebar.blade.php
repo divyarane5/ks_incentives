@@ -150,17 +150,33 @@
                 @can('referral-template-view')
                     <li class="menu-item {{ ((Request::segment(1) == 'template')) ? 'active': '' }}">
                         <a href="{{ route('template.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Template</div>
+                            <div data-i18n="Without menu">Templates</div>
                         </a>
                     </li>
                 @endcan
                 @can('referral-client-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'referral-client')) ? 'active': '' }}">
-                        <a href="{{ route('referral-client.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Referral Client</div>
+                    <li class="menu-item {{ ((Request::segment(1) == 'client')) ? 'active': '' }}">
+                        <a href="{{ route('client.index') }}" class="menu-link">
+                            <div data-i18n="Without menu"> Clients</div>
                         </a>
                     </li>
                 @endcan
+                @can('response-view')
+                    <li class="menu-item {{ ((Request::segment(1) == 'client_response')) ? 'active': '' }}">
+                        <a href="{{ route('client_response.index') }}" class="menu-link">
+                            <div data-i18n="Without menu"> Referral Response</div>
+                        </a>
+                    </li>
+                @endcan
+                @can('response-view')
+                    <li class="menu-item {{ ((Request::segment(1) == 'client_response_service')) ? 'active': '' }}">
+                        <a href="{{ url('/client_response_service') }}" class="menu-link">
+                            <div data-i18n="Without menu"> Service Response</div>
+                        </a>
+                    </li>
+                @endcan
+                
+                
             </ul>
 
         </li>

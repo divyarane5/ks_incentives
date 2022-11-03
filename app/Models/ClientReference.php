@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Auth;
 
-class ReferralClient extends Model
+class ClientReference extends Model
 {
     use HasFactory, SoftDeletes;
 

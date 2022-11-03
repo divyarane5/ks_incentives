@@ -1,0 +1,1 @@
+<?php echo "Dear ".$name.", Thank You! We shall get connected to you shortly."; ?>
