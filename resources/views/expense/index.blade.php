@@ -44,8 +44,8 @@
             columns: [
                 {data: 'name', name: 'name'},
                 {data: 'vendors', name: 'vendors', sortable: false},
-                {data: 'created_at', name: 'created_at', sortable: false},
-                {data: 'updated_at', name: 'updated_at', sortable: false},
+                {data: 'created_at', name: 'created_at'},
+                {data: 'updated_at', name: 'updated_at'},
                 {data: 'action', 'sortable': false, sortable: false},
             ]
       });

@@ -13,7 +13,7 @@ interface IndentRepositoryInterface
     //updation
     public function updateIndent($indentDetails, $id);
     public function updateIndentItems($indentItemDetails, $indent);
-    public function updateIndentPayments($indentPaymentDetails, $indent);
+    public function updateIndentPayments($indentPaymentDetails, $indent, $addingFlag = false);
     public function updateIndentAttachments($files, $attachmentNames, $attachmentIds, $indent);
     public function updateIndentItemStatus($status, $indentItem, $desc = "");
     public function updateIndentItemToNextApproval($status, $indentItem);

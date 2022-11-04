@@ -97,12 +97,17 @@ $('document').ready(function () {
                     '<input type="hidden" name="attachmentName[]" value="' + value.name + '">' +
                     '</div>');
                 }
+                $(".remove").click(function(){
+                    $(this).parent(".pip").remove();
+                });
             });
             fileReader.readAsDataURL(f);
             i++;
+
         });
     });
     $(".remove").click(function(){
+        alert("bb");
         $(this).parent(".pip").remove();
     });
 });

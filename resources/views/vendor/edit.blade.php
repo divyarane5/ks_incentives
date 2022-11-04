@@ -13,7 +13,7 @@
         <form action="{{ route('vendor.update', $id) }}" method="post" enctype="multipart/form-data">
             @csrf
             @method('put')
-            @form_hidden('id', $id)
+            <input type="hidden" name="id" value="{{ $id }}">
             <div class="card-body">
                 <div class="row">
                     <div class="mb-3 col-md-6">

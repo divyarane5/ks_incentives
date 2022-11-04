@@ -7,7 +7,6 @@ use App\Interfaces\IndentRepositoryInterface;
 use App\Models\BusinessUnit;
 use App\Models\Expense;
 use App\Models\Indent;
-use App\Models\IndentApproveLog;
 use App\Models\IndentAttachment;
 use App\Models\IndentComment;
 use App\Models\IndentItem;
@@ -30,7 +29,7 @@ class IndentController extends Controller
         $this->middleware('permission:indent-create', ['only' => ['create','store']]);
         $this->middleware('permission:indent-edit', ['only' => ['edit','update']]);
         $this->middleware('permission:indent-delete', ['only' => ['destroy']]);
-        $this->middleware('permission:indent-delete', ['only' => ['indentClosure']]);
+        $this->middleware('permission:indent-payment-conclude', ['only' => ['indentClosure', 'updatePayment']]);
 
         $this->indentRepository = $indentRepository;
     }
@@ -45,14 +44,26 @@ class IndentController extends Controller
             if (!auth()->user()->can('indent-view-all') && auth()->user()->can('indent-view-own')) {
                 $indents = $indents->where('indents.created_by', auth()->user()->id);
             }
-            $indents = $indents->get();
 
             return DataTables::of($indents)
+                ->addCOlumn('id', function ($row) {
+                    return $row->indent_code;
+                })
                 ->addColumn('bill_mode', function ($row) {
                     return config('constants.BILL_MODES')[$row->bill_mode];
                 })
                 ->addColumn('status', function ($row) {
-                    return config('constants.INDENT_STATUS')[$row->status];
+                    $statusClass = "bg-label-primary";
+                    if ($row->status == "rejected") {
+                        $statusClass = "bg-label-danger";
+                    } else if ($row->status == "pending") {
+                        $statusClass = "bg-label-warning";
+                    } else if ($row->status == "closed") {
+                        $statusClass = "bg-label-success";
+                    } else if ($row->status == "approved") {
+                        $statusClass = "bg-label-info";
+                    }
+                    return '<span class="badge '.$statusClass.' me-1">'.config('constants.INDENT_STATUS')[$row->status].'</span>';
                 })
                 ->addColumn('created_at', function ($row) {
                     return date('d-m-Y H:i:s', strtotime($row->created_at));
@@ -61,7 +72,7 @@ class IndentController extends Controller
                     $actions = '<a class="dropdown-item" href="'.route('indent.show', $row->id).'"
                     ><i class="bx bx-show me-1"></i> View</a>';
 
-                    if (auth()->user()->can('indent-edit')) {
+                    if (auth()->user()->can('indent-edit') && !in_array($row->status, ['approved', 'rejected', 'closed'])) {
                         $actions .= '<a class="dropdown-item" href="'.route('indent.edit', $row->id).'"
                                         ><i class="bx bx-edit-alt me-1"></i> Edit</a>';
                     }
@@ -86,7 +97,7 @@ class IndentController extends Controller
                     }
                     return '';
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['action', 'status'])
                 ->make(true);
 
         }
@@ -213,8 +224,7 @@ class IndentController extends Controller
                         ->join('business_units', 'indents.business_unit_id', '=', 'business_units.id')
                         ->join('indent_items', 'indents.id', '=', 'indent_items.indent_id')
                         ->join('users', 'indents.created_by', '=', 'users.id')
-                        ->where('indent_items.next_approver_id', auth()->user()->id)
-                        ->get();
+                        ->where('indent_items.next_approver_id', auth()->user()->id);
 
             return DataTables::of($indents)
                 ->addColumn('bill_mode', function ($row) {
@@ -239,8 +249,9 @@ class IndentController extends Controller
 
     public function show($id)
     {
+        $paymentMethods = PaymentMethod::orderBy('name', 'asc')->get();
         $indent = Indent::with('indentItems', 'indentPayments', 'indentAttachments', 'location', 'businessUnit', 'indentComments', 'indentApproveLogs')->where('id', $id)->first();
-        return view('indent.show', compact('indent'));
+        return view('indent.show', compact('indent', 'paymentMethods'));
     }
 
     public function indentComment(Request $request)
@@ -279,8 +290,7 @@ class IndentController extends Controller
                         ->join('locations', 'indents.location_id', '=', 'locations.id')
                         ->join('business_units', 'indents.business_unit_id', '=', 'business_units.id')
                         ->join('users', 'indents.created_by', '=', 'users.id')
-                        ->whereIn('indents.status', ['approved', 'half-approved'])
-                        ->get();
+                        ->whereIn('indents.status', ['approved', 'half-approved']);
 
             return DataTables::of($indents)
                 ->addColumn('bill_mode', function ($row) {
@@ -311,5 +321,16 @@ class IndentController extends Controller
     public function closeIndent($id)
     {
         Indent::where('id', $id)->update(['status' => 'closed']);
+    }
+
+    public function updatePayment(Request $request, $id)
+    {
+        $indent = Indent::with('indentPayments')->find($id);
+        if ($request->has('payment_method_id')) {
+            $indentPaymentDetails = $request->only(['payment_method_id', 'payment_description', 'amount', 'indent_payment_id']);
+            $this->indentRepository->updateIndentPayments($indentPaymentDetails, $indent, true);
+            return back()->withInput($request->input())->with('success', 'Indent payment updated successfully.');
+        }
+        return back()->withInput($request->input())->with('error', 'No indent payment to add.');
     }
 }

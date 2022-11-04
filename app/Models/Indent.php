@@ -23,12 +23,18 @@ class Indent extends Model
         'status'
     ];
 
+    protected $appends = ["indent_code"];
+
     protected static function boot() {
         parent::boot();
 
         static::creating(function ($model) {
             $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
         });
+    }
+
+    public function getIndentCodeAttribute() {
+            return config('constants.INDENT_CODE_PREFIX').str_pad($this->id, 6, '0', STR_PAD_LEFT);
     }
 
     public function location()

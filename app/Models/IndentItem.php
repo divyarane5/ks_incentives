@@ -34,6 +34,11 @@ class IndentItem extends Model
         return $this->belongsTo(Expense::class);
     }
 
+    public function indent()
+    {
+        return $this->belongsTo(Indent::class);
+    }
+
     public function vendor()
     {
         return $this->belongsTo(Vendor::class);

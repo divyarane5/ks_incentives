@@ -23,4 +23,9 @@ class IndentComment extends Model
             $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
         });
     }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'created_by', 'id');
+    }
 }

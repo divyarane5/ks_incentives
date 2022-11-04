@@ -19,7 +19,7 @@ Route::get('reference/{id}', [App\Http\Controllers\ClientController::class, 'ref
 Route::post('rthankyou', [App\Http\Controllers\ClientController::class, 'rthankyou'])->name('client.rthankyou');
 Route::get('service/{id}/{sname}', [App\Http\Controllers\ClientController::class, 'service'])->name('client.service');
 Route::post('sthankyou', [App\Http\Controllers\ClientController::class, 'sthankyou'])->name('client.sthankyou');
-  
+
 Route::group(['middleware' => 'auth'], function() {
     Route::get('/', function () {
         return view('dashboard');
@@ -31,6 +31,7 @@ Route::group(['middleware' => 'auth'], function() {
 
     //User
     Route::resource('users', App\Http\Controllers\UserController::class);
+    Route::get('/import_users', [App\Http\Controllers\UserController::class, 'importUser'])->name('user.import');
 
     //Location
     Route::resource('location', App\Http\Controllers\LocationController::class);
@@ -86,6 +87,7 @@ Route::group(['middleware' => 'auth'], function() {
     Route::post('update_indent_item_status', [App\Http\Controllers\IndentController::class, 'UpdateIndentItemStatus'])->name('update_indent_item_status');
     Route::get('indent-closure', [App\Http\Controllers\IndentController::class, 'indentClosure'])->name('indent.closure');
     Route::get('close-indent/{id}', [App\Http\Controllers\IndentController::class, 'closeIndent'])->name('indent.close');
+    Route::get('update-payment/{id}', [App\Http\Controllers\IndentController::class, 'updatePayment'])->name('indent.payment_update');
 });
 
 

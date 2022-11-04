@@ -32,5 +32,9 @@ class CreateAdminUserSeeder extends Seeder
         $role->syncPermissions($permissions);
 
         $user->assignRole([$role->id]);
+
+        $userRole = Role::create(['name' => 'User']);
+
+        $userRole->syncPermissions(['indent-view-own', 'indent-create', 'indent-edit']);
     }
 }

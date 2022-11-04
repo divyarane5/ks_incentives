@@ -34,14 +34,14 @@
                     <tr>
                     <td class="align-middle"><small class="text-light fw-semibold">Status</small></td>
                     <td class="py-3">
-                        <?php 
-                            if($rclient->status == 0){ 
-                                $r = "Pending"; 
-                            }elseif($rclient->status == 1){ 
+                        <?php
+                            if($rclient->status == 0){
+                                $r = "Pending";
+                            }elseif($rclient->status == 1){
                                 $r = "In Progress";
-                            }elseif($rclient->status == 2){ 
+                            }elseif($rclient->status == 2){
                                 $r = "Completed";
-                            }elseif($rclient->status == 3){ 
+                            }elseif($rclient->status == 3){
                                 $r = "Deleted (Invalid)";
                             }
                            // return $r;
@@ -84,17 +84,17 @@
 
                 </tbody>
             </table>
-            
+
         </div>
     </div>
 
-    
+
     <!-- Striped Rows -->
         @if(count($creferences) > 0)
         <div class="card">
             <h5 class="card-header">View Referral Client References</h5>
             <div class="table-responsive text-nowrap">
-            
+
                 <table class="table table-striped">
                     <thead>
                     <tr>
@@ -115,7 +115,7 @@
                     @endforeach
                     </tbody>
                 </table>
-        
+
             </div>
         </div>
         <!--/ Striped Rows -->
@@ -124,22 +124,22 @@
         <form action="{{ route('client_response.update', $id) }}" method="post" enctype="multipart/form-data">
             @csrf
             @method('put')
-            @form_hidden('id', $id)
+            <input type="hidden" name="id" value="{{ $id }}">
             @form_hidden('form_type', $rclient->form_type)
             <div class="card-body">
                 <div class="row">
-           
+
                     <div class="mb-3 col-md-6">
                         <label class="form-label" for="status">Status<span class="start-mark">*</span></label>
                         <select id="status" name="status" class="form-select" @error('status') autofocus @enderror required>
                             <option>Select Status</option>
-                         
-                            
+
+
                             <option value="0" {{ (0 == ((old('status') != "") ? old('status') : $rclient->status) ? 'selected' : '') }}>Pending</option>
                             <option value="1" {{ (1 == ((old('status') != "") ? old('status') : $rclient->status) ? 'selected' : '') }}>In Progress</option>
                             <option value="2" {{ (2 == ((old('status') != "") ? old('status') : $rclient->status) ? 'selected' : '') }}>Completed</option>
                             <option value="3" {{ (3 == ((old('status') != "") ? old('status') : $rclient->status) ? 'selected' : '') }}>Deleted</option>
-                           
+
                         </select>
                         @error('location_id')
                             <span class="invalid-feedback" role="alert">

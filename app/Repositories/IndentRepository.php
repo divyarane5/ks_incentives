@@ -2,14 +2,17 @@
 namespace App\Repositories;
 
 use App\Interfaces\IndentRepositoryInterface;
+use App\Mail\IndentApprovalEmail;
 use App\Models\Indent;
 use App\Models\IndentApproveLog;
 use App\Models\IndentAttachment;
 use App\Models\IndentConfiguration;
 use App\Models\IndentItem;
 use App\Models\IndentPayment;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 
 class IndentRepository implements IndentRepositoryInterface
 {
@@ -136,13 +139,13 @@ class IndentRepository implements IndentRepositoryInterface
         return $indent;
     }
 
-    public function updateIndentPayments($indentPaymentDetails, $indent)
+    public function updateIndentPayments($indentPaymentDetails, $indent, $addingFlag = false)
     {
         $oldIndentPaymentIds = $indent->indentPayments->pluck('id')->toArray();
         $newIndentPaymentIds = isset($indentPaymentDetails['indent_payment_id']) ? array_filter($indentPaymentDetails['indent_payment_id'], 'strlen') : [];
         $deletedPaymentIds = array_diff($oldIndentPaymentIds, $newIndentPaymentIds);
 
-        if (!empty($deletedPaymentIds)) {
+        if (!empty($deletedPaymentIds) && !$addingFlag) {
             IndentPayment::whereIn('id', $deletedPaymentIds)->forceDelete();
         }
 
@@ -218,6 +221,7 @@ class IndentRepository implements IndentRepositoryInterface
 
                 $indentItem->next_approver_id = $firstApprover;
                 $indentItem->save();
+                $this->indentApprovalEmail($indentItem);
                 return $indentItem;
             }
         }
@@ -292,8 +296,21 @@ class IndentRepository implements IndentRepositoryInterface
                     $this->updateIndentItemStatus($nextStatus, $indentItem, $desc);
                     $indentItem->next_approver_id = $nextApproverId;
                     $indentItem->save();
+                    $this->indentApprovalEmail($indentItem);
                 }
             }
         }
+    }
+
+    public function indentApprovalEmail($indentItem)
+    {
+        $user = User::find($indentItem->created_by);
+        $arr = [
+            'user' => $user->name,
+            'indent_id' => $indentItem->indent_id,
+            'indent_code' => $indentItem->indent->indent_code
+        ];
+        $approvalTo = User::find($indentItem->next_approver_id);
+        Mail::to('vrushali.bangar@homebazaar.com')->send(new IndentApprovalEmail($arr)); //$approvalTo->email
     }
 }

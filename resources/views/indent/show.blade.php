@@ -10,11 +10,15 @@
     <!-- Striped Rows -->
     <div class="card">
         <div class="card-body">
-            <h5 class="card-header">Indent - {{ $indent->title }}</h5>
+            <h5 class="card-header">Indent - {{ $indent->indent_code }}</h5>
             <div class="mb-4">
                 <div class="row m-0">
                     <div class="col-md-6 border-right">
                         <table class="table table-borderless col-md-6">
+                            <tr>
+                                <th  width="41%">Title: </th>
+                                <td>{{ $indent->title }}</td>
+                            </tr>
                             <tr>
                                 <th>Bill Mode: </th>
                                 <td>{{ config('constants.BILL_MODES')[$indent->bill_mode] }}</td>
@@ -23,14 +27,15 @@
                                 <th>Location: </th>
                                 <td>{{ $indent->location->name }}</td>
                             </tr>
-                            <tr>
-                                <th>Business Unit: </th>
-                                <td>{{ $indent->businessUnit->name }}</td>
-                            </tr>
+
                         </table>
                     </div>
                     <div class="col-md-6">
                         <table class="table table-borderless col-md-6">
+                            <tr>
+                                <th>Business Unit: </th>
+                                <td>{{ $indent->businessUnit->name }}</td>
+                            </tr>
                             <tr>
                                 <th>Bill Submission Date - Softcopy: </th>
                                 <td>{{ (!empty($indent->softcopy_bill_submission_date)) ? date('d-m-Y', strtotime($indent->softcopy_bill_submission_date)) : '-' }}</td>
@@ -44,7 +49,7 @@
                     <div class="col-md-12">
                         <table class="table table-borderless">
                             <tr>
-                                <th>Description: </th>
+                                <th width="20%">Description: </th>
                                 <td>{{ $indent->description }}</td>
                             </tr>
                         </table>
@@ -96,38 +101,56 @@
             </div>
             <h5 class="card-header">Indent Payment</h5>
             <div class="mb-4 m-0">
-                <table class="table table-striped" id="indent_payment_table">
-                    <thead>
-                        <tr>
-                            <th>Payment method<span class="start-mark">*</span></th>
-                            <th>Description</th>
-                            <th>Amount<span class="start-mark">*</span></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @php
-                            $total = 0;
-                        @endphp
-                        @if (!empty($indent->indentPayments))
-                            @foreach ($indent->indentPayments as $i => $payment)
-                                <tr>
-                                    <td>{{ $payment->paymentMethod->name }}</td>
-                                    <td>{{ $payment->description }}</td>
-                                    <td>{{ $payment->amount }}</td>
-                                </tr>
-                                @php
-                                    $total += $payment->amount;
-                                @endphp
-                            @endforeach
-                        @endif
-                    </tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="2" class="right-align">Total</td>
-                            <td>{{ $total }}</td>
-                        </tr>
-                    </tfoot>
-                </table>
+                <form action="{{ route('indent.payment_update', $indent->id) }}">
+                    <table class="table table-striped" id="indent_payment_table">
+                        <thead>
+                            <tr>
+                                <th>Payment method<span class="start-mark">*</span></th>
+                                <th>Description</th>
+                                <th>Amount<span class="start-mark">*</span></th>
+                                @can('indent-payment-conclude')
+                                    <th></th>
+                                @endcan
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $total = 0;
+                            @endphp
+                            @if (!empty($indent->indentPayments))
+                                @foreach ($indent->indentPayments as $i => $payment)
+                                    <tr>
+                                        <td>{{ $payment->paymentMethod->name }}</td>
+                                        <td>{{ $payment->description }}</td>
+                                        <td>{{ $payment->amount }}</td>
+                                        @can('indent-payment-conclude')
+                                            <td></td>
+                                        @endcan
+                                    </tr>
+                                    @php
+                                        $total += $payment->amount;
+                                    @endphp
+                                @endforeach
+                            @endif
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="2" class="right-align">Total</td>
+                                <td>
+                                    <b class="payment-final-total">
+                                        {{ $total }}
+                                    </b>
+                                </td>
+                                @can('indent-payment-conclude')
+                                    <td><button type="button" class="btn btn-icon btn-outline-primary float-end" onclick="addPaymentItem()"><i class="tf-icons bx bx-plus"></i></button></td>
+                                @endcan
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-primary my-4" >Update Payment</button>
+                    </div>
+                </form>
             </div>
             <h5 class="card-header">Indent Attachments</h5>
             <div class="mb-4 m-0 row">
@@ -178,7 +201,7 @@
                                 <div>
                                     @if ($indent->indentComments)
                                         @foreach ($indent->indentComments->sortByDesc('id') as $comment)
-                                            <span class="comment_date">{{ date('d M Y H:i:s', strtotime($comment->created_at)) }}</span>
+                                            <span class="comment_date"><b>{{ $comment->user->name }}</b> {{ date('d M Y H:i:s', strtotime($comment->created_at)) }}</span>
                                             <p>{{ $comment->comment }}</p>
                                         @endforeach
                                     @endif
@@ -187,8 +210,10 @@
                             <div class="tab-pane fade" id="navs-top-history" role="tabpanel">
                                 @if (!empty($indent->indentApproveLogs))
                                     @foreach ($indent->indentApproveLogs->sortByDesc('id') as $log)
-                                        <span class="comment_date">{{ date('d M Y H:i:s', strtotime($log->created_at)) }}</span>
+                                    <div class="{{ ($log->status == 'rejected') ? 'red' : 'green' }}">
+                                        <span class="comment_date ">{{ date('d M Y H:i:s', strtotime($log->created_at)) }}</span>
                                         <p>{{ $log->description }}</p>
+                                    </div>
                                     @endforeach
                                 @endif
                             </div>
@@ -211,10 +236,38 @@
     </div>
 </div>
 
+<!-- payment line item copy -->
+
+<table id="payment_item" style="display: none">
+    <tr>
+        <td>
+            <input type="hidden" name="indent_payment_id[]" value="">
+            <select name="payment_method_id[]" class="form-select payment_method_id " aria-label="Payment method" required>
+                <option value="">Select Payment method</option>
+                @if (!empty($paymentMethods))
+                    @foreach ($paymentMethods as $methods)
+                        <option value="{{ $methods->id }}">{{ $methods->name }}</option>
+                    @endforeach
+                @endif
+            </select>
+        </td>
+        <td>
+            <textarea name="payment_description[]" class="form-control payment_description" aria-label="Description" rows="2"></textarea>
+        </td>
+        <td>
+            <input type="number" name="amount[]" class="form-control amount" min="1" required />
+        </td>
+        <td>
+            <button type="button" class="btn btn-icon btn-outline-danger float-end" onclick="removePaymentItem(this)"><i class="tf-icons bx bx-trash"></i></button>
+        </td>
+    </tr>
+</table>
+
 @endsection
 
 
 @section('script')
+<script src="{{ asset("assets/js/indent.js") }}"></script>
 <script>
     $(document).ready(function () {
         $(".filePopup").on('click', function (e) {
@@ -288,9 +341,27 @@
             },
             data: {status: status, indent_item_id: indentItemId},
             success: function (res) {
+                $(".preloader").css('display', 'none');
                 window.location.reload();
+            },
+            beforeSend: function (request) {
+                $(".preloader").css('display', 'flex');
             }
         });
+    }
+
+    function calculatePaymentFinalTotal()
+    {
+        //overall total
+        var finalTotal = 0;
+        $("#indent_payment_table tr td:nth-child(3)").each(function (i) {
+            var subTotal = $(this).find('.amount').val();
+            if (subTotal != "" && !isNaN(subTotal)) {
+                finalTotal += Number(subTotal);
+            }
+        })
+        finalTotal = finalTotal + {{ $total }};
+        $(".payment-final-total").html(finalTotal);
     }
 </script>
 @endsection

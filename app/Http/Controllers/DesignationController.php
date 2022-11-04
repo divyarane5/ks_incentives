@@ -20,7 +20,10 @@ class DesignationController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Designation::all();
+            if (isset($request->order[0]) && !empty($request->order[0])) {
+                $orderColumn = $request->columns[$request->order[0]['column']]['name'];
+            }
+            $data = Designation::query();
             return DataTables::of($data)
                 ->addColumn('name', function ($row) {
                     return $row->name;
@@ -63,6 +66,7 @@ class DesignationController extends Controller
                     return '';
                 })
                 ->rawColumns(['action'])
+                ->orderColumn($orderColumn, $orderColumn.' $1')
                 ->make(true);
         }
         return view('designation.index');

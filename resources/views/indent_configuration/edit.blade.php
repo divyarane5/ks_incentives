@@ -4,18 +4,18 @@
 <!-- Content -->
 
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4"><a href="{{ route('indent_configuration.index') }}" class="text-muted fw-light">Indent Configuration/</a> Add Indent Configuration</h4>
+    <h4 class="fw-bold py-3 mb-4"><a href="{{ route('indent_configuration.index') }}" class="text-muted fw-light">Indent Configuration/</a> Edit Indent Configuration</h4>
 
     <!-- Basic Layout -->
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">Add Indent Configuration</h5>
+            <h5 class="mb-0">Edit Indent Configuration</h5>
             <small class="text-muted float-end"><a class="btn btn-primary" href="{{ route('indent_configuration.index') }}"> Back</a></small>
         </div>
         <form action="{{ route('indent_configuration.update', $id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('put')
-            @form_hidden('id', $id)
+            <input type="hidden" name="id" value="{{ $id }}">
             <div class="card-body">
                 <div class="row">
                     <div class="mb-3 col-md-6">

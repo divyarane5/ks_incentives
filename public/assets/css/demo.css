@@ -182,3 +182,32 @@ tr.readonly select, tr.readonly input, tr.readonly .vendor_btn, tr.readonly .btn
 .comment_date {
     font-size: 11px;
 }
+
+.red {
+    color: #d60000c9;
+}
+
+.green {
+    color: #016c01cf;
+}
+.preloader {
+    position: fixed;
+    right: 0;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1001;
+    background: #ffffff7d;
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    flex-direction: column;
+    vertical-align: middle;
+    height: 100%;
+}
+.preloader .spinner-border {
+    margin: auto;
+}

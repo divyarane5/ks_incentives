@@ -30,7 +30,8 @@ return [
                         'approve3' => 'approver4',
                         'approve4' => 'approver5',
                         'approve5' => '',
-                    ]
+    ],
+    'INDENT_CODE_PREFIX' => 'HB-IND-',
 ]
 
 ?>
