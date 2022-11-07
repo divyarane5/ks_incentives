@@ -160,6 +160,14 @@
 
         </li>
     @endcanany
+    @can('booking-view')
+    <li class="menu-item {{ (Request::segment(1) == 'booking') ? 'active': '' }}">
+        <a href="{{ route('booking.index') }}" class="menu-link">
+            <i class="menu-icon tf-icons bx bx-copy"></i>
+            <div data-i18n="Analytics">Booking</div>
+        </a>
+    </li>
+    @endcan
     @can('user-view')
     <li class="menu-item {{ (Request::segment(1) == 'users') ? 'active': '' }}">
         <a href="{{ route('users.index') }}" class="menu-link">
