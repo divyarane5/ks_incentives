@@ -65,6 +65,9 @@ Route::group(['middleware' => 'auth'], function() {
     Route::resource('client_response', App\Http\Controllers\ReferralClientController::class);
     Route::get('client_response_service', [App\Http\Controllers\ReferralClientController::class, 'sresponse']);
 
+    //Booking
+    Route::resource('booking', App\Http\Controllers\BookingController::class);
+
     //profile
     Route::get('/account', [App\Http\Controllers\UserController::class, 'account'])->name('account');
     Route::post('/update_profile', [App\Http\Controllers\UserController::class, 'updateProfile'])->name('update_profile');
