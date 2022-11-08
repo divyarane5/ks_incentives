@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html>
   <head>
@@ -54,9 +55,9 @@
       .container {
         display: block;
         margin: 0 auto !important;
+        background: #fff;
         /* makes it centered */
        
-        padding: 10px;
        
       }
 
@@ -65,15 +66,15 @@
         box-sizing: border-box;
         display: block;
         margin: 0 auto;
-        max-width: 75%;
-        padding: 10px; 
+        max-width: 100%;
+   
       }
 
       /* -------------------------------------
           HEADER, FOOTER, MAIN
       ------------------------------------- */
       .main {
-        background: #ffffff;
+        /* background: #ffffff; */
         border-radius: 3px;
         width: 100%; 
       }
@@ -346,7 +347,7 @@
 
               <!-- START MAIN CONTENT AREA -->
               <tr>
-                <td class="wrapper">
+                <td class="">
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                     <tr>
                       <td>
@@ -393,9 +394,32 @@
 
             <!-- END MAIN CONTENT AREA -->
             </table>
+            <br>
             <!-- END CENTERED WHITE CONTAINER -->
+            <div style="">
+                <div class="email-d" style="display:flex; align-items:center">
+                    <h3 style="font-size: 16px; color: #6b6765;  font-weight: 500; margin-bottom: 0;">{{$user->u_name}}</h3>
+                    
+                </div>
+                <div class="email-d" style="display:flex; align-items:center">
+                    <h3 style="font-size: 16px; color: #6b6765;  font-weight: 500; margin-bottom: 0;">{{$user->d_name}}</h3>
+                    <h3 style="font-size: 16px; color: #6b6765;  font-weight: 500; margin-bottom: 0;"> | HomeBazaar.com</h3>  
+                </div>
+                <div class="email-f">
 
-            
+                    <h3 style="color: #6b6765; font-weight: 500; font-size:16px; margin-bottom: 0;">Mobile : {{$user->mobile}}</h3>
+                </div>
+                <div class="email-f">
+
+                    <h3 style="color: #6b6765; font-weight: 500; font-size:16px; margin-bottom: 0;">2301, Cyber One, Sec 30(A),<br> Vashi, Navi Mumbai, 400703.</h3>
+                </div>
+                <div>
+                    <a href="https://in.linkedin.com/company/homebazaarcom" target="_blank"><img src="https://www.homebazzar.com/emailer/img/linkdln.jpg" alt="HomeBazaar.com" style=" border-radius: 4px; margin-top:4px  "></a></div>
+
+
+                    <a href="https://www.homebazaar.com/" target="_blank"><img src="https://www.homebazzar.com/emailer/img/homebazaar.png" alt="HomeBazaar.com" style="width:30%; border:0;     margin-top: 2px;"></a>
+                </div>
+            </div>
 
           </div>
         </td>

@@ -9,6 +9,8 @@ use DataTables;
 use Illuminate\Http\Request;
 use App\Models\ClientReference;
 use App\Models\ReferralClient;
+use App\Mail\ReferralMail;
+use Illuminate\Support\Facades\Mail;
 
 class ClientController extends Controller
 {
@@ -68,6 +70,10 @@ class ClientController extends Controller
                     if (auth()->user()->can('referral-client-view')) {
                         $actions .= '<a class="dropdown-item" target=”_blank”  href="'.route('client.show', $row->id).'"
                                         ><i class="bx bx-edit-alt me-1"></i> View</a>';
+                    }
+                    if (auth()->user()->can('referral-client-view')) {
+                        $actions .= '<a class="dropdown-item" target=”_blank”  href="'.url('send_referral_mail/'.$row->id).'"
+                                        ><i class="bx bx-edit-alt me-1"></i> Send Email</a>';
                     }
                     if (!empty($actions)) {
                         return '<div class="dropdown">
@@ -139,8 +145,18 @@ class ClientController extends Controller
         $client=$this->_Client->getAllData($id);
        // $client = Client::find($id);
         return view('client.show', compact('id', 'client'));
-        //return view('client.show', ['client' => $client]);
+    }
 
+    public function sendReferralMail($id)
+    {
+        $client=$this->_Client->getAllData($id);
+        $arr = [
+            'id' => $id,
+            'client' => $client,
+           // 'user' => $user
+        ];
+        Mail::to('divya.rane@homebazaar.com')->send(new ReferralMail($arr)); //$approvalTo->email
+        return redirect()->route('client.index')->with('success', 'Mail Sent Successfully');
     }
 
     public function reference($id)

@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 use App\Models\Booking;
+use App\Models\User;
 use App\Http\Requests\BookingRequest;
 use DataTables;
 use Illuminate\Http\Request;
-
+use App\Mail\BookingMail;
+use Illuminate\Support\Facades\Mail;
+use DB; 
 class BookingController extends Controller
 {
     function __construct()
@@ -77,6 +80,11 @@ class BookingController extends Controller
                         $actions .= '<a class="dropdown-item" target=”_blank”  href="'.route('booking.show', $row->id).'"
                                         ><i class="bx bx-edit-alt me-1"></i> View</a>';
                     }
+                    if (auth()->user()->can('booking-view')) {
+                        $actions .= '<a class="dropdown-item" target=”_blank”  href="'.url('send_booking_mail/'.$row->id).'"
+                                        ><i class="bx bx-edit-alt me-1"></i> Send Email</a>';
+                    }
+                    
                     if (!empty($actions)) {
                         return '<div class="dropdown">
                                         <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
@@ -87,6 +95,7 @@ class BookingController extends Controller
                                         </div>
                                     </div>';
                     }
+                    
                     return '';
                 })
                 ->rawColumns(['action'])
@@ -153,11 +162,30 @@ class BookingController extends Controller
 
     public function show($id)
     {
-       
-       // $client=$this->_Client->getAllData($id);
         $booking = Booking::find($id);
-        return view('booking.show', compact('id', 'booking'));
-        //return view('client.show', ['client' => $client]);
+        $user = DB::table('users')
+                    ->select('users.name as u_name','users.id as u_id','designations.name as d_name','users.mobile')
+                   ->join('designations', 'users.designation_id','=','designations.id','inner')
+	               ->where('users.id',$booking->created_by)
+	               ->first();
+                
+        return view('booking.show', compact('id', 'booking','user'));
 
+    }
+
+    public function sendBookingMail($id){
+        $booking = Booking::find($id);
+        $user = DB::table('users')
+                    ->select('users.name as u_name','users.id as u_id','designations.name as d_name','users.mobile')
+                   ->join('designations', 'users.designation_id','=','designations.id','inner')
+	               ->where('users.id',$booking->created_by)
+	               ->first();
+        $arr = [
+            'id' => $id,
+            'booking' => $booking,
+            'user' => $user
+        ];
+        Mail::to('divya.rane@homebazaar.com')->send(new BookingMail($arr)); //$approvalTo->email
+        return redirect()->route('booking.index')->with('success', 'Mail Sent Successfully');
     }
 }
