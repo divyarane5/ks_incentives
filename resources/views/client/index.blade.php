@@ -24,6 +24,7 @@
                     <th>Client Name</th>
                     <th>Client Email</th>
                     <th>Subject Name</th>
+                    <th>Status</th>
                     <th>Created On</th>
                     <th>Modified On</th>
                     <th>Actions</th>
@@ -51,6 +52,7 @@
                 {data: 'client_name', name: 'client_name'},
                 {data: 'client_email', name: 'client_email'},
                 {data: 'subject_name', name: 'subject_name'},
+                {data: 'click', name: 'click'},
                 {data: 'created_at', name: 'created_at'},
                 {data: 'updated_at', name: 'updated_at'},
                 {data: 'action', 'sortable': false},

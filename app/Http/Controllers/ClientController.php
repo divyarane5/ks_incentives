@@ -43,8 +43,13 @@ class ClientController extends Controller
                 ->addColumn('subject_name', function ($row) {
                     return $row->subject_name;
                 })
-                ->addColumn('email_sent', function ($row) {
-                    return $row->email_sent;
+                ->addColumn('click', function ($row) {
+                    if($row->click == 1){
+                        $click = 'Read';
+                    }else{
+                        $click= '';
+                    }
+                    return $click;
                 })
                 ->addColumn('created_at', function ($row) {
                     return date("d-m-Y", strtotime($row->created_at));
@@ -147,6 +152,14 @@ class ClientController extends Controller
         return view('client.show', compact('id', 'client'));
     }
 
+    public function click($id)
+    {
+        Client::where('id', $id)
+                ->update([
+                    'click' => 1
+                    ]);
+    }
+    
     public function sendReferralMail($id)
     {
         $client=$this->_Client->getAllData($id);
