@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\UserProfileRequest;
 use App\Http\Requests\UserRequest;
+use App\Imports\ImportUser;
+use App\Imports\UpdateUserReporting;
 use App\Interfaces\UserRepositoryInterface;
 use App\Models\Department;
 use App\Models\Designation;
@@ -11,7 +13,9 @@ use App\Models\Location;
 use App\Models\User;
 use Illuminate\Http\Request;
 use DataTables;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UserController extends Controller
 {
@@ -46,6 +50,9 @@ class UserController extends Controller
                                         '.csrf_field().'
                                         '.method_field('delete').'
                                     </form>';
+                    }
+                    if (auth()->user()->can('configuration-view')) {
+                        $actions .= '<a class="dropdown-item" href="'.route('indent_configuration.index').'?user_id='.$row->id.'"><i class="bx bx-list-ul me-1"></i> Indent Configuration</a>';
                     }
                     if (!empty($actions)) {
                         return '<div class="dropdown">
@@ -150,6 +157,13 @@ class UserController extends Controller
         }
 
         return redirect()->route('account')->with('success', 'Profile Updated Successfully');
+    }
+
+    public function importUser()
+    {
+        Excel::import(new ImportUser, storage_path('app/employees.xlsx'));
+        Excel::import(new UpdateUserReporting, storage_path('app/employees.xlsx'));
+        //return redirect()->back();
     }
 
 }

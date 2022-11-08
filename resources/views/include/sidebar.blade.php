@@ -101,10 +101,10 @@
         </li>
     @endcanany
 
-    @canany(['configuration-view'])
-        <li class="menu-item {{ in_array(Request::segment(1), ['indent_configuration']) ? 'active open': '' }}">
+    @canany(['configuration-view', 'indent-view-all', 'indent-view-own', 'indent-approval', 'indent-payment-conclude'])
+        <li class="menu-item {{ in_array(Request::segment(1), ['indent_configuration', 'indent', 'indent-approval', 'indent-closure']) ? 'active open': '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle ">
-                <i class="menu-icon tf-icons bx bx-layout"></i>
+                <i class="menu-icon tf-icons bx bx-dollar-circle"></i>
                 <div data-i18n="Layouts">Indent</div>
             </a>
             <ul class="menu-sub">
@@ -114,6 +114,27 @@
                             <div data-i18n="Without menu">Indent Configuration</div>
                         </a>
                     </li>
+                @endcan
+                @canany(['indent-view-all', 'indent-view-own'])
+                    <li class="menu-item {{ ((Request::segment(1) == 'indent')) ? 'active': '' }}">
+                        <a href="{{ route('indent.index') }}" class="menu-link">
+                            <div data-i18n="Without menu">Indents</div>
+                        </a>
+                    </li>
+                @endcan
+                @can('indent-approval')
+                <li class="menu-item {{ ((Request::segment(1) == 'indent-approval')) ? 'active': '' }}">
+                    <a href="{{ route('indent.approval') }}" class="menu-link">
+                        <div data-i18n="Without menu">Indent Approval</div>
+                    </a>
+                </li>
+                @endcan
+                @can('indent-payment-conclude')
+                <li class="menu-item {{ ((Request::segment(1) == 'indent-closure')) ? 'active': '' }}">
+                    <a href="{{ route('indent.closure') }}" class="menu-link">
+                        <div data-i18n="Without menu">Indent Closure</div>
+                    </a>
+                </li>
                 @endcan
             </ul>
         </li>

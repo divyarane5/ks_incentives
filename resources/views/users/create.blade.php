@@ -152,7 +152,7 @@
                     </div>
                     <div class="mb-3 col-md-6">
                         <label for="dob" class="form-label">Date Of Birth<span class="start-mark">*</span></label>
-                        <input class="form-control" name="dob" type="date" value="{{ old('dob') }}" id="dob" name="dob" @error('dob') autofocus @enderror required />
+                        <input class="form-control" name="dob" type="date" value="{{ old('dob') }}" id="dob"  @error('dob') autofocus @enderror required />
                         @error('dob')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>

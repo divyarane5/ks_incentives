@@ -19,6 +19,7 @@
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Vendors</th>
                     <th>Created On</th>
                     <th>Modified On</th>
                     <th>Actions</th>
@@ -42,9 +43,10 @@
             ajax: "{{ route('expense.index') }}",
             columns: [
                 {data: 'name', name: 'name'},
+                {data: 'vendors', name: 'vendors', sortable: false},
                 {data: 'created_at', name: 'created_at'},
                 {data: 'updated_at', name: 'updated_at'},
-                {data: 'action', 'sortable': false},
+                {data: 'action', 'sortable': false, sortable: false},
             ]
       });
 

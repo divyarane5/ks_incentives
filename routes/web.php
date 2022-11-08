@@ -19,7 +19,7 @@ Route::get('reference/{id}', [App\Http\Controllers\ClientController::class, 'ref
 Route::post('rthankyou', [App\Http\Controllers\ClientController::class, 'rthankyou'])->name('client.rthankyou');
 Route::get('service/{id}/{sname}', [App\Http\Controllers\ClientController::class, 'service'])->name('client.service');
 Route::post('sthankyou', [App\Http\Controllers\ClientController::class, 'sthankyou'])->name('client.sthankyou');
-  
+
 Route::group(['middleware' => 'auth'], function() {
     Route::get('/', function () {
         return view('dashboard');
@@ -31,6 +31,7 @@ Route::group(['middleware' => 'auth'], function() {
 
     //User
     Route::resource('users', App\Http\Controllers\UserController::class);
+    Route::get('/import_users', [App\Http\Controllers\UserController::class, 'importUser'])->name('user.import');
 
     //Location
     Route::resource('location', App\Http\Controllers\LocationController::class);
@@ -43,11 +44,15 @@ Route::group(['middleware' => 'auth'], function() {
 
     //Expense
     Route::resource('expense', App\Http\Controllers\ExpenseController::class);
+    Route::post('expense/ajax/store', [App\Http\Controllers\ExpenseController::class, 'ajaxStore'])->name('expense.ajax.store');
 
     //Vendor
     Route::resource('vendor', App\Http\Controllers\VendorController::class)->except(['show', 'index', 'store']);
     Route::get('vendor/index', [App\Http\Controllers\VendorController::class, 'index'])->name('vendor.index');
     Route::post('vendor/store', [App\Http\Controllers\VendorController::class, 'store'])->name('vendor.store');
+    Route::get('vendor_dropdown/{expense_id}', [App\Http\Controllers\VendorController::class, 'getVendorDropdown'])->name('vendor.dropdown');
+    Route::post('vendor/ajax/store', [App\Http\Controllers\VendorController::class, 'ajaxStore'])->name('vendor.ajax.store');
+    Route::post('vendor/update_status', [App\Http\Controllers\VendorController::class, 'updateStatus'])->name('vendor.update_status');
 
     //Business Unit
     Route::resource('business_unit', App\Http\Controllers\BusinessUnitController::class);
@@ -75,9 +80,17 @@ Route::group(['middleware' => 'auth'], function() {
     //roles and permissions
     Route::resource('role', App\Http\Controllers\RoleController::class)->except(['show']);
 
-    //Indent
+    //Indent configuration
     Route::resource('indent_configuration', App\Http\Controllers\IndentConfigurationController::class)->except(['show']);
 
+    //Indent
+    Route::resource('indent', App\Http\Controllers\IndentController::class);
+    Route::get('indent-approval', [App\Http\Controllers\IndentController::class, 'indentApproval'])->name('indent.approval');
+    Route::post('add-indent-comment', [App\Http\Controllers\IndentController::class, 'indentComment'])->name('indent.comment');
+    Route::post('update_indent_item_status', [App\Http\Controllers\IndentController::class, 'UpdateIndentItemStatus'])->name('update_indent_item_status');
+    Route::get('indent-closure', [App\Http\Controllers\IndentController::class, 'indentClosure'])->name('indent.closure');
+    Route::get('close-indent/{id}', [App\Http\Controllers\IndentController::class, 'closeIndent'])->name('indent.close');
+    Route::get('update-payment/{id}', [App\Http\Controllers\IndentController::class, 'updatePayment'])->name('indent.payment_update');
 });
 
 

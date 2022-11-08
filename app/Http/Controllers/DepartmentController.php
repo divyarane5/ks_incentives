@@ -14,13 +14,15 @@ class DepartmentController extends Controller
         $this->middleware('permission:department-create', ['only' => ['create','store']]);
         $this->middleware('permission:department-edit', ['only' => ['edit','update']]);
         $this->middleware('permission:department-delete', ['only' => ['destroy']]);
-
     }
 
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Department::all();
+            if (isset($request->order[0]) && !empty($request->order[0])) {
+                $orderColumn = $request->columns[$request->order[0]['column']]['name'];
+            }
+            $data = Department::query();
             return DataTables::of($data)
                 ->addColumn('name', function ($row) {
                     return $row->name;
@@ -62,6 +64,7 @@ class DepartmentController extends Controller
                     return '';
                 })
                 ->rawColumns(['action'])
+                ->orderColumn($orderColumn, $orderColumn.' $1')
                 ->make(true);
         }
         return view('department.index');

@@ -47,6 +47,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
 </head>
 <body>
+    <div class="preloader" style="display: none">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
     <!-- Layout wrapper -->
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">
@@ -78,8 +83,10 @@
             </div>
         </div>
     </div>
+    <input type="hidden" id="base_url" value="{{ url('/') }}">
+    <input type="hidden" id="asset_url" value="{{ asset('/') }}">
     <!-- Core JS -->
-    <!-- build:js {{ asset("assets/vendor/js/core.js") }} -->
+    <script src="{{ asset("assets/vendor/js/core.js") }}"></script>
     <script src="{{ asset("assets/vendor/libs/jquery/jquery.js") }}"></script>
     <script src="{{ asset("assets/vendor/libs/popper/popper.js") }}"></script>
     <script src="{{ asset("assets/vendor/js/bootstrap.js") }}"></script>
@@ -100,9 +107,12 @@
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.js"></script>
+    <script src="{{ asset('assets/vendor/dataTable/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/dataTable/dataTables.bootstrap4.min.js') }}"></script>
+    <script src="{{ asset('assets/vendor/dataTable/dataTables.responsive.min.js') }}"></script>
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.0/jquery.validate.js"></script>
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
     @yield('script')
 

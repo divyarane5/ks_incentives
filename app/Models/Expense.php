@@ -23,5 +23,9 @@ class Expense extends Model
         });
     }
 
+    public function vendors() {
+        return $this->belongsToMany(Vendor::class, 'expense_vendor_mapping');
+    }
+
 
 }

@@ -149,3 +149,65 @@ div.table-responsive>div.dataTables_wrapper>div.row:last-child {
     margin-left: -0.5rem;
     padding-right: 0;
 }
+.action-divider-left {
+    width: 80%;
+    display: inline;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-right: 0;
+}
+
+.action-divider-right {
+    border: 1px solid #d9dee3;
+    margin-left: -4px;
+    margin-top: -3px;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    line-height: 1.53;
+    width: 15%;
+    padding: 7px 10px;
+}
+
+.right-align {
+    text-align: right;
+}
+
+tr.readonly select, tr.readonly input, tr.readonly .vendor_btn, tr.readonly .btn-outline-danger {
+    background-color: #eceef1;
+    opacity: 1;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.comment_date {
+    font-size: 11px;
+}
+
+.red {
+    color: #d60000c9;
+}
+
+.green {
+    color: #016c01cf;
+}
+.preloader {
+    position: fixed;
+    right: 0;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    z-index: 1001;
+    background: #ffffff7d;
+    display: flex;
+    -webkit-box-align: center;
+    align-items: center;
+    -webkit-box-pack: center;
+    -webkit-box-orient: vertical;
+    -webkit-box-direction: normal;
+    flex-direction: column;
+    vertical-align: middle;
+    height: 100%;
+}
+.preloader .spinner-border {
+    margin: auto;
+}

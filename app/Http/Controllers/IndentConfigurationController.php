@@ -26,8 +26,9 @@ class IndentConfigurationController extends Controller
 
     public function index(Request $request)
     {
+        $userId = $request->has('user_id') ? $request->get('user_id') : '';
         if ($request->ajax()) {
-            $indentConfigurations = $this->indentConfigurationRepository->getIndentConfigurations();
+            $indentConfigurations = $this->indentConfigurationRepository->getIndentConfigurations($userId);
             return DataTables::of($indentConfigurations)
                 ->addColumn('created_at', function ($row) {
                     return date("d-m-Y", strtotime($row->created_at));
@@ -62,14 +63,15 @@ class IndentConfigurationController extends Controller
                 ->rawColumns(['action'])
                 ->make(true);
         }
-        return view('indend_configuration.index');
+        return view('indent_configuration.index', compact('userId'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
+        $userId = $request->has('user_id') ? $request->get('user_id') : '';
         $users = User::select(['id', 'name'])->orderBy('name', 'asc')->get();
         $expenses = Expense::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        return view('indend_configuration.create', compact('users', 'expenses'));
+        return view('indent_configuration.create', compact('users', 'expenses', 'userId'));
     }
 
     public function store(IndentConfigurationRequest $request)
@@ -96,7 +98,7 @@ class IndentConfigurationController extends Controller
         $users = User::select(['id', 'name'])->orderBy('name', 'asc')->get();
         $expenses = Expense::select(['id', 'name'])->orderBy('name', 'asc')->get();
         $intendConfiguration = IndentConfiguration::find($id);
-        return view('indend_configuration.edit', compact('users', 'expenses', 'intendConfiguration', 'id'));
+        return view('indent_configuration.edit', compact('users', 'expenses', 'intendConfiguration', 'id'));
     }
 
     public function update(IndentConfigurationRequest $request, $id)

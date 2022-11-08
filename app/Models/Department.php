@@ -5,10 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Auth; 
+use Auth;
 class Department extends Model
 {
     use HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'name',
+    ];
 
     protected static function boot() {
         parent::boot();
@@ -17,8 +21,4 @@ class Department extends Model
             $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
         });
     }
-
-    protected $fillable = [
-        'name',
-    ];
 }

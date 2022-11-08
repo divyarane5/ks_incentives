@@ -7,11 +7,14 @@ use DB;
 
 class IndentConfigurationRepository implements IndentConfigurationRepositoryInterface
 {
-    public function getIndentConfigurations()
+    public function getIndentConfigurations($userId = "")
     {
-        return IndentConfiguration::select(['indent_configurations.id', 'users.name as user', 'expenses.name as expense', 'monthly_limit', 'indent_limit', 'indent_configurations.created_at'])
-                    ->join('users', 'indent_configurations.user_id', '=', 'users.id')
-                    ->join('expenses', 'indent_configurations.expense_id', '=', 'expenses.id');
-
+        $indentConfiguration = IndentConfiguration::select(['indent_configurations.id', 'users.name as user', 'expenses.name as expense', 'monthly_limit', 'indent_limit', 'indent_configurations.created_at'])
+                        ->join('users', 'indent_configurations.user_id', '=', 'users.id')
+                        ->join('expenses', 'indent_configurations.expense_id', '=', 'expenses.id');
+        if ($userId != "") {
+            $indentConfiguration = $indentConfiguration->where('user_id', $userId);
+        }
+        return $indentConfiguration;
     }
 }

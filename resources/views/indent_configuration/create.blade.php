@@ -23,7 +23,7 @@
                           <option value="" >Select User</option>
                           @if(!empty($users))
                             @foreach ($users as $user)
-                                <option value="{{ $user->id }}" {{ (old('user_id') == $user->id) ? 'selected' : '' }}>{{ $user->name }}</option>
+                                <option value="{{ $user->id }}" {{ ((old('user_id') != "" ? old('user_id') : $userId) == $user->id) ? 'selected' : '' }}>{{ $user->name }}</option>
                             @endforeach
                           @endif
                         </select>

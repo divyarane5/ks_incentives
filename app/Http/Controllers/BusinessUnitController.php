@@ -20,7 +20,10 @@ class BusinessUnitController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = BusinessUnit::all();
+            if (isset($request->order[0]) && !empty($request->order[0])) {
+                $orderColumn = $request->columns[$request->order[0]['column']]['name'];
+            }
+            $data = BusinessUnit::query();
             return DataTables::of($data)
                 ->addColumn('name', function ($row) {
                     return $row->name;
@@ -62,6 +65,7 @@ class BusinessUnitController extends Controller
                     return '';
                 })
                 ->rawColumns(['action'])
+                ->orderColumn($orderColumn, $orderColumn.' $1')
                 ->make(true);
         }
         return view('business_unit.index');

@@ -13,10 +13,10 @@
         <form action="{{ route('client.update', $id) }}" method="post" enctype="multipart/form-data">
             @csrf
             @method('put')
-            @form_hidden('id', $id)
+            <input type="hidden" name="id" value="{{ $id }}">
             <div class="card-body">
                 <div class="row">
-                    
+
                     <div class="mb-3 col-md-6">
                         <label class="form-label" for="template_id">Template<span class="start-mark">*</span></label>
                         <select id="template_id" name="template_id" class="form-select" @error('template_id') autofocus @enderror required>
@@ -69,7 +69,7 @@
                             </span>
                         @enderror
                     </div>
-                    
+
 
                     <div>
                         <button type="submit" class="btn btn-primary" {{ (strtolower($client->name) == 'superadmin') ? 'disabled' : '' }}>Submit</button>
