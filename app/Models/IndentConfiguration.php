@@ -20,9 +20,7 @@ class IndentConfiguration extends Model
         'approver4',
         'approver5',
         'monthly_limit',
-        'indent_limit',
-        'monthly_limit_approval_required',
-        'indent_limit_approval_required'
+        'indent_limit'
     ];
 
     protected static function boot() {

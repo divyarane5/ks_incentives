@@ -38,15 +38,21 @@ class IndentRepository implements IndentRepositoryInterface
         for ($i = 0; $i < $itemsCount; $i++) {
             $indentArr = [$indentDetails['expense_id'][$i], $indentDetails['vendor_id'][$i], $indentDetails['quantity'][$i], $indentDetails['unit_price'][$i]];
             if (!in_array("", $indentArr) && !in_array(null, $indentArr)) {
+                $gst = ($indentDetails['gst'][$i] != "") ? $indentDetails['gst'][$i] : 0;
+                $tds = ($indentDetails['tds'][$i] != "") ? $indentDetails['tds'][$i] : 0;
                 $indentItem = new IndentItem();
                 $indentItem->indent_id = $indent->id;
                 $indentItem->expense_id = $indentDetails['expense_id'][$i];
                 $indentItem->vendor_id = $indentDetails['vendor_id'][$i];
                 $indentItem->quantity = $indentDetails['quantity'][$i];
                 $indentItem->unit_price = $indentDetails['unit_price'][$i];
-                $indentItem->total = $indentItem->quantity*$indentItem->unit_price;
+                $indentItem->gst = $gst;
+                $indentItem->tds = $tds;
+                $subTotal = ($indentItem->quantity*$indentItem->unit_price);
+                $total = (($subTotal + $gst) - $tds);
+                $indentItem->total = $total;
                 $indentItem->save();
-                $total += $indentItem->total;
+                $total += $total;
                 $this->updateIndentItemApproval($indentItem);
 
             }
@@ -119,6 +125,8 @@ class IndentRepository implements IndentRepositoryInterface
         //update items
         $total = 0;
         for ($i = 0; $i < sizeof($indentItemDetails['indent_item_id']); $i++) {
+            $gst = ($indentItemDetails['gst'][$i] != "") ? $indentItemDetails['gst'][$i] : 0;
+            $tds = ($indentItemDetails['tds'][$i] != "") ? $indentItemDetails['tds'][$i] : 0;
             $indentItem = new IndentItem();
             if (!empty($indentItemDetails['indent_item_id'][$i])) {
                 $indentItem = IndentItem::find($indentItemDetails['indent_item_id'][$i]);
@@ -128,7 +136,11 @@ class IndentRepository implements IndentRepositoryInterface
             $indentItem->vendor_id = $indentItemDetails['vendor_id'][$i];
             $indentItem->quantity = $indentItemDetails['quantity'][$i];
             $indentItem->unit_price = $indentItemDetails['unit_price'][$i];
-            $indentItem->total = $indentItem->quantity*$indentItem->unit_price;
+            $indentItem->gst = $gst;
+            $indentItem->tds = $tds;
+            $subTotal = ($indentItem->quantity*$indentItem->unit_price);
+            $total = (($subTotal + $gst) - $tds);
+            $indentItem->total = $total;
             $indentItem->save();
             $total += $indentItem->total;
 
@@ -210,7 +222,7 @@ class IndentRepository implements IndentRepositoryInterface
                     $approvalRequired = 1;
                 }
 
-                if ($indentItem->quantity > $configuration->indent_limit) {
+                if ($indentItem->unit_price > $configuration->indent_limit) {
                     $approvalRequired = 1;
                 }
 
@@ -267,8 +279,9 @@ class IndentRepository implements IndentRepositoryInterface
 
     public function updateIndentItemToNextApproval($status, $indentItem)
     {
-        $configuration = IndentConfiguration::where('user_id', $indentItem->created_by)->where('expense_id', $indentItem->expense_id)->first()->toArray();
+        $configuration = IndentConfiguration::where('user_id', $indentItem->created_by)->where('expense_id', $indentItem->expense_id)->first();
         if (!empty($configuration)) {
+            $configuration = $configuration->toArray();
             if ($status == 'approved') {
                 //next status
                 if ($indentItem->status == "pending") {
@@ -299,6 +312,13 @@ class IndentRepository implements IndentRepositoryInterface
                     $this->indentApprovalEmail($indentItem);
                 }
             }
+        } else {
+            if ($status == 'approved') {
+                $this->updateIndentItemStatus('approved', $indentItem);
+                $indentItem->next_approver_id = 0;
+                $indentItem->save();
+                return $indentItem;
+            }
         }
     }
 
@@ -310,7 +330,60 @@ class IndentRepository implements IndentRepositoryInterface
             'indent_id' => $indentItem->indent_id,
             'indent_code' => $indentItem->indent->indent_code
         ];
-        $approvalTo = User::find($indentItem->next_approver_id);
-        Mail::to('vrushali.bangar@homebazaar.com')->send(new IndentApprovalEmail($arr)); //$approvalTo->email
+        $approvalToEmails = User::whereIn('id', explode(",", $indentItem->next_approver_id))->get()->pluck('email')->toArray();
+        Mail::to('vrushali.bangar@homebazaar.com')->send(new IndentApprovalEmail($arr)); //$approvalToEmails
+    }
+
+    public function IndentCountByStatus()
+    {
+        $indents = Indent::select(['status', DB::raw('count(*) as total')]);
+        if (!auth()->user()->can('indent-view-all') && auth()->user()->can('indent-view-own')) {
+            $indents = $indents->where('indents.created_by', auth()->user()->id);
+        }
+        return $indents->groupBy('status')->get()->pluck('total', 'status')->toArray();
+    }
+
+    public function getWeeklyIndentExpense()
+    {
+        $indentExpense =IndentPayment::select([DB::raw('SUM(amount) as expense'), DB::raw('DATE_FORMAT(indent_payments.created_at, "%Y-%m-%d") as created_date')])
+                            ->join('indents', 'indent_payments.indent_id', '=', 'indents.id');
+        if (!auth()->user()->can('indent-view-all') && auth()->user()->can('indent-view-own') && !auth()->user()->can('indent-payment-conclude')) {
+            $indentExpense = $indentExpense->where('indents.created_by', auth()->user()->id);
+        }
+        return $indentExpense->whereBetween(DB::raw('DATE_FORMAT(indent_payments.created_at, "%Y-%m-%d")'), [date('Y-m-d', strtotime('-6 days')), date('Y-m-d')])
+                            ->groupBy('created_date')
+                            ->get()
+                            ->pluck('expense', 'created_date')
+                            ->toArray();
+    }
+
+    public function getTotalIndentExpense()
+    {
+        $indentExpense =IndentPayment::select([DB::raw('SUM(amount) as total')])
+                            ->join('indents', 'indent_payments.indent_id', '=', 'indents.id');
+        if (!auth()->user()->can('indent-view-all') && auth()->user()->can('indent-view-own') && !auth()->user()->can('indent-payment-conclude')) {
+            $indentExpense = $indentExpense->where('indents.created_by', auth()->user()->id);
+        }
+        return $indentExpense->first()->total;
+    }
+
+    public function getIndentApproval($limit = "")
+    {
+        $indent = Indent::select(['indents.id', 'indent_items.id as indent_item_id', 'expenses.name as expense', 'vendors.name as vendor', 'indents.title', 'locations.name as location', 'business_units.name as business_unit', 'bill_mode', 'indent_items.total', 'indent_items.status', 'indent_items.created_at', 'users.name as raised_by'])
+                        ->join('locations', 'indents.location_id', '=', 'locations.id')
+                        ->join('business_units', 'indents.business_unit_id', '=', 'business_units.id')
+                        ->join('indent_items', 'indents.id', '=', 'indent_items.indent_id')
+                        ->join('expenses', 'indent_items.expense_id', '=', 'expenses.id')
+                        ->join('vendors', 'indent_items.vendor_id', '=', 'vendors.id')
+                        ->join('users', 'indents.created_by', '=', 'users.id')
+                        ->whereNotIn('indent_items.status', ['rejected', 'approved', 'closed']);
+        if (!auth()->user()->hasRole('Superadmin')) {
+            $indent = $indent->whereRaw('FIND_IN_SET("'.auth()->user()->id.'", indent_items.next_approver_id)');
+        }
+
+        if ($limit != "") {
+            $indent = $indent->limit($limit);
+        }
+        return $indent;
     }
 }

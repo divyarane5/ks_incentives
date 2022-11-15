@@ -18,7 +18,9 @@ class IndentItem extends Model
         'quantity',
         'unit_price',
         'total',
-        'next_approver_id'
+        'next_approver_id',
+        'gst',
+        'tds'
     ];
 
     protected static function boot() {

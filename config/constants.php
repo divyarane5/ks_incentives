@@ -8,7 +8,7 @@ return [
                         'pending' => 'Pending',
                         'approved' => 'Approved',
                         'rejected' => 'Rejected',
-                        'half-approved' => 'Half Approved',
+                        'half-approved' => 'Partial Approved',
                         'closed' => 'Closed'
                     ],
     'INDENT_ITEM_STATUS' => [
@@ -30,8 +30,23 @@ return [
                         'approve3' => 'approver4',
                         'approve4' => 'approver5',
                         'approve5' => '',
-    ],
+                ],
     'INDENT_CODE_PREFIX' => 'HB-IND-',
+    'TRANSPORT_MODE' => [
+                    'car' => 'Car',
+                    'bike' => 'Bike',
+                    'bus' => 'Bus',
+                    'auto' => 'Auto',
+                    'train' => 'Train',
+                    'other' => 'Other'
+                ],
+    'REIMBURSEMENT_STATUS' => [
+                    'pending' => 'Pending',
+                    'approved' => 'Approved',
+                    'rejected' => 'Rejected',
+                    'settled' => 'Settled'
+                ],
+    'REIMBURSEMENT_CODE_PREFIX' => 'HB-RMB-',
 ]
 
 ?>

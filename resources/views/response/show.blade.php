@@ -131,7 +131,7 @@
 
                     <div class="mb-3 col-md-6">
                         <label class="form-label" for="status">Status<span class="start-mark">*</span></label>
-                        <select id="status" name="status" class="form-select" @error('status') autofocus @enderror required>
+                        <select id="status" name="status" class="" @error('status') autofocus @enderror required>
                             <option>Select Status</option>
 
 

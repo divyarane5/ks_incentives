@@ -45,6 +45,7 @@
     <script src="{{ asset("assets/js/config.js") }}"></script>
     <link href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.css" />
 </head>
 <body>
     <div class="preloader" style="display: none">
@@ -88,6 +89,7 @@
     <!-- Core JS -->
     <script src="{{ asset("assets/vendor/js/core.js") }}"></script>
     <script src="{{ asset("assets/vendor/libs/jquery/jquery.js") }}"></script>
+    <script src="{{ asset("assets/js/custom.js") }}"></script>
     <script src="{{ asset("assets/vendor/libs/popper/popper.js") }}"></script>
     <script src="{{ asset("assets/vendor/js/bootstrap.js") }}"></script>
     <script src="{{ asset("assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js") }}"></script>
@@ -101,9 +103,6 @@
     <!-- Main JS -->
     <script src="{{ asset("assets/js/main.js") }}"></script>
 
-    <!-- Page JS -->
-    <script src="{{ asset("assets/js/dashboards-analytics.js") }}"></script>
-
     <!-- Place this tag in your head or just before your close body tag. -->
     <script async defer src="https://buttons.github.io/buttons.js"></script>
 
@@ -114,7 +113,15 @@
     <script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.21/js/dataTables.bootstrap4.min.js"></script>-->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.js"></script>
-    @yield('script')
 
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/js/bootstrap-select.min.js"></script>
+    @yield('script')
+        <script>
+            $('select:not(.raw-select)').selectpicker({
+                'liveSearch' : true,
+            });
+
+            </script>
   </body>
 </html>

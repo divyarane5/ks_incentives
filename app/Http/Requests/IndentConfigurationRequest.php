@@ -42,8 +42,8 @@ class IndentConfigurationRequest extends FormRequest
                     return $query;
                 }),
             ],
-            'monthly_limit' => 'nullable|numeric|gt:0',
-            'intent_limit' => 'nullable|numeric|gt:0'
+            'monthly_limit' => 'nullable|numeric|gte:0',
+            'intent_limit' => 'nullable|numeric|gte:0'
         ];
     }
 

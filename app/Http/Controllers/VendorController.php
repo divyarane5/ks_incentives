@@ -22,13 +22,13 @@ class VendorController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            if (isset($request->order[0]) && !empty($request->order[0])) {
-                $orderColumn = $request->columns[$request->order[0]['column']]['name'];
-            }
-            $data = Vendor::select('vendors.*');
+            $data = Vendor::query();
             return DataTables::of($data)
                 ->addColumn('name', function ($row) {
                     return $row->name;
+                })
+                ->addColumn('tds', function ($row) {
+                    return $row->tds_percentage.' %';
                 })
                 ->addColumn('status', function ($row) {
                     return '<div class="form-check form-switch mb-2">
@@ -69,7 +69,6 @@ class VendorController extends Controller
                     return '';
                 })
                 ->rawColumns(['action', 'status'])
-                ->orderColumn($orderColumn, $orderColumn.' $1')
                 ->make(true);
         }
         return view('vendor.index');
@@ -85,6 +84,7 @@ class VendorController extends Controller
         //create location
         $vendor = new Vendor();
         $vendor->name = $request->input('name');
+        $vendor->tds_percentage = !empty($request->input('tds_percentage')) ? $request->input('tds_percentage') : 0;
         $vendor->save();
 
         return redirect()->route('vendor.index')->with('success', 'Vendor Added Successfully');
@@ -100,6 +100,7 @@ class VendorController extends Controller
     {
         $vendor = Vendor::find($id);
         $vendor->name = $request->input('name');
+        $vendor->tds_percentage = !empty($request->input('tds_percentage')) ? $request->input('tds_percentage') : 0;
         $vendor->save();
 
         return redirect()->route('vendor.index')->with('success', 'Vendor Updated Successfully');
@@ -113,11 +114,13 @@ class VendorController extends Controller
 
     public function getVendorDropdown($expenseId)
     {
-        $vendors = Expense::find($expenseId)->vendors;
         $str = '<option value="">Select Vendor</option>';
-        if (!empty($vendors)) {
-            foreach ($vendors as $vendor) {
-                $str .= '<option value="'.$vendor->id.'">'.$vendor->name.'</option>';
+        if ($expenseId != "") {
+            $vendors = Expense::find($expenseId)->vendors;
+            if (!empty($vendors)) {
+                foreach ($vendors as $vendor) {
+                    $str .= '<option value="'.$vendor->id.'" data-tds-percentage="'.$vendor->tds_percentage.'" >'.$vendor->name.'</option>';
+                }
             }
         }
         return $str;

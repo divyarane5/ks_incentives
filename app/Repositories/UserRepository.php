@@ -31,7 +31,7 @@ class UserRepository implements UserRepositoryInterface
         $user->name = $request->input('name');
         $user->employee_code = $request->input('employee_code');
         $user->email = $request->input('email');
-        if ($request->has('password')) {
+        if ($request->has('password') && !empty($request->input('password'))) {
             $user->password = Hash::make($request->input('password'));
         }
         $user->entity = $request->input('entity');

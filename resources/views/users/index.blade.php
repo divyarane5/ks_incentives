@@ -52,12 +52,12 @@
             serverSide: true,
             ajax: "{{ route('users.index') }}",
             columns: [
-                {data: 'employee_code', name: 'employee_code'},
-                {data: 'name', name: 'name'},
-                {data: 'email', name: 'email'},
+                {data: 'employee_code', name: 'users.employee_code'},
+                {data: 'name', name: 'users.name'},
+                {data: 'email', name: 'users.email'},
                 {data: 'designation', name: 'designations.name'},
-                {data: 'department', name: 'department'},
-                {data: 'location', name: 'location'},
+                {data: 'department', name: 'departments.name'},
+                {data: 'location', name: 'locations.name'},
                 {data: 'company', name: 'entity'},
                 {data: 'action', 'sortable': false},
             ]

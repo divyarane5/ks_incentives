@@ -79,15 +79,13 @@ class IndentConfigurationController extends Controller
         $indentConfiguration = new IndentConfiguration();
         $indentConfiguration->user_id = $request->input('user_id');
         $indentConfiguration->expense_id = $request->input('expense_id');
-        $indentConfiguration->approver1 = $request->input('approver1');
-        $indentConfiguration->approver2 = $request->input('approver2');
-        $indentConfiguration->approver3 = $request->input('approver3');
-        $indentConfiguration->approver4 = $request->input('approver4');
-        $indentConfiguration->approver5 = $request->input('approver5');
+        $indentConfiguration->approver1 = !empty($request->input('approver1')) ? implode(",", $request->input('approver1')) : '';
+        $indentConfiguration->approver2 = !empty($request->input('approver2')) ? implode(",", $request->input('approver2')) : '';
+        $indentConfiguration->approver3 = !empty($request->input('approver3')) ? implode(",", $request->input('approver3')) : '';
+        $indentConfiguration->approver4 = !empty($request->input('approver4')) ? implode(",", $request->input('approver4')) : '';
+        $indentConfiguration->approver5 = !empty($request->input('approver5')) ? implode(",", $request->input('approver5')) : '';
         $indentConfiguration->monthly_limit = $request->input('monthly_limit');
         $indentConfiguration->indent_limit = $request->input('indent_limit');
-        $indentConfiguration->monthly_limit_approval_required = ($request->has('monthly_limit_approval_required') ? 1 : 0);
-        $indentConfiguration->indent_limit_approval_required = ($request->has('indent_limit_approval_required') ? 1 : 0);
         $indentConfiguration->save();
 
         return redirect()->route('indent_configuration.index')->with('success', 'Indent Configuration Added Successfully');
@@ -106,15 +104,13 @@ class IndentConfigurationController extends Controller
         $indentConfiguration = IndentConfiguration::find($id);
         $indentConfiguration->user_id = $request->input('user_id');
         $indentConfiguration->expense_id = $request->input('expense_id');
-        $indentConfiguration->approver1 = $request->input('approver1');
-        $indentConfiguration->approver2 = $request->input('approver2');
-        $indentConfiguration->approver3 = $request->input('approver3');
-        $indentConfiguration->approver4 = $request->input('approver4');
-        $indentConfiguration->approver5 = $request->input('approver5');
+        $indentConfiguration->approver1 = !empty($request->input('approver1')) ? implode(",", $request->input('approver1')) : '';
+        $indentConfiguration->approver2 = !empty($request->input('approver2')) ? implode(",", $request->input('approver2')) : '';
+        $indentConfiguration->approver3 = !empty($request->input('approver3')) ? implode(",", $request->input('approver3')) : '';
+        $indentConfiguration->approver4 = !empty($request->input('approver4')) ? implode(",", $request->input('approver4')) : '';
+        $indentConfiguration->approver5 = !empty($request->input('approver5')) ? implode(",", $request->input('approver5')) : '';
         $indentConfiguration->monthly_limit = $request->input('monthly_limit');
         $indentConfiguration->indent_limit = $request->input('indent_limit');
-        $indentConfiguration->monthly_limit_approval_required = ($request->has('monthly_limit_approval_required') ? 1 : 0);
-        $indentConfiguration->indent_limit_approval_required = ($request->has('indent_limit_approval_required') ? 1 : 0);
         $indentConfiguration->save();
 
         return redirect()->route('indent_configuration.index')->with('success', 'Indent Configuration Updated Successfully');

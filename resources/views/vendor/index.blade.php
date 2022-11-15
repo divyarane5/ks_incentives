@@ -19,6 +19,7 @@
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>TDS</th>
                     <th>Status</th>
                     <th>Created On</th>
                     <th>Modified On</th>
@@ -42,10 +43,11 @@
             serverSide: true,
             ajax: "{{ route('vendor.index') }}",
             columns: [
-                {data: 'name', name: 'name'},
-                {data: 'status', name: 'status'},
-                {data: 'created_at', name: 'created_at'},
-                {data: 'updated_at', name: 'updated_at'},
+                {data: 'name', name: 'vendors.name'},
+                {data: 'tds', name: 'vendors.tds_percentage'},
+                {data: 'status', name: 'vendors.status'},
+                {data: 'created_at', name: 'vendors.created_at'},
+                {data: 'updated_at', name: 'vendors.updated_at'},
                 {data: 'action', 'sortable': false},
             ],
             order: [[2, 'desc']],

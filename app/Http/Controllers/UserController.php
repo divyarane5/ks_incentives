@@ -38,6 +38,7 @@ class UserController extends Controller
             return DataTables::of($users)
                 ->addColumn('action', function ($row) {
                     $actions = '';
+                    $actions .= '<a class="dropdown-item" href="'.route('users.show', $row->id).'"><i class="bx bx-show  me-1"></i> View</a>';
                     if (auth()->user()->can('user-edit')) {
                         $actions .= '<a class="dropdown-item" href="'.route('users.edit', $row->id).'"
                                         ><i class="bx bx-edit-alt me-1"></i> Edit</a>';
@@ -164,6 +165,12 @@ class UserController extends Controller
         Excel::import(new ImportUser, storage_path('app/employees.xlsx'));
         Excel::import(new UpdateUserReporting, storage_path('app/employees.xlsx'));
         //return redirect()->back();
+    }
+
+    public function show($id)
+    {
+        $user = User::find($id);
+        return view('users.view', compact('user'));
     }
 
 }

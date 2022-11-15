@@ -10,13 +10,7 @@
         <!-- Search -->
         <div class="navbar-nav align-items-center">
         <div class="nav-item d-flex align-items-center">
-            <i class="bx bx-search fs-4 lh-0"></i>
-            <input
-            type="text"
-            class="form-control border-0 shadow-none"
-            placeholder="Search Employee"
-            aria-label="Search Employee"
-            />
+            <h5 class="mb-0">Welcome To Homebazaar.com...</h5>
         </div>
         </div>
         <!-- /Search -->

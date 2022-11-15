@@ -3,6 +3,7 @@
 namespace App\Providers;
 
 use App\Models\IndentConfiguration;
+use App\Models\User;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -28,13 +29,20 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('indent-approval', function($user) {
             $userId = auth()->user()->id;
-            $indentConfigurationCount = IndentConfiguration::where('approver1', $userId)
-                                        ->orWhere('approver2', $userId)
-                                        ->orWhere('approver3', $userId)
-                                        ->orWhere('approver4', $userId)
-                                        ->orWhere('approver5', $userId)
+            $indentConfigurationCount = IndentConfiguration::whereRaw('FIND_IN_SET("'.$userId.'", approver1)')
+                                        ->orWhereRaw('FIND_IN_SET("'.$userId.'", approver2)')
+                                        ->orWhereRaw('FIND_IN_SET("'.$userId.'", approver3)')
+                                        ->orWhereRaw('FIND_IN_SET("'.$userId.'", approver4)')
+                                        ->orWhereRaw('FIND_IN_SET("'.$userId.'", approver5)')
                                         ->count();
-            return $indentConfigurationCount > 0;
+            return (($indentConfigurationCount > 0) || auth()->user()->hasRole('Superadmin'));
+        });
+
+        Gate::define('reimbursement-approval', function($user) {
+            $userId = auth()->user()->id;
+            $asParentCount = User::where('reporting_user_id', $userId)
+                                        ->count();
+            return ($asParentCount > 0 || auth()->user()->hasRole('Superadmin'));
         });
     }
 }

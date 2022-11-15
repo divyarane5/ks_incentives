@@ -4,7 +4,7 @@
 <!-- Content -->
 
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4"><a href="{{ route('location.index') }}" class="text-muted fw-light">Location/</a> Add Location</h4>
+    <h4 class="fw-bold py-3 mb-4"><a href="{{ route('location.index') }}" class="text-muted fw-light">Location</a>/ Add Location</h4>
 
     <!-- Basic Layout -->
     <div class="card mb-4">

@@ -34,7 +34,7 @@ class Indent extends Model
     }
 
     public function getIndentCodeAttribute() {
-            return config('constants.INDENT_CODE_PREFIX').str_pad($this->id, 6, '0', STR_PAD_LEFT);
+        return config('constants.INDENT_CODE_PREFIX').str_pad($this->id, 6, '0', STR_PAD_LEFT);
     }
 
     public function location()

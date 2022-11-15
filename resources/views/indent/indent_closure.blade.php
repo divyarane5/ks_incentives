@@ -13,6 +13,7 @@
             <table id="indent-approval" class="table table-striped" width="100%">
             <thead>
                 <tr>
+                    <th>#</th>
                     <th>Title</th>
                     <th>Location</th>
                     <th>Business Unit</th>
@@ -45,6 +46,7 @@
                     }
                 },
                 columns: [
+                    {data: 'id', name: 'id'},
                     {data: 'title', name: 'title'},
                     {data: 'location', name: 'locations.name'},
                     {data: 'business_unit', name: 'business_units.name'},

@@ -66,7 +66,7 @@
                             </div>
                             <div class="mb-3 col-md-6">
                                 <label for="gender" class="form-label">Gender</label>
-                                <select id="gender" name="gender" class="select2 form-select" @error('gender') autofocus @enderror>
+                                <select id="gender" name="gender" class="select2 " @error('gender') autofocus @enderror>
                                     @php
                                         $genders = config('constants.GENDER_OPTIONS');
                                     @endphp
@@ -106,7 +106,7 @@
                     <div class="col-md-6 border-right">
                         <table class="table table-borderless col-md-6">
                             <tr>
-                                <th>Entity: </th>
+                                <th>Company: </th>
                                 <td>{{ (!empty(auth()->user()->entity) ? auth()->user()->entity : '') }}</td>
                             </tr>
                             <tr>

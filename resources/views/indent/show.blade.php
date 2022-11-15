@@ -4,7 +4,7 @@
 
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="row">
-        <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Indent /</span> View</h4>
+        <h4 class="fw-bold py-3 mb-4"><a href="{{ route('indent.index') }}" class="text-muted fw-light">Indent</a>/ View</h4>
     </div>
 
     <!-- Striped Rows -->
@@ -62,10 +62,13 @@
                 <table class="table table-striped" id="indent_item_table">
                     <thead>
                         <tr>
-                            <th style="width: 272px;">Expense</th>
-                            <th style="width: 272px;">Vendor</th>
+                            <th>Expense</th>
+                            <th>Vendor</th>
                             <th>Quantity</th>
                             <th>Unit Price</th>
+                            <th>Sub Total</th>
+                            <th>GST</th>
+                            <th>TDS</th>
                             <th>Total</th>
                             <th>Status</th>
                         </tr>
@@ -75,16 +78,23 @@
                             @foreach ($indent->indentItems as $i => $item)
                                 <tr>
                                     <th>{{ $item->expense->name }}</th>
-                                    <th>{{ $item->vendor->name }}</th>
+                                    <th>
+                                        {{ $item->vendor->name }}
+                                        @if($item->vendor->status == 0)
+                                            <span class="red vendor_error">Please contact to finance for this vendor</span>
+                                        @endif
+                                    </th>
                                     <th>{{ $item->quantity }}</th>
                                     <th>{{ $item->unit_price }}</th>
+                                    <th>{{ $item->unit_price*$item->quantity }}</th>
+                                    <th>{{ $item->gst }}</th>
+                                    <th>{{ $item->tds }}</th>
                                     <th>{{ $item->total }}</th>
-                                    <th>
-                                        @if ($item->next_approver_id == auth()->user()->id)
+                                    <th class="center-align">
+                                        {{ config('constants.INDENT_ITEM_STATUS')[$item->status] }}<br>
+                                        @if (((in_array(auth()->user()->id, explode(",", $item->next_approver_id))) || auth()->user()->hasRole('Superadmin')) &&  $item->status != "approved" && $item->status != "rejected")
                                         <button type="button" class="btn rounded-pill btn-outline-primary" onclick="changeIndentItemStatus({{ $item->id }}, 'approved');">Approve</button>
                                         <button type="button" class="btn rounded-pill btn-outline-danger" onclick="changeIndentItemStatus({{ $item->id }}, 'rejected');">Reject</button>
-                                        @else
-                                        {{ config('constants.INDENT_ITEM_STATUS')[$item->status] }}
                                         @endif
                                     </th>
                                 </tr>
@@ -93,7 +103,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="4" class="right-align">Total</td>
+                            <td colspan="7" class="right-align">Total</td>
                             <td colspan="2">{{ $indent->total }}</td>
                         </tr>
                     </tfoot>
@@ -147,9 +157,11 @@
                             </tr>
                         </tfoot>
                     </table>
+                    @can('indent-payment-conclude')
                     <div class="form-group">
                         <button type="submit" class="btn btn-primary my-4" >Update Payment</button>
                     </div>
+                    @endcan
                 </form>
             </div>
             <h5 class="card-header">Indent Attachments</h5>
@@ -242,7 +254,7 @@
     <tr>
         <td>
             <input type="hidden" name="indent_payment_id[]" value="">
-            <select name="payment_method_id[]" class="form-select payment_method_id " aria-label="Payment method" required>
+            <select name="payment_method_id[]" class=" payment_method_id raw-select form-select" aria-label="Payment method" required>
                 <option value="">Select Payment method</option>
                 @if (!empty($paymentMethods))
                     @foreach ($paymentMethods as $methods)
@@ -263,6 +275,44 @@
     </tr>
 </table>
 
+
+<div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md" role="document">
+        <div class="modal-content">
+            <form action="{{ route("update_indent_item_status") }}" id="indent_reject"  method="POST">
+                @csrf
+                <div class="modal-header">
+                <h5 class="modal-title">Indent Rejection</h5>
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                ></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="mb-3">
+                            <input type="hidden" name="indent_item_id" id="indent_item_id" value="">
+                            <label class="form-label" for="reject_remark">Remark</label>
+                            <textarea name="comment" class="form-control" id="reject_remark" required ></textarea>
+                            <span class="reject_remark_error invalid-feedback" role="alert">
+                                <strong></strong>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                        Close
+                    </button>
+                    <button type="submit" id="rejectRemarkSubmit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 
@@ -278,7 +328,14 @@
                 $("#file-modal .modal-content").html('<embed src="'+$(this).attr("href")+'" frameborder="0" height="450px">');
             }
             $("#file-modal").modal('show');
-        })
+        });
+
+        $("#indent_reject").on("submit", function(e) {
+            e.preventDefault();
+            var indentItemId = $("#indent_reject #indent_item_id").val();
+            var comment = $("#indent_reject #reject_remark").val();
+            updateIndentStatus(indentItemId, "rejected", comment);
+        });
     });
 
     function addComment()
@@ -304,33 +361,35 @@
         });
     }
 
-    function changeIndentItemStatus(indentItemId, status)
+    function changeIndentItemStatus(indentItemId, status, comment)
     {
         if (status == "rejected") {
-            $.confirm({
-                title: 'Reject Indent Item Request.',
-                content: 'Are you sure you want to reject indent item request?',
-                type: 'red',
-                typeAnimated: true,
-                buttons: {
-                    tryAgain: {
-                        text: 'Yes',
-                        btnClass: 'btn-red',
-                        action: function(){
-                            event.preventDefault();
-                            updateIndentStatus(indentItemId, status);
-                        }
-                    },
-                    close: function () {
-                    }
-                }
-            });
+            $("#indent_reject #indent_item_id").val(indentItemId)
+            $("#rejectModal").modal('show');
+            // $.confirm({
+            //     title: 'Reject Indent Item Request.',
+            //     content: 'Are you sure you want to reject indent item request?',
+            //     type: 'red',
+            //     typeAnimated: true,
+            //     buttons: {
+            //         tryAgain: {
+            //             text: 'Yes',
+            //             btnClass: 'btn-red',
+            //             action: function(){
+            //                 event.preventDefault();
+            //                 updateIndentStatus(indentItemId, status);
+            //             }
+            //         },
+            //         close: function () {
+            //         }
+            //     }
+            // });
         } else {
             updateIndentStatus(indentItemId, status);
         }
     }
 
-    function updateIndentStatus(indentItemId, status) {
+    function updateIndentStatus(indentItemId, status, comment = "") {
         $.ajax({
             type: 'POST',
             url: "{{ route('update_indent_item_status') }}",
@@ -339,7 +398,7 @@
                         "content"
                     ),
             },
-            data: {status: status, indent_item_id: indentItemId},
+            data: {status: status, indent_item_id: indentItemId, comment: comment},
             success: function (res) {
                 $(".preloader").css('display', 'none');
                 window.location.reload();

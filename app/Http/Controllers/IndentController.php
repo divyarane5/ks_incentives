@@ -46,7 +46,7 @@ class IndentController extends Controller
             }
 
             return DataTables::of($indents)
-                ->addCOlumn('id', function ($row) {
+                ->addColumn('id', function ($row) {
                     return $row->indent_code;
                 })
                 ->addColumn('bill_mode', function ($row) {
@@ -108,10 +108,11 @@ class IndentController extends Controller
     {
         $locations = Location::select(['id', 'name'])->orderBy('name', 'asc')->get();
         $businessUnits = BusinessUnit::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $expenses = Expense::join('indent_configurations', 'expenses.id', '=', 'indent_configurations.expense_id')->select(['expenses.id', 'expenses.name'])
-                        ->where('indent_configurations.user_id', auth()->user()->id)
-                        ->orderBy('name', 'asc')
-                        ->get();
+        $expenses = Expense::join('indent_configurations', 'expenses.id', '=', 'indent_configurations.expense_id')->select(['expenses.id', 'expenses.name']);
+        if (!auth()->user()->can('indent-view-all') && auth()->user()->can('indent-view-own')) {
+            $expenses = $expenses->where('indent_configurations.user_id', auth()->user()->id);
+        }
+        $expenses = $expenses->orderBy('name', 'asc')->get();
         $paymentMethods = PaymentMethod::orderBy('name', 'asc')->get();
         return view('indent.create', compact('locations', 'businessUnits', 'expenses', 'paymentMethods'));
     }
@@ -125,8 +126,9 @@ class IndentController extends Controller
             $indent = $this->indentRepository->addIndent($indentDetails);
 
             //Item details
-            $indentItemDetails = $request->only(['expense_id', 'vendor_id', 'quantity', 'unit_price']);
+            $indentItemDetails = $request->only(['expense_id', 'vendor_id', 'quantity', 'unit_price', 'gst', 'tds']);
             $indent = $this->indentRepository->addIndentItems($indentItemDetails, $indent);
+
 
             //Payment details
             if ($request->has('payment_method_id')) {
@@ -177,7 +179,7 @@ class IndentController extends Controller
             $indent = $this->indentRepository->updateIndent($indentDetails, $indent);
 
             //Item details
-            $indentItemDetails = $request->only(['expense_id', 'vendor_id', 'quantity', 'unit_price', 'indent_item_id']);
+            $indentItemDetails = $request->only(['expense_id', 'vendor_id', 'quantity', 'unit_price', 'indent_item_id', 'gst', 'tds']);
             $indent = $this->indentRepository->updateIndentItems($indentItemDetails, $indent);
 
             //Payment details
@@ -218,20 +220,22 @@ class IndentController extends Controller
     public function indentApproval(Request $request)
     {
         if ($request->ajax()) {
-            $indents = Indent::distinct()
-                        ->select(['indents.id', 'indents.title', 'locations.name as location', 'business_units.name as business_unit', 'bill_mode', 'indents.total', 'indents.status', 'indents.created_at', 'users.name as raised_by'])
-                        ->join('locations', 'indents.location_id', '=', 'locations.id')
-                        ->join('business_units', 'indents.business_unit_id', '=', 'business_units.id')
-                        ->join('indent_items', 'indents.id', '=', 'indent_items.indent_id')
-                        ->join('users', 'indents.created_by', '=', 'users.id')
-                        ->where('indent_items.next_approver_id', auth()->user()->id);
+            $indents = $this->indentRepository->getIndentApproval();
 
             return DataTables::of($indents)
+                ->addColumn("approval", function ($row) {
+                    return '<div class="form-check mt-3">
+                                <input class="form-check-input indent_approval" name="indent_approval[]" type="checkbox" value="'.$row->indent_item_id.'">
+                            </div>';
+                })
+                ->addColumn('id', function ($row) {
+                    return $row->indent_code;
+                })
                 ->addColumn('bill_mode', function ($row) {
                     return config('constants.BILL_MODES')[$row->bill_mode];
                 })
                 ->addColumn('status', function ($row) {
-                    return config('constants.INDENT_STATUS')[$row->status];
+                    return config('constants.INDENT_ITEM_STATUS')[$row->status];
                 })
                 ->addColumn('created_at', function ($row) {
                     return date('d-m-Y H:i:s', strtotime($row->created_at));
@@ -240,7 +244,7 @@ class IndentController extends Controller
                     return '<a class="btn rounded-pill btn-outline-primary" href="'.route('indent.show', $row->id).'"
                     ><i class="bx bx-show me-1"></i> View</a>';
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['action', 'approval'])
                 ->make(true);
 
         }
@@ -270,6 +274,10 @@ class IndentController extends Controller
             $status = $request->input('status');
             $indentItem = IndentItem::with('expense')->find($indentItemId);
             if ($status == "rejected") {
+                $comment = new IndentComment();
+                $comment->comment = $request->input('comment');
+                $comment->indent_id = $indentItem->indent_id;
+                $comment->save();
                 $this->indentRepository->updateIndentItemStatus($status, $indentItem);
                 $indentItem->next_approver_id = 0;
                 $indentItem->save();
@@ -293,6 +301,9 @@ class IndentController extends Controller
                         ->whereIn('indents.status', ['approved', 'half-approved']);
 
             return DataTables::of($indents)
+                ->addColumn('id', function ($row) {
+                    return $row->indent_code;
+                })
                 ->addColumn('bill_mode', function ($row) {
                     return config('constants.BILL_MODES')[$row->bill_mode];
                 })
@@ -333,4 +344,16 @@ class IndentController extends Controller
         }
         return back()->withInput($request->input())->with('error', 'No indent payment to add.');
     }
+
+    public function bulkIndentItemApprove(Request $request)
+    {
+        $indentApprovals = $request->input('indent_approval');
+        if (!empty($indentApprovals)) {
+            foreach ($indentApprovals as $indentItemId) {
+                $indentItem = IndentItem::with('expense')->find($indentItemId);
+                $this->indentRepository->updateIndentItemToNextApproval("approved", $indentItem);
+            }
+        }
+    }
+
 }

@@ -24,7 +24,8 @@ class VendorRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|regex:/^[\pL\s\-]+$/u'
+            'name' => 'required|regex:/^[\pL\s\-]+$/u',
+            'tds_percentage' => 'numeric|regex:/^\d+(\.\d{1,2})?$/'
         ];
     }
 }
