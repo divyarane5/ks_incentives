@@ -66,7 +66,7 @@ class UserRepository implements UserRepositoryInterface
         $user->save();
 
         //update role
-        $user->assignRole([$request->input('role_id')]);
+        $user->syncRoles([$request->input('role_id')]);
         return $user;
     }
 }

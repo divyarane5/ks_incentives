@@ -16,7 +16,7 @@ class ReimbursementController extends Controller
 
     function __construct(ReimbursementRepositoryInterface $reimbursementRepository)
     {
-        $this->middleware('permission:reimbursement-view-all|reimbursement-view-own', ['only' => ['index']]);
+        $this->middleware('permission:reimbursement-view-all|reimbursement-view-own|reimbursement-approval', ['only' => ['index']]);
         $this->middleware('permission:reimbursement-create', ['only' => ['create','store']]);
         $this->middleware('permission:reimbursement-edit', ['only' => ['edit','update']]);
         $this->middleware('permission:reimbursement-delete', ['only' => ['destroy']]);
