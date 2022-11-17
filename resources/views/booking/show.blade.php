@@ -4,7 +4,7 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
+    <!-- <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"> -->
     <title>Simple Transactional Email</title>
     <style>
       /* -------------------------------------
@@ -354,28 +354,28 @@
                         <p>Dear {{$booking->developer_name}},</p>
                         <p>Greetings of the day from Homebazaar.com!</p>
                         <p>We are excited to inform you that we have successfully closed a booking with {{$booking->developer_name}} with the below-mentioned details :</p>
-                        <table class="w3-table-all w3-centered">
-                            <tr>
-                            <th>Project Name</th>
-                            <th>Client Name</th>
-                            <th>Booking Date</th>
-                            <th>Configuration</th>
-                            <th>Flat No</th>
-                            <th>Wing</th>
-                            <th>Cluster / Tower</th>
-                            <th>Sales Executive </th>
+                        <table class="w3-table-all w3-centered" style="border: 1px solid #ccc;     border-collapse: collapse;">
+                            <tr style="border-bottom: 1px solid #ddd;">
+                            <th style="padding: 8px 8px;">Project Name</th>
+                            <th style="padding: 8px 8px;">Client Name</th>
+                            <th style="padding: 8px 8px;">Booking Date</th>
+                            <th style="padding: 8px 8px;">Configuration</th>
+                            <th style="padding: 8px 8px;">Flat No</th>
+                            <th style="padding: 8px 8px;">Wing</th>
+                            <th style="padding: 8px 8px;">Cluster / Tower</th>
+                            <th style="padding: 8px 8px;">Sales Executive </th>
                             <th>( Homebazaar)	Sourcing Manager </th>
                             </tr>
-                            <tr>
-                            <td>{{$booking->project_name}}</td>
-                            <td>{{$booking->client_name}}</td>
-                            <td>{{$booking->booking_date}}</td>
-                            <td>{{$booking->configuration}}</td>
-                            <td>{{$booking->flat_no}}</td>
-                            <td>{{$booking->wing}}</td>
-                            <td>{{$booking->tower}}</td>
-                            <td>{{$booking->sales_person}}</td>
-                            <td>{{$booking->sourcing_manager}}</td>
+                            <tr style="background-color: #f1f1f1; border-bottom: 1px solid #ddd;">
+                            <td style="padding: 8px 8px; text-align: center;">{{$booking->project_name}}</td>
+                            <td style="padding: 8px 8px; text-align: center;">{{$booking->client_name}}</td>
+                            <td style="padding: 8px 8px; text-align: center;">{{$booking->booking_date}}</td>
+                            <td style="padding: 8px 8px; text-align: center;">{{$booking->configuration}}</td>
+                            <td style="padding: 8px 8px; text-align: center;">{{$booking->flat_no}}</td>
+                            <td style="padding: 8px 8px; text-align: center;">{{$booking->wing}}</td>
+                            <td style="padding: 8px 8px; text-align: center;">{{$booking->tower}}</td>
+                            <td style="padding: 8px 8px; text-align: center;">{{$booking->sales_person}}</td>
+                            <td style="padding: 8px 8px; text-align: center;">{{$booking->sourcing_manager}}</td>
                             </tr>
                             <tr>
                         </table>
