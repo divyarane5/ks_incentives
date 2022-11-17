@@ -41,6 +41,10 @@
                                 <th>Amount: </th>
                                 <td>{{ $reimbursement->amount }}</td>
                             </tr>
+                            <tr>
+                                <th>Reimbursement Date: </th>
+                                <td>{{ date("d-m-Y", strtotime($reimbursement->reimbursement_date)) }}</td>
+                            </tr>
                         </table>
                     </div>
                     <div class="col-md-6">

@@ -36,6 +36,7 @@
                         <th>From Location</th>
                         <th>To Destination</th>
                         <th>Amount</th>
+                        <th>Reimbursement Date</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -74,6 +75,7 @@
                 {data: 'source', name: 'source'},
                 {data: 'destination', name: 'destination'},
                 {data: 'amount', name: 'amount'},
+                {data: 'reimbursement_date', name: 'reimbursement_date'},
                 {data: 'status', sortable: false},
                 {data: 'action', sortable: false},
             ],
@@ -91,11 +93,11 @@
                     extend: 'excelHtml5',
                     title: 'reimbursement_export',
                     exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6, 7, 8],
+                        columns: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
                         format: {
                         body: function ( data, row, column, node ) {
                             // return column;
-                           if (column == 7){
+                           if (column == 9){
                                 if ($(node).find('button').length > 0) {
                                     return String($(node).find('button').html()).trim();
                                 } else if ($(node).find('.badge').length > 0){

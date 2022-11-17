@@ -56,6 +56,15 @@
                         @enderror
                     </div>
                     <div class="mb-3 col-md-6">
+                        <label class="form-label" for="reimbursement_date">Reimbursement Date</label>
+                        <input type="date"  name="reimbursement_date" class="form-control" id="reimbursement_date" value="{{ !empty(old('reimbursement_date')) ? old('destination') : $reimbursement->reimbursement_date }}" @error('reimbursement_date') autofocus @enderror  />
+                        @error('reimbursement_date')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+                    <div class="mb-3 col-md-6">
                         <label class="form-label" for="transport_mode">Transport Mode</label>
                         <select name="transport_mode" class="" id="transport_mode" aria-label="Transport Mode" @error('transport_mode') autofocus @enderror required>
                             <option value="">Select Transport Mode</option>

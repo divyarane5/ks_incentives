@@ -29,6 +29,7 @@ class CreateReimbursementsTable extends Migration
             $table->enum('status', ['pending', 'approved', 'rejected', 'settled'])->default('pending')->nullable();
             $table->string('file_path')->nullable();
             $table->string('file_name')->nullable();
+            $table->date('reimbursement_date')->nullable();
             $table->unsignedInteger('created_by');
             $table->softDeletes();
             $table->timestamps();

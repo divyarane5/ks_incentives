@@ -26,7 +26,7 @@ class ReimbursementController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $reimbursements = Reimbursement::select(['reimbursements.*', 'attended_of.name as visit_attended_of_user', 'created_by_user.name as visit_attended_by', 'created_by_user.reporting_user_id'])
+            $reimbursements = Reimbursement::select(['reimbursements.*', 'attended_of.name as visit_attended_of_user', 'created_by_user.name as visit_attended_by', 'created_by_user.reporting_user_id', 'reimbursement_date'])
                                 ->join('users as attended_of', 'reimbursements.visit_attended_of_id', '=', 'attended_of.id')
                                 ->join('users as created_by_user', 'reimbursements.created_by', '=', 'created_by_user.id');
             if (!auth()->user()->can('reimbursement-view-all') && auth()->user()->can('reimbursement-view-own')) {
@@ -65,6 +65,9 @@ class ReimbursementController extends Controller
                 })
                 ->addColumn('destination', function ($row) {
                     return $row->destination;
+                })
+                ->addColumn("reimbursement_date", function ($row) {
+                    return date('d-m-Y', strtotime($row->reimbursement_date));
                 })
                 ->addColumn('amount', function ($row) {
                     return $row->amount;
@@ -158,6 +161,7 @@ class ReimbursementController extends Controller
         $reimbursement->transport_mode = $request->input('transport_mode');
         $reimbursement->amount = $request->input('amount');
         $reimbursement->comment = $request->input('comment');
+        $reimbursement->reimbursement_date = $request->input('reimbursement_date');
         $reimbursement->save();
 
         //attachments
@@ -188,6 +192,7 @@ class ReimbursementController extends Controller
         $reimbursement->transport_mode = $request->input('transport_mode');
         $reimbursement->amount = $request->input('amount');
         $reimbursement->comment = $request->input('comment');
+        $reimbursement->reimbursement_date = $request->input('reimbursement_date');
         $reimbursement->save();
 
         //attachments
