@@ -2,14 +2,7 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <div class="row">
-        <h4 class="fw-bold py-3 mb-4 col-md-6"><span class="text-muted fw-light">Indent /</span> List</h4>
-        <div class="col-md-6">
-            @can('indent-create')
-            <a href="{{ route('indent.create') }}" type="button" class="btn btn-primary pull-right my-3 mb-4 ">Add Indent</a>
-            @endcan
-        </div>
-    </div>
+    <h4 class="fw-bold ">Indent Payments</h4>
 
     <!-- Striped Rows -->
     <div class="card my-4" id="IndentFilter">
@@ -70,23 +63,18 @@
     </div>
     <div class="card">
         <div class="row">
-        <h5 class="card-header col-md-6">Indents</h5>
-        <div class="datatableButtons mr-2 pull-right my-3 mb-4 right-align col-md-6"></div>
+        <div class="datatableButtons mr-2 pull-right my-3 mb-4 right-align col-md-12"></div>
         </div>
         <div class="table-responsive text-nowrap">
-            <table id="indent-datatable" class="table table-striped" width="100%">
+            <table id="indent-payment-datatable" class="table table-striped" width="100%">
             <thead>
                 <tr>
                     <th>Code</th>
                     <th>Title</th>
-                    <th>Location</th>
-                    <th>Business Unit</th>
-                    <th>Bill Mode</th>
-                    <th>total</th>
-                    <th>Status</th>
+                    <th>Amount</th>
+                    <th>Payment Method</th>
+                    <th>Payment By</th>
                     <th>Created On</th>
-                    <th>Raised By</th>
-                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody class="table-border-bottom-0">
@@ -105,11 +93,11 @@
 <script src="{{ asset('assets/vendor/dataTable/buttons.html5.min.js') }}"></script>
 <script type="text/javascript">
     $(document).ready(function () {
-        var table = $('#indent-datatable').DataTable({
+        var table = $('#indent-payment-datatable').DataTable({
                 processing: true,
                 serverSide: true,
                 ajax: {
-                    url: "{{ route('indent.index') }}",
+                    url: "{{ route('reports.indent_payments') }}",
                     data: function (d) {
                         d.location_id = $("#location_id").val();
                         d.bill_mode = $("#bill_mode").val();
@@ -118,39 +106,34 @@
                     }
                 },
                 columns: [
-                    {data: 'id', name: 'id'},
-                    {data: 'title', name: 'title'},
-                    {data: 'location', name: 'locations.name'},
-                    {data: 'business_unit', name: 'business_units.name'},
-                    {data: 'bill_mode', name: 'bill_mode'},
-                    {data: 'total', name: 'total'},
-                    {data: 'status', name: 'status'},
-                    {data: 'created_at', name: 'indents.created_at', sortable : true},
-                    {data: 'raised_by', name: 'users.name'},
-                    {data: 'action', 'sortable': false},
-                ],
-                order: [[7, 'desc']],
+                    {data: 'code', name: 'indents.id'},
+                    {data: 'title', name: 'indents.title'},
+                    {data: 'amount', name: 'indent_payments.amount'},
+                    {data: 'payment_method', name: 'payment_methods.name'},
+                    {data: 'payment_by', name: 'users.name'},
+                    {data: 'created_at', name: 'indent_payments.created_at'}
+                ]
         });
 
         $("#filter").on('click', function () {
             console.log($("#location_id").val());
-            $('#indent-datatable').DataTable().ajax.reload();
+            $('#indent-payment-datatable').DataTable().ajax.reload();
         });
 
 
         $("#clear").on('click', function () {
             $("#IndentFilter select").val('');
             $("#IndentFilter select").selectpicker('refresh');
-            $('#indent-datatable').DataTable().ajax.reload();
+            $('#indent-payment-datatable').DataTable().ajax.reload();
         });
 
         var buttons = new $.fn.dataTable.Buttons(table, {
             buttons: [
                 {
                     extend: 'excelHtml5',
-                    title: 'indent_export',
+                    title: 'indent_payment_export',
                     exportOptions: {
-                        columns: [ 0, 1, 2, 3, 4, 5, 6, 7, 8]
+                        columns: [ 0, 1, 2, 3, 4, 5]
                     }
                 }
             ]
@@ -158,27 +141,6 @@
         $('.buttons-excel').removeClass('dt-button buttons-excel buttons-html5').addClass('btn btn-success btn-plus mx-3').attr('id', 'excelHtml5').html('<i class="fa fa-file-excel-o mr-2"></i> Export to Excel');
     });
 
-    function deleteIndent(id)
-    {
-        $.confirm({
-            title: 'Delete Indent',
-            content: 'Are you sure you want to delete indent?',
-            type: 'red',
-            typeAnimated: true,
-            buttons: {
-                tryAgain: {
-                    text: 'Yes',
-                    btnClass: 'btn-red',
-                    action: function(){
-                        event.preventDefault();
-                        document.getElementById(id).submit()
-                    }
-                },
-                close: function () {
-                }
-            }
-        });
-    }
 
 </script>
 @endsection

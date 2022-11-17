@@ -26,7 +26,7 @@ class ReimbursementController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $reimbursements = Reimbursement::select(['reimbursements.*', 'attended_of.name as visit_attended_of_user', 'created_by_user.name as visit_created_by', 'created_by_user.reporting_user_id'])
+            $reimbursements = Reimbursement::select(['reimbursements.*', 'attended_of.name as visit_attended_of_user', 'created_by_user.name as visit_attended_by', 'created_by_user.reporting_user_id'])
                                 ->join('users as attended_of', 'reimbursements.visit_attended_of_id', '=', 'attended_of.id')
                                 ->join('users as created_by_user', 'reimbursements.created_by', '=', 'created_by_user.id');
             if (!auth()->user()->can('reimbursement-view-all') && auth()->user()->can('reimbursement-view-own')) {

@@ -140,10 +140,17 @@ div.table-responsive>div.dataTables_wrapper>div.row:last-child {
     padding-left: 3px;
 }
 
+@media (max-width: 768px) {
+    .p-xs-0 {
+        padding: 0;
+    }
+}
+
 @media (max-width: 575px) {
     .approver {
         width: 100%;
     }
+
 }
 @media (min-width: 576px) {
     .approver {
@@ -348,4 +355,15 @@ select {
 .vendor_error{
     text-transform: none;
     display: block;
+}
+.dropdown.bootstrap-select .dropdown-toggle:focus {
+    outline: none !important;
+}
+
+.dropdown.bootstrap-select .btn-light:hover {
+    transform: none;
+    -webkit-transform: none;
+    -moz-transform: none;
+    -ms-transform: none;
+    -o-transform: none;
 }

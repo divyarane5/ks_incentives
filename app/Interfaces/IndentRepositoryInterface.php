@@ -3,7 +3,7 @@ namespace App\Interfaces;
 
 interface IndentRepositoryInterface
 {
-    public function getIndentApproval($limit = "");
+    public function getIndentApproval($limit = "", $indentRequest = []);
 
     //creation
     public function addIndent($indentDetails);

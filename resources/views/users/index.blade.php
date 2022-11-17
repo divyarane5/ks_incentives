@@ -13,16 +13,89 @@
         </div>
     </div>
 
+    <div class="card my-4" id="UserFilter">
+        <div class="card-body row">
+            <div class="mb-3 col-md-3">
+                <label class="form-label" for="entity">Company</label>
+                <select id="entity" name="entity" class="" >
+                    <option value="">Select Company</option>
+                    @php
+                        $companies = config('constants.COMPANY_OPTIONS');
+                    @endphp
+                    @foreach ($companies as $key => $company)
+                        <option value="{{ $company }}" >{{ $company }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="mb-3 col-md-3">
+                <label class="form-label" for="location_id">Location</label>
+                <select id="location_id" name="location_id" class="">
+                    <option value="">Select Location</option>
+                    @if (!empty($locations))
+                        @foreach ($locations as $key => $location)
+                            <option value="{{ $location->id }}" >{{ $location->name }}</option>
+                        @endforeach
+                    @endif
+                </select>
+            </div>
+            <div class="mb-3 col-md-3">
+                <label class="form-label" for="department_id">Department</label>
+                <select id="department_id" name="department_id" class="">
+                    <option value="">Select Department</option>
+                    @if (!empty($departments))
+                        @foreach ($departments as $key => $department)
+                            <option value="{{ $department->id }}">{{ $department->name }}</option>
+                        @endforeach
+                    @endif
+                </select>
+            </div>
+            <div class="mb-3 col-md-3">
+                <label class="form-label" for="designation_id">Designation</label>
+                <select id="designation_id" name="designation_id" class="" >
+                    <option value="">Select Designation</option>
+                    @if (!empty($designations))
+                        @foreach ($designations as $key => $designation)
+                            <option value="{{ $designation->id }}" >{{ $designation->name }}</option>
+                        @endforeach
+                    @endif
+                </select>
+            </div>
+            <div class="mb-3 col-md-3">
+                <label class="form-label" for="role_id">Role</label>
+                <select id="role_id" name="role_id" class="" >
+                    <option value="">Select Role</option>
+                    @if (!empty($roles))
+                        @foreach ($roles as $key => $role)
+                            <option value="{{ $role->id }}" >{{ $role->name }}</option>
+                        @endforeach
+                    @endif
+                </select>
+                @error('role_id')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
+            <div class="mb-3 col-md-3">
+                <label class="form-label" for="role_id">&nbsp;</label><br>
+                <button type="button" id="filter" class="btn btn-primary me-sm-2">Filter</button>
+                <button type="button" id="clear" class="btn btn-secondary" >Clear</button>
+            </div>
+        </div>
+    </div>
     <!-- Striped Rows -->
     <div class="card">
-        <h5 class="card-header">Users</h5>
-
+        <div class="row">
+            <h5 class="card-header  col-md-6">Users</h5>
+            <div class="datatableButtons mr-2 pull-right my-3 mb-4 right-align col-md-6"></div>
+        </div>
         <div class="table-responsive text-nowrap">
             <table id="user-datatable" class="table table-striped" width="100%">
                 <thead>
                     <tr>
                         <th>Employee Code</th>
                         <th>Name</th>
+                        <th>Role</th>
                         <th>Email</th>
                         <th>Designation</th>
                         <th>Department</th>
@@ -44,16 +117,30 @@
 
 
 @section('script')
+<script src="{{ asset('assets/vendor/dataTable/dataTables.buttons.min.js') }}"></script>
+<script src="{{ asset('assets/vendor/dataTable/jszip.min.js') }}"></script>
+<script src="{{ asset('assets/vendor/dataTable/vfs_fonts.js') }}"></script>
+<script src="{{ asset('assets/vendor/dataTable/buttons.html5.min.js') }}"></script>
 <script type="text/javascript">
     $(document).ready(function () {
         //listing
         var table = $('#user-datatable').DataTable({
             processing: true,
             serverSide: true,
-            ajax: "{{ route('users.index') }}",
+            ajax: {
+                url: "{{ route('users.index') }}",
+                data: function (d) {
+                    d.entity = $("#entity").val();
+                    d.location_id = $("#location_id").val();
+                    d.department_id = $("#department_id").val();
+                    d.designation_id = $("#designation_id").val();
+                    d.role_id = $("#role_id").val();
+                }
+            },
             columns: [
                 {data: 'employee_code', name: 'users.employee_code'},
                 {data: 'name', name: 'users.name'},
+                {data: 'role', name: 'role', sortable:false},
                 {data: 'email', name: 'users.email'},
                 {data: 'designation', name: 'designations.name'},
                 {data: 'department', name: 'departments.name'},
@@ -63,6 +150,29 @@
             ]
         });
 
+        $("#filter").on('click', function () {
+            $('#user-datatable').DataTable().ajax.reload();
+        });
+
+
+        $("#clear").on('click', function () {
+            $("#UserFilter select").val('');
+            $("#UserFilter select").selectpicker('refresh');
+            $('#user-datatable').DataTable().ajax.reload();
+        });
+
+        var buttons = new $.fn.dataTable.Buttons(table, {
+            buttons: [
+            {
+                    extend: 'excelHtml5',
+                    title: 'user_export',
+                    exportOptions: {
+                        columns: [ 0, 1, 2, 3, 4, 5, 6, 7]
+                    }
+                }
+            ]
+        }).container().appendTo($('.datatableButtons'));
+        $('.buttons-excel').removeClass('dt-button buttons-excel buttons-html5').addClass('btn btn-success btn-plus mx-3').attr('id', 'excelHtml5').html('<i class="fa fa-file-excel-o mr-2"></i> Export to Excel');
     });
 
     function deleteUser(id)
@@ -86,6 +196,7 @@
             }
         });
     }
+
 
 </script>
 @endsection

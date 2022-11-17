@@ -91,6 +91,10 @@ Route::group(['middleware' => 'auth'], function() {
     Route::resource('reimbursement', App\Http\Controllers\ReimbursementController::class);
     Route::post('update_reimbursement_status', [App\Http\Controllers\ReimbursementController::class, 'updateReimbursementStatus'])->name('update_reimbursement_status');
     Route::post('update_bulk_reimbursement_status', [App\Http\Controllers\ReimbursementController::class, 'updateBulkReimbursementStatus'])->name('update_bulk_reimbursement_status');
+
+    //Reports
+    Route::get('indent_payments', [App\Http\Controllers\ReportController::class, 'indentPayments'])->name('reports.indent_payments');
+    Route::get('reimbursement_payments', [App\Http\Controllers\ReportController::class, 'reimbursementPayments'])->name('reports.reimbursement_payments');
 });
 
 

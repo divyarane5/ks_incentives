@@ -367,9 +367,9 @@ class IndentRepository implements IndentRepositoryInterface
         return $indentExpense->first()->total;
     }
 
-    public function getIndentApproval($limit = "")
+    public function getIndentApproval($limit = "", $indentRequest = [])
     {
-        $indent = Indent::select(['indents.id', 'indent_items.id as indent_item_id', 'expenses.name as expense', 'vendors.name as vendor', 'indents.title', 'locations.name as location', 'business_units.name as business_unit', 'bill_mode', 'indent_items.total', 'indent_items.status', 'indent_items.created_at', 'users.name as raised_by'])
+        $indents = Indent::select(['indents.id', 'indent_items.id as indent_item_id', 'expenses.name as expense', 'vendors.name as vendor', 'indents.title', 'locations.name as location', 'business_units.name as business_unit', 'bill_mode', 'indent_items.total', 'indent_items.status', 'indent_items.created_at', 'users.name as raised_by'])
                         ->join('locations', 'indents.location_id', '=', 'locations.id')
                         ->join('business_units', 'indents.business_unit_id', '=', 'business_units.id')
                         ->join('indent_items', 'indents.id', '=', 'indent_items.indent_id')
@@ -378,12 +378,28 @@ class IndentRepository implements IndentRepositoryInterface
                         ->join('users', 'indents.created_by', '=', 'users.id')
                         ->whereNotIn('indent_items.status', ['rejected', 'approved', 'closed']);
         if (!auth()->user()->hasRole('Superadmin')) {
-            $indent = $indent->whereRaw('FIND_IN_SET("'.auth()->user()->id.'", indent_items.next_approver_id)');
+            $indents = $indents->whereRaw('FIND_IN_SET("'.auth()->user()->id.'", indent_items.next_approver_id)');
+        }
+
+        if (isset($indentRequest['location_id']) && $indentRequest['location_id'] != "") {
+            $indents = $indents->where('indents.location_id', $indentRequest['location_id']);
+        }
+
+        if (isset($indentRequest['bill_mode']) && $indentRequest['bill_mode'] != "") {
+            $indents = $indents->where('bill_mode', $indentRequest['bill_mode']);
+        }
+
+        if (isset($indentRequest['business_unit_id']) && $indentRequest['business_unit_id'] != "") {
+            $indents = $indents->where('business_unit_id', $indentRequest['business_unit_id']);
+        }
+
+        if (isset($indentRequest['status']) && $indentRequest['status'] != "") {
+            $indents = $indents->where('indents.status', $indentRequest['status']);
         }
 
         if ($limit != "") {
-            $indent = $indent->limit($limit);
+            $indents = $indents->limit($limit);
         }
-        return $indent;
+        return $indents;
     }
 }

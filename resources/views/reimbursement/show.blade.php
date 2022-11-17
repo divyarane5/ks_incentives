@@ -9,15 +9,15 @@
 
     <!-- Striped Rows -->
     <div class="card">
-        <div class="card-body">
+        <div class="card-body p-xs-0">
             <div class="row">
             <h5 class="card-header col-md-6">Reimbursements - {{ $reimbursement->reimbursement_code }}</h5>
             <div class="col-md-6">
                 @if (auth()->user()->can('reimbursement-settlement') && $reimbursement->status == "approved")
                     <button class="btn btn-primary pull-right" onclick="updateStatus({{ $reimbursement->id }}, 'settled')">Settle</button>
                 @elseif (($reimbursement->reporting_user_id == auth()->user()->id || auth()->user()->hasRole('Superadmin')) && $reimbursement->status == "pending" )
-                    <button class="btn btn-primary pull-right" onclick="updateStatus({{ $reimbursement->id }}, 'approved')">Approve</button>
-                    <button class="btn btn-danger pull-right mr-12" onclick="updateStatus({{ $reimbursement->id }}, 'rejected')">Reject</button>
+                    <button class="btn btn-primary pull-right mx-3" onclick="updateStatus({{ $reimbursement->id }}, 'approved')">Approve</button>
+                    <button class="btn btn-danger pull-right" onclick="updateStatus({{ $reimbursement->id }}, 'rejected')">Reject</button>
                 @endif
             </div>
             </div>
@@ -26,7 +26,7 @@
                     <div class="col-md-6 border-right">
                         <table class="table table-borderless col-md-6">
                             <tr>
-                                <th  width="41%">Client Name: </th>
+                                <th  width="50%">Client Name: </th>
                                 <td>{{ $reimbursement->client_name }}</td>
                             </tr>
                             <tr>
@@ -46,7 +46,7 @@
                     <div class="col-md-6">
                         <table class="table table-borderless col-md-6">
                             <tr>
-                                <th>Project Name: </th>
+                                <th width="50%">Project Name: </th>
                                 <td>{{ $reimbursement->project_name }}</td>
                             </tr>
                             <tr>

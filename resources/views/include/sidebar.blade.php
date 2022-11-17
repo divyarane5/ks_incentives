@@ -199,5 +199,29 @@
     </li>
     @endcan
 
+    @canany(['indent-view-all', 'indent-view-own', 'indent-approval', 'indent-payment-conclude', 'reimbursement-view-all', 'reimbursement-view-own', 'reimbursement-approval'])
+    <li class="menu-item {{ in_array(Request::segment(1), ['indent_payments', 'reimbursement_payments']) ? 'active open': '' }}">
+        <a href="javascript:void(0);" class="menu-link menu-toggle ">
+            <i class="menu-icon tf-icons bx bxs-report"></i>
+            <div data-i18n="Layouts">Reports</div>
+        </a>
+        <ul class="menu-sub ">
+            @canany(['indent-view-all', 'indent-view-own', 'indent-approval', 'indent-payment-conclude'])
+            <li class="menu-item {{ ((Request::segment(1) == 'indent_payments')) ? 'active': '' }}">
+                <a href="{{ route('reports.indent_payments') }}" class="menu-link">
+                    <div data-i18n="Without menu">Indent Payments</div>
+                </a>
+            </li>
+            @endcanany
+            @canany(['reimbursement-view-all', 'reimbursement-view-own', 'reimbursement-approval'])
+            <li class="menu-item {{ ((Request::segment(1) == 'reimbursement_payments')) ? 'active': '' }}">
+                <a href="{{ route('reports.reimbursement_payments') }}" class="menu-link">
+                    <div data-i18n="Without menu">Reimbursement Payments</div>
+                </a>
+            </li>
+            @endcanany
+        </ul>
+    </li>
+    @endcanany
     </ul>
 </aside>

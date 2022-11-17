@@ -9,14 +9,14 @@
 
     <!-- Striped Rows -->
     <div class="card">
-        <div class="card-body">
+        <div class="card-body p-xs-0">
             <h5 class="card-header">Indent - {{ $indent->indent_code }}</h5>
             <div class="mb-4">
                 <div class="row m-0">
                     <div class="col-md-6 border-right">
                         <table class="table table-borderless col-md-6">
                             <tr>
-                                <th  width="41%">Title: </th>
+                                <th width="50%">Title: </th>
                                 <td>{{ $indent->title }}</td>
                             </tr>
                             <tr>
@@ -33,7 +33,7 @@
                     <div class="col-md-6">
                         <table class="table table-borderless col-md-6">
                             <tr>
-                                <th>Business Unit: </th>
+                                <th width="50%">Business Unit: </th>
                                 <td>{{ $indent->businessUnit->name }}</td>
                             </tr>
                             <tr>
@@ -49,7 +49,7 @@
                     <div class="col-md-12">
                         <table class="table table-borderless">
                             <tr>
-                                <th width="20%">Description: </th>
+                                <th  class="col-lg-3 col-md-3 col-6">Description: </th>
                                 <td>{{ $indent->description }}</td>
                             </tr>
                         </table>
@@ -58,7 +58,7 @@
             </div>
             <hr>
             <h5 class="card-header">Indent Items</h5>
-            <div class="mb-4 m-0">
+            <div class="mb-4 m-0" style="overflow: auto">
                 <table class="table table-striped" id="indent_item_table">
                     <thead>
                         <tr>
@@ -110,7 +110,7 @@
                 </table>
             </div>
             <h5 class="card-header">Indent Payment</h5>
-            <div class="mb-4 m-0">
+            <div class="mb-4 m-0" style="overflow: auto">
                 <form action="{{ route('indent.payment_update', $indent->id) }}">
                     <table class="table table-striped" id="indent_payment_table">
                         <thead>
@@ -158,7 +158,7 @@
                         </tfoot>
                     </table>
                     @can('indent-payment-conclude')
-                    <div class="form-group">
+                    <div class="form-group px-2">
                         <button type="submit" class="btn btn-primary my-4" >Update Payment</button>
                     </div>
                     @endcan
@@ -186,7 +186,7 @@
             <div class="row">
                 <div class="">
                     <div class="nav-align-top mb-4">
-                        <ul class="nav nav-pills mb-3" role="tablist">
+                        <ul class="nav nav-pills mb-3 px-2" role="tablist">
                             <li class="nav-item">
                                 <button type="button" class="nav-link active" role="tab" data-bs-toggle="tab" data-bs-target="#navs-top-comment" aria-controls="navs-top-home" aria-selected="true" >
                                     Comments

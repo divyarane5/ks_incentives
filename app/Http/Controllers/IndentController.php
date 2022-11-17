@@ -37,12 +37,29 @@ class IndentController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
+            $indentRequest = $request->only(['location_id', 'bill_mode', 'business_unit_id', 'status']);
             $indents = Indent::select(['indents.id', 'indents.title', 'locations.name as location', 'business_units.name as business_unit', 'bill_mode', 'indents.total', 'indents.status', 'indents.created_at', 'users.name as raised_by'])
                         ->join('locations', 'indents.location_id', '=', 'locations.id')
                         ->join('business_units', 'indents.business_unit_id', '=', 'business_units.id')
                         ->join('users', 'indents.created_by', '=', 'users.id');
             if (!auth()->user()->can('indent-view-all') && auth()->user()->can('indent-view-own')) {
                 $indents = $indents->where('indents.created_by', auth()->user()->id);
+            }
+
+            if ($indentRequest['location_id'] != "") {
+                $indents = $indents->where('indents.location_id', $indentRequest['location_id']);
+            }
+
+            if ($indentRequest['bill_mode'] != "") {
+                $indents = $indents->where('bill_mode', $indentRequest['bill_mode']);
+            }
+
+            if ($indentRequest['business_unit_id'] != "") {
+                $indents = $indents->where('business_unit_id', $indentRequest['business_unit_id']);
+            }
+
+            if ($indentRequest['status'] != "") {
+                $indents = $indents->where('indents.status', $indentRequest['status']);
             }
 
             return DataTables::of($indents)
@@ -101,7 +118,9 @@ class IndentController extends Controller
                 ->make(true);
 
         }
-        return view('indent.index');
+        $locations = Location::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        $businessUnits = BusinessUnit::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        return view('indent.index',compact('locations', 'businessUnits'));
     }
 
     public function create()
@@ -220,8 +239,9 @@ class IndentController extends Controller
     public function indentApproval(Request $request)
     {
         if ($request->ajax()) {
-            $indents = $this->indentRepository->getIndentApproval();
+            $indentRequest = $request->only(['location_id', 'bill_mode', 'business_unit_id', 'status']);
 
+            $indents = $this->indentRepository->getIndentApproval("", $indentRequest);
             return DataTables::of($indents)
                 ->addColumn("approval", function ($row) {
                     return '<div class="form-check mt-3">
@@ -248,7 +268,9 @@ class IndentController extends Controller
                 ->make(true);
 
         }
-        return view('indent.indent_approvals');
+        $locations = Location::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        $businessUnits = BusinessUnit::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        return view('indent.indent_approvals', compact('locations', 'businessUnits'));
     }
 
     public function show($id)
@@ -294,11 +316,24 @@ class IndentController extends Controller
     public function indentClosure(Request $request)
     {
         if ($request->ajax()) {
+            $indentRequest = $request->only(['location_id', 'bill_mode', 'business_unit_id', 'status']);
             $indents = Indent::select(['indents.id', 'indents.title', 'locations.name as location', 'business_units.name as business_unit', 'bill_mode', 'indents.total', 'indents.status', 'indents.created_at', 'users.name as raised_by'])
                         ->join('locations', 'indents.location_id', '=', 'locations.id')
                         ->join('business_units', 'indents.business_unit_id', '=', 'business_units.id')
                         ->join('users', 'indents.created_by', '=', 'users.id')
                         ->whereIn('indents.status', ['approved', 'half-approved']);
+            if ($indentRequest['location_id'] != "") {
+                $indents = $indents->where('indents.location_id', $indentRequest['location_id']);
+            }
+
+            if ($indentRequest['bill_mode'] != "") {
+                $indents = $indents->where('bill_mode', $indentRequest['bill_mode']);
+            }
+
+            if ($indentRequest['business_unit_id'] != "") {
+                $indents = $indents->where('business_unit_id', $indentRequest['business_unit_id']);
+            }
+
 
             return DataTables::of($indents)
                 ->addColumn('id', function ($row) {
@@ -326,7 +361,9 @@ class IndentController extends Controller
                 ->make(true);
 
         }
-        return view('indent.indent_closure');
+        $locations = Location::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        $businessUnits = BusinessUnit::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        return view('indent.indent_closure', compact('locations', 'businessUnits'));
     }
 
     public function closeIndent($id)
