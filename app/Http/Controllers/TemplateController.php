@@ -81,7 +81,7 @@ class TemplateController extends Controller
 
         //create location
         $template = new Template();
-        $template->content = 'tmplate';
+        $template->content = $request->input('content');
         $template->name = $request->input('name');
         $template->save();
 
@@ -98,6 +98,7 @@ class TemplateController extends Controller
     {
         $template = Template::find($id);
         $template->name = $request->input('name');
+        $template->content = $request->input('content');
         $template->save();
 
         return redirect()->route('template.index')->with('success', 'Template Updated Successfully');

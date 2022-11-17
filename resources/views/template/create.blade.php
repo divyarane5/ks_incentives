@@ -26,7 +26,16 @@
                             </span>
                         @enderror
                     </div>
-
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label" for="content">Content<span class="start-mark">*</span></label>
+                        <textarea id="content"  class="form-control" name="content" rows="4" cols="50">{{ old('content') }}</textarea>
+                        <!-- <input name="name" class="form-control" id="name" value="{{ old('content') }}" required/> -->
+                        @error('content')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
 
                     <div>
                         <button type="submit" class="btn btn-primary">Submit</button>

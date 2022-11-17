@@ -59,7 +59,7 @@ section.section-content.padding-y.bg.mt-2.mb-2.imp {
     }
 
    .reference-desktop-img {
-    background-image: url(img/reference-banner.jpg);
+    background-image: url(https://projectslaunch.com/referral-program/img/reference-banner.jpg);
     background-size: cover;
     background-repeat: no-repeat;
     background-position: 95%;
@@ -479,7 +479,7 @@ input.btn.btn-primary.btn-block {
                                     <div class="col-md-4 form-group mt-3">
 <input type="button" name="submit" class="btn btn-primary btn-block" value="Submit" onclick="sendContact();" >
 
-<hr><small>Condition Apply<sup style="color:#FF0000;">*</sup></small>
+
 
                                     </div> <!-- form-group// -->
                                 </div>

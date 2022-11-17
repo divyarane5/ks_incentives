@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 Auth::routes();
 Route::get('reference/{id}', [App\Http\Controllers\ClientController::class, 'reference'])->name('client.reference');
+Route::get('click/{id}', [App\Http\Controllers\ClientController::class, 'click'])->name('client.click');
 Route::post('rthankyou', [App\Http\Controllers\ClientController::class, 'rthankyou'])->name('client.rthankyou');
 Route::get('service/{id}/{sname}', [App\Http\Controllers\ClientController::class, 'service'])->name('client.service');
 Route::post('sthankyou', [App\Http\Controllers\ClientController::class, 'sthankyou'])->name('client.sthankyou');
@@ -63,10 +64,15 @@ Route::group(['middleware' => 'auth'], function() {
 
     //Client
     Route::resource('client', App\Http\Controllers\ClientController::class);
+    Route::get('send_referral_mail/{id}', [App\Http\Controllers\ClientController::class, 'sendReferralMail']);
 
     //Client Response
     Route::resource('client_response', App\Http\Controllers\ReferralClientController::class);
     Route::get('client_response_service', [App\Http\Controllers\ReferralClientController::class, 'sresponse']);
+
+    //Booking
+    Route::resource('booking', App\Http\Controllers\BookingController::class);
+    Route::get('send_booking_mail/{id}', [App\Http\Controllers\BookingController::class, 'sendBookingMail']);
 
     //profile
     Route::get('/account', [App\Http\Controllers\UserController::class, 'account'])->name('account');
