@@ -118,28 +118,47 @@ function expenseChangeEvent()
         var expense_id = $(this).val();
         var tr = getParentElement($(this), 'tr');
         var vendorElement = tr.find("td .vendor_id");
-        $.ajax({
-            type: 'GET',
-            url: BASE_URL+"/vendor_dropdown/"+expense_id,
-            dataType: "html",
-            success: function (res) {
-                vendorElement.html(res);
-            }
-        });
+        if (expense_id == "") {
+            var str = '<option value="">Select Vendor</option>';
+            vendorElement.html(str);
+        } else {
+            $.ajax({
+                type: 'GET',
+                url: BASE_URL+"/vendor_dropdown/"+expense_id,
+                dataType: "html",
+                success: function (res) {
+                    vendorElement.html(res);
+                }
+            });
+        }
+
     });
 }
 
 function priceQtyChangeEvent()
 {
-    $(".quantity, .unit_price").bind('change', function () {
+    $(".quantity, .unit_price, .gst, .vendor_id, .expense_id").bind('change', function () {
         //line item total
         var tr = getParentElement($(this), 'tr');
         var quantity = tr.find("td .quantity").val();
         var unitPrice = tr.find("td .unit_price").val();
         quantity = (quantity == "") ? 0 : quantity;
         unitPrice = (unitPrice == "") ? 0 : unitPrice;
-        var total = quantity*unitPrice;
+        var total = parseFloat(quantity*unitPrice);
         tr.find("td.total").html(total);
+
+        //TDS
+        var tdsPercentage = tr.find(".vendor_id :selected").data('tds-percentage');
+        tdsPercentage = (tdsPercentage == undefined) ? 0 : tdsPercentage;
+        var tdsAmount = parseFloat((tdsPercentage != 0 && total != 0) ? ((tdsPercentage*total)/100) : 0);
+        tr.find("td .tds").val(tdsAmount);
+        tr.find("td .tds_column").html(tdsAmount);
+
+        //final total
+        var gst = tr.find("td .gst").val();
+        gst = parseFloat((gst == "") ? 0 : gst);
+        var finalTotal = parseFloat((total + gst) - tdsAmount);
+        tr.find(".final_total_column").html(finalTotal);
 
         calculateIndentFinalTotal();
     });
@@ -148,7 +167,7 @@ function priceQtyChangeEvent()
 function calculateIndentFinalTotal()
 {
     var finalTotal = 0;
-    $("#indent_item_table tr td:nth-child(5)").each(function (i) {
+    $("#indent_item_table tr td:nth-child(8)").each(function (i) {
         var subTotal = $(this).html();
         if (subTotal != "" && !isNaN(subTotal)) {
             finalTotal += Number(subTotal);
@@ -195,6 +214,7 @@ function addIndentItem()
     item.find('select').val("");
     item.find('input').val("");
     item.find('.total').html("-");
+    item.find('.final_total_column').html("-");
     item.find('select .vendor_id').html('<option value="">Select Vendor</option>');
     item.appendTo("#indent_item_table tbody");
     $(".expense_id").unbind('change');

@@ -16,6 +16,7 @@ class CreateVendorsTable extends Migration
         Schema::create('vendors', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->float('tds_percentage')->default(0);
             $table->tinyInteger('status')->default(1);
             $table->unsignedInteger('created_by');
             $table->timestamps();

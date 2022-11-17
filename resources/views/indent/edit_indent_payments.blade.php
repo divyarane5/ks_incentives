@@ -20,7 +20,7 @@
                     <tr>
                         <td>
                             <input type="hidden" name="indent_payment_id[]" value="{{ old('indent_payment_id')[$i] }}">
-                            <select name="payment_method_id[]" class="form-select payment_method_id " aria-label="Payment method" >
+                            <select name="payment_method_id[]" class=" payment_method_id raw-select form-select" aria-label="Payment method" >
                                 <option value="">Select Payment method</option>
                                 @if (!empty($paymentMethods))
                                     @foreach ($paymentMethods as $methods)
@@ -64,7 +64,7 @@
                     <tr>
                         <td>
                             <input type="hidden" name="indent_payment_id[]" value="{{ $payment->id }}">
-                            <select name="payment_method_id[]" class="form-select payment_method_id " aria-label="Payment method" >
+                            <select name="payment_method_id[]" class=" payment_method_id raw-select form-select" aria-label="Payment method" >
                                 <option value="">Select Payment method</option>
                                 @if (!empty($paymentMethods))
                                     @foreach ($paymentMethods as $methods)
@@ -91,7 +91,7 @@
                 <tr>
                     <td>
                         <input type="hidden" name="indent_payment_id[]" value="">
-                        <select name="payment_method_id[]" class="form-select payment_method_id " aria-label="Payment method" required>
+                        <select name="payment_method_id[]" class=" payment_method_id raw-select form-select" aria-label="Payment method" required>
                             <option value="">Select Payment method</option>
                             @if (!empty($paymentMethods))
                                 @foreach ($paymentMethods as $methods)

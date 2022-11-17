@@ -31,7 +31,7 @@ class ImportUser implements ToModel
                 //check for department
                 $department = Department::where('name', $departmentName)->first();
                 if (empty($department)) {
-                    $department = new Department([
+                    $department = Department::create([
                         'name' => $departmentName
                     ]);
                 }
@@ -40,7 +40,7 @@ class ImportUser implements ToModel
                 //check for designation
                 $designation = Designation::where('name', $designationName)->first();
                 if (empty($designation)) {
-                    $designation = new Designation([
+                    $designation = Designation::create([
                         'name' => $designationName
                     ]);
                 }
@@ -49,7 +49,7 @@ class ImportUser implements ToModel
                 //check for location
                 $location = Location::where('name', $locationName)->first();
                 if (empty($location)) {
-                    $location = new Location([
+                    $location = Location::create([
                         'name' => $locationName
                     ]);
                 }

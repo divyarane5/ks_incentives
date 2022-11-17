@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4 col-md-6"><a href="{{ route('expense.index') }}" class="text-muted fw-light">Expense /</a> Edit</h4>
+    <h4 class="fw-bold py-3 mb-4 col-md-6"><a href="{{ route('expense.index') }}" class="text-muted fw-light">Expense </a>/ Edit</h4>
     <!-- Basic Layout -->
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -27,7 +27,7 @@
                     </div>
                     <div class="mb-3 col-md-6">
                         <label for="vendors" class="form-label">Vendors</label>
-                        <select name="vendors[]" multiple class="form-select" id="vendors" aria-label="Vendors">
+                        <select name="vendors[]" multiple class="" id="vendors" aria-label="Vendors">
                           <option value="" >Select Vendors</option>
                           @if(!empty($vendors))
                             @foreach ($vendors as $vendor)

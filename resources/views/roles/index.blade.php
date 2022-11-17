@@ -41,9 +41,9 @@
             serverSide: true,
             ajax: "{{ route('role.index') }}",
             columns: [
-                {data: 'name', name: 'name'},
-                {data: 'created_at', name: 'created_at'},
-                {data: 'updated_at', name: 'updated_at'},
+                {data: 'name', name: 'roles.name'},
+                {data: 'created_at', name: 'roles.created_at'},
+                {data: 'updated_at', name: 'roles.updated_at'},
                 {data: 'action', 'sortable': false},
             ]
       });

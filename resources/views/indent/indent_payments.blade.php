@@ -19,7 +19,7 @@
                 @for ($i = 0; $i < sizeof(old('payment_method_id')); $i++)
                     <tr>
                         <td>
-                            <select name="payment_method_id[]" class="form-select payment_method_id " aria-label="Payment method" required>
+                            <select name="payment_method_id[]" class=" payment_method_id raw-select form-select" aria-label="Payment method" required>
                                 <option value="">Select Payment method</option>
                                 @if (!empty($paymentMethods))
                                     @foreach ($paymentMethods as $methods)
@@ -61,7 +61,7 @@
             @else
                 <tr>
                     <td>
-                        <select name="payment_method_id[]" class="form-select payment_method_id " aria-label="Payment method" required>
+                        <select name="payment_method_id[]" class=" payment_method_id raw-select form-select" aria-label="Payment method" required>
                             <option value="">Select Payment method</option>
                             @if (!empty($paymentMethods))
                                 @foreach ($paymentMethods as $methods)

@@ -34,10 +34,15 @@ class UserController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $users = $this->userRepository->getUsers();
+            $userRequest = $request->only(['entity', 'location_id', 'department_id', 'designation_id', 'role_id']);
+            $users = $this->userRepository->getUsers($userRequest);
             return DataTables::of($users)
+                ->addColumn('role', function ($row) {
+                    return $row->getRoleNames()[0];
+                })
                 ->addColumn('action', function ($row) {
                     $actions = '';
+                    $actions .= '<a class="dropdown-item" href="'.route('users.show', $row->id).'"><i class="bx bx-show  me-1"></i> View</a>';
                     if (auth()->user()->can('user-edit')) {
                         $actions .= '<a class="dropdown-item" href="'.route('users.edit', $row->id).'"
                                         ><i class="bx bx-edit-alt me-1"></i> Edit</a>';
@@ -69,7 +74,11 @@ class UserController extends Controller
                 ->rawColumns(['action'])
                 ->make(true);
         }
-        return view('users.index');
+        $locations = Location::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        $departments = Department::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        $designations = Designation::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        $roles = Role::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        return view('users.index', compact('locations', 'departments', 'designations', 'roles'));
     }
 
     public function create()
@@ -164,6 +173,12 @@ class UserController extends Controller
         Excel::import(new ImportUser, storage_path('app/employees.xlsx'));
         Excel::import(new UpdateUserReporting, storage_path('app/employees.xlsx'));
         //return redirect()->back();
+    }
+
+    public function show($id)
+    {
+        $user = User::find($id);
+        return view('users.view', compact('user'));
     }
 
 }

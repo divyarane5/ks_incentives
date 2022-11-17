@@ -5,10 +5,13 @@
     <table class="table table-striped" id="indent_item_table">
         <thead>
             <tr>
-                <th style="width: 272px;">Expense<span class="start-mark">*</span></th>
-                <th style="width: 272px;">Vendor<span class="start-mark">*</span></th>
+                <th style="min-width: 200px;">Expense<span class="start-mark">*</span></th>
+                <th style="min-width: 200px;">Vendor<span class="start-mark">*</span></th>
                 <th>Quantity<span class="start-mark">*</span></th>
                 <th>Unit Price<span class="start-mark">*</span></th>
+                <th>Sub Total</th>
+                <th>GST</th>
+                <th>TDS</th>
                 <th>Total</th>
                 <th></th>
             </tr>
@@ -21,7 +24,7 @@
                 @for ($i = 0; $i < sizeof(old('expense_id')); $i++)
                     <tr>
                         <td>
-                            <select name="expense_id[]" class="form-select expense_id " aria-label="Expense" required>
+                            <select name="expense_id[]" class=" expense_id raw-select form-select" aria-label="Expense" required>
                                 <option value="">Select Expense</option>
                                 @if (!empty($expenses))
                                     @foreach ($expenses as $expense)
@@ -37,18 +40,20 @@
                             @enderror
                         </td>
                         <td>
-                            <select name="vendor_id[]" class="form-select vendor_id action-divider-left" aria-label="Expense" required>
-                                <option value="">Select Vendor</option>
-                                @php
-                                    $vendors = getVendors(old('expense_id')[$i]);
-                                @endphp
-                                @if (!empty($vendors))
-                                    @foreach ($vendors as $vendor)
-                                        <option value="{{ $vendor->id }}" {{ (old('vendor_id')[$i] == $vendor->id) ? 'selected' : '' }}>{{ $vendor->name }}</option>
-                                    @endforeach
-                                @endif
-                            </select>
-                            <span class="btn vendor_btn action-divider-right"><i class="tf-icons bx bx-plus"></i></span>
+                            <div class="input-group">
+                                <select name="vendor_id[]" class=" vendor_id action-divider-left raw-select form-select" aria-label="Expense" required>
+                                    <option value="">Select Vendor</option>
+                                    @php
+                                        $vendors = getVendors(old('expense_id')[$i]);
+                                    @endphp
+                                    @if (!empty($vendors))
+                                        @foreach ($vendors as $vendor)
+                                            <option value="{{ $vendor->id }}" data-tds-percentage="{{ $vendor->tds_percentage }}" {{ (old('vendor_id')[$i] == $vendor->id) ? 'selected' : '' }}>{{ $vendor->name }}</option>
+                                        @endforeach
+                                    @endif
+                                </select>
+                                <button class="btn btn-outline-primary vendor_btn" type="button" id="button-addon2"><i class="tf-icons bx bx-plus"></i></button>
+                            </div>
                             @error('vendor_id.'.$i)
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
@@ -76,9 +81,24 @@
                                 $quantity = !empty(old('quantity')[$i]) ? old('quantity')[$i] : 0;
                                 $unit_price = !empty(old('unit_price')[$i]) ? old('unit_price')[$i] : 0;
                                 $subTotal = $quantity*$unit_price;
-                                $total += $subTotal
                             @endphp
                             {{ $subTotal }}
+                        </td>
+                        <td>
+                            <input type="number" name="gst[]" class="form-control gst" min="1" value="{{ old('gst')[$i] }}" required />
+                        </td>
+                        <td>
+                            <input type="hidden" class="tds" name="tds[]"  value="{{ old('tds')[$i] }}">
+                            <span class="tds_column">{{ old('tds')[$i] }}</span>
+                        </td>
+                        <td class="final_total_column">
+                            @php
+                                $gst = !empty(old('gst')[$i]) ? old('gst')[$i] : 0;
+                                $tds = !empty(old('tds')[$i]) ? old('tds')[$i] : 0;
+                                $lineItemTotal = ($subTotal + $gst) - $tds;
+                                $total += $lineItemTotal;
+                            @endphp
+                            {{ $lineItemTotal }}
                         </td>
                         <td>
                             <button type="button" class="btn btn-icon btn-outline-danger float-end" onclick="removeIndentItem(this)"><i class="tf-icons bx bx-trash"></i></button>
@@ -88,7 +108,7 @@
             @else
                 <tr>
                     <td>
-                        <select name="expense_id[]" class="form-select expense_id" aria-label="Expense" required>
+                        <select name="expense_id[]" class=" expense_id raw-select form-select " aria-label="Expense" required>
                             <option value="">Select Expense</option>
                             @if (!empty($expenses))
                                 @foreach ($expenses as $expense)
@@ -99,10 +119,14 @@
                         <!--<span class="btn expense_btn action-divider-right"><i class="tf-icons bx bx-plus"></i></span>-->
                     </td>
                     <td>
-                        <select name="vendor_id[]" class="form-select vendor_id action-divider-left" aria-label="Expense" required>
-                            <option value="">Select Vendor</option>
-                        </select>
-                        <span class="btn vendor_btn action-divider-right"><i class="tf-icons bx bx-plus"></i></span>
+                        <div class="input-group">
+                            <select name="vendor_id[]" class=" vendor_id action-divider-left raw-select form-select" aria-label="Expense" required>
+                                <option value="">Select Vendor</option>
+                            </select>
+                            <button class="btn btn-outline-primary vendor_btn" type="button" id="button-addon2"><i class="tf-icons bx bx-plus"></i></button>
+                          </div>
+
+                        {{-- <span class="btn vendor_btn action-divider-right"></span> --}}
                     </td>
                     <td>
                         <input type="number" name="quantity[]" class="form-control quantity" min="1" required />
@@ -114,6 +138,14 @@
                         -
                     </td>
                     <td>
+                        <input type="number" name="gst[]" class="form-control gst" min="1" required />
+                    </td>
+                    <td>
+                        <input type="hidden" class="tds" name="tds[]" value="">
+                        <span class="tds_column">-</span>
+                    </td>
+                    <td class="final_total_column"></td>
+                    <td>
                         <button type="button" class="btn btn-icon btn-outline-danger float-end" onclick="removeIndentItem(this)"><i class="tf-icons bx bx-trash"></i></button>
                     </td>
                 </tr>
@@ -122,7 +154,7 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="4" class="right-align">
+                <td colspan="7" class="right-align">
                     Total
                 </td>
                 <td>

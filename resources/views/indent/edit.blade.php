@@ -4,7 +4,7 @@
 <!-- Content -->
 
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4"><a href="{{ route('indent.index') }}" class="text-muted fw-light">Indent/</a> Edit Indent</h4>
+    <h4 class="fw-bold py-3 mb-4"><a href="{{ route('indent.index') }}" class="text-muted fw-light">Indent</a>/ Edit Indent</h4>
 
     <!-- Basic Layout -->
     <div class="card mb-4">
@@ -19,7 +19,7 @@
             @endif
             @csrf
             @method('put')
-            @form_hidden('id', $indent->id)
+            <input type="hidden" value="{{ $indent->id }}" name="id">
             <div class="card-body">
                 <div class="row">
                     <div class="mb-3 col-md-12 d-flex justify-content-between align-items-center">
@@ -37,7 +37,7 @@
                     </div>
                     <div class="mb-3 col-md-6">
                         <label for="bill_mode" class="form-label">Bill Mode<span class="start-mark">*</span></label>
-                        <select name="bill_mode" class="form-select" id="bill_mode" aria-label="Bill Mode" @error('bill_mode') autofocus @enderror required>
+                        <select name="bill_mode" class="" id="bill_mode" aria-label="Bill Mode" @error('bill_mode') autofocus @enderror required>
                             <option value="">Select Bill Mode</option>
                             @php
                                 $billModes = config('constants.BILL_MODES');
@@ -54,7 +54,7 @@
                     </div>
                     <div class="mb-3 col-md-6">
                         <label for="location_id " class="form-label">Location<span class="start-mark">*</span></label>
-                        <select name="location_id" class="form-select" id="location_id " aria-label="Location" @error('location_id') autofocus @enderror required>
+                        <select name="location_id" class="" id="location_id " aria-label="Location" @error('location_id') autofocus @enderror required>
                             <option value="">Select Location</option>
                             @if (!empty($locations))
                                 @foreach ($locations as $location)
@@ -70,7 +70,7 @@
                     </div>
                     <div class="mb-3 col-md-6">
                         <label for="business_unit_id" class="form-label">Business Unit<span class="start-mark">*</span></label>
-                        <select name="business_unit_id" class="form-select" id="business_unit_id" aria-label="Business Unit" @error('business_unit_id') autofocus @enderror required>
+                        <select name="business_unit_id" class="" id="business_unit_id" aria-label="Business Unit" @error('business_unit_id') autofocus @enderror required>
                             <option value="">Select Business Unit</option>
                             @if (!empty($businessUnits))
                                 @foreach ($businessUnits as $unit)
@@ -154,7 +154,7 @@
     <tr>
         <td>
             <input type="hidden" name="indent_payment_id[]" value="">
-            <select name="payment_method_id[]" class="form-select payment_method_id " aria-label="Payment method" required>
+            <select name="payment_method_id[]" class=" payment_method_id " aria-label="Payment method" required>
                 <option value="">Select Payment method</option>
                 @if (!empty($paymentMethods))
                     @foreach ($paymentMethods as $methods)

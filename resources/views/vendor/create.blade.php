@@ -4,7 +4,7 @@
 <!-- Content -->
 
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4"><a  href="{{ route('vendor.index') }}" class="text-muted fw-light">Vendor/</a> Add Vendor</h4>
+    <h4 class="fw-bold py-3 mb-4"><a  href="{{ route('vendor.index') }}" class="text-muted fw-light">Vendor</a>/ Add Vendor</h4>
 
     <!-- Basic Layout -->
     <div class="card mb-4">
@@ -26,7 +26,15 @@
                             </span>
                         @enderror
                     </div>
-
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label" for="tds_percentage">TDS in precentage</label>
+                        <input type="text" name="tds_percentage" class="form-control" id="tds_percentage" value="{{ old('tds_percentage') }}" onkeyup="validateTwoDecimal(this);" />
+                        @error('tds_percentage')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
                     <div>
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </div>

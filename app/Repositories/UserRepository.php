@@ -7,7 +7,7 @@ use Hash;
 
 class UserRepository implements UserRepositoryInterface
 {
-    public function getUsers()
+    public function getUsers($userRequest = [])
     {
         $user = User::select([
                 'users.id',
@@ -22,6 +22,27 @@ class UserRepository implements UserRepositoryInterface
             ->leftJoin('designations', 'users.designation_id', '=', 'designations.id')
             ->leftJoin('departments', 'users.department_id', '=', 'departments.id')
             ->leftJoin('locations', 'users.location_id', '=', 'locations.id');
+
+        if (isset($userRequest['entity']) && $userRequest['entity'] != "") {
+            $user = $user->where('entity', $userRequest['entity']);
+        }
+        if (isset($userRequest['location_id']) && $userRequest['location_id'] != "") {
+            $user = $user->where('location_id', $userRequest['location_id']);
+        }
+        if (isset($userRequest['department_id']) && $userRequest['department_id'] != "") {
+            $user = $user->where('department_id', $userRequest['department_id']);
+        }
+        if (isset($userRequest['designation_id']) && $userRequest['designation_id'] != "") {
+            $user = $user->where('designation_id', $userRequest['designation_id']);
+        }
+        if (isset($userRequest['role_id']) && $userRequest['role_id'] != "") {
+            $roleId = $userRequest['role_id'];
+            $user = $user->whereHas(
+                    'roles', function($q) use($roleId) {
+                        $q->where('id', $roleId);
+                    }
+                );
+        }
         return $user;
     }
 
@@ -31,7 +52,7 @@ class UserRepository implements UserRepositoryInterface
         $user->name = $request->input('name');
         $user->employee_code = $request->input('employee_code');
         $user->email = $request->input('email');
-        if ($request->has('password')) {
+        if ($request->has('password') && !empty($request->input('password'))) {
             $user->password = Hash::make($request->input('password'));
         }
         $user->entity = $request->input('entity');
@@ -45,7 +66,7 @@ class UserRepository implements UserRepositoryInterface
         $user->save();
 
         //update role
-        $user->assignRole([$request->input('role_id')]);
+        $user->syncRoles([$request->input('role_id')]);
         return $user;
     }
 }

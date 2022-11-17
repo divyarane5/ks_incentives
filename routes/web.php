@@ -22,9 +22,7 @@ Route::get('service/{id}/{sname}', [App\Http\Controllers\ClientController::class
 Route::post('sthankyou', [App\Http\Controllers\ClientController::class, 'sthankyou'])->name('client.sthankyou');
 
 Route::group(['middleware' => 'auth'], function() {
-    Route::get('/', function () {
-        return view('dashboard');
-    });
+    Route::get('/', [App\Http\Controllers\DashboardController::class, 'index']);
 
     //dashboard
     Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])->name('dashboard');
@@ -94,6 +92,15 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('indent-closure', [App\Http\Controllers\IndentController::class, 'indentClosure'])->name('indent.closure');
     Route::get('close-indent/{id}', [App\Http\Controllers\IndentController::class, 'closeIndent'])->name('indent.close');
     Route::get('update-payment/{id}', [App\Http\Controllers\IndentController::class, 'updatePayment'])->name('indent.payment_update');
+    Route::post('bulk_indent_item_approve', [App\Http\Controllers\IndentController::class, 'bulkIndentItemApprove'])->name('bulk_indent_item_approve');
+
+    Route::resource('reimbursement', App\Http\Controllers\ReimbursementController::class);
+    Route::post('update_reimbursement_status', [App\Http\Controllers\ReimbursementController::class, 'updateReimbursementStatus'])->name('update_reimbursement_status');
+    Route::post('update_bulk_reimbursement_status', [App\Http\Controllers\ReimbursementController::class, 'updateBulkReimbursementStatus'])->name('update_bulk_reimbursement_status');
+
+    //Reports
+    Route::get('indent_payments', [App\Http\Controllers\ReportController::class, 'indentPayments'])->name('reports.indent_payments');
+    Route::get('reimbursement_payments', [App\Http\Controllers\ReportController::class, 'reimbursementPayments'])->name('reports.reimbursement_payments');
 });
 
 

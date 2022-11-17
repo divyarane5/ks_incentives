@@ -13,6 +13,7 @@ class Vendor extends Model
 
     protected $fillable = [
         'name',
+        'tds_percentage'
     ];
 
     protected static function boot() {

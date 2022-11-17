@@ -18,16 +18,16 @@
     totalRevenueChartOptions = {
       series: [
         {
-          name: '2021',
-          data: [18, 7, 15, 29, 18, 12, 9]
+            name: 'Reimbursement Expense',
+            data: JSON.parse(document.getElementById("weekly_reimbursement_expense").value),
         },
         {
-          name: '2020',
-          data: [-13, -18, -9, -14, -5, -17, -15]
-        }
+          name: 'Indent Expense',
+          data: JSON.parse(document.getElementById("weekly_indent_expense").value)
+        },
       ],
       chart: {
-        height: 300,
+        height: 294,
         stacked: true,
         type: 'bar',
         toolbar: { show: false }
@@ -38,7 +38,7 @@
           columnWidth: '33%',
           borderRadius: 12,
           startingShape: 'rounded',
-          endingShape: 'rounded'
+          endingShape: 'rounded',
         }
       },
       colors: [config.colors.primary, config.colors.info],
@@ -47,9 +47,9 @@
       },
       stroke: {
         curve: 'smooth',
-        width: 6,
+        width: 4,
         lineCap: 'round',
-        colors: [cardColor]
+        colors: [config.colors.primary, config.colors.info]
       },
       legend: {
         show: true,
@@ -62,7 +62,7 @@
           offsetX: -3
         },
         labels: {
-          colors: axisColor
+          colors: axisColor,
         },
         itemMargin: {
           horizontal: 10
@@ -78,12 +78,12 @@
         }
       },
       xaxis: {
-        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul'],
+        categories: Last7Days(),
         labels: {
           style: {
             fontSize: '13px',
             colors: axisColor
-          }
+          },
         },
         axisTicks: {
           show: false
@@ -97,6 +97,9 @@
           style: {
             fontSize: '13px',
             colors: axisColor
+          },
+          formatter: function (value) {
+            return "₹" + value;
           }
         }
       },
@@ -107,7 +110,7 @@
             plotOptions: {
               bar: {
                 borderRadius: 10,
-                columnWidth: '32%'
+                columnWidth: '25%'
               }
             }
           }
@@ -118,7 +121,7 @@
             plotOptions: {
               bar: {
                 borderRadius: 10,
-                columnWidth: '35%'
+                columnWidth: '25%'
               }
             }
           }
@@ -129,7 +132,7 @@
             plotOptions: {
               bar: {
                 borderRadius: 10,
-                columnWidth: '42%'
+                columnWidth: '40%'
               }
             }
           }
@@ -140,7 +143,7 @@
             plotOptions: {
               bar: {
                 borderRadius: 10,
-                columnWidth: '48%'
+                columnWidth: '30%'
               }
             }
           }
@@ -151,7 +154,7 @@
             plotOptions: {
               bar: {
                 borderRadius: 10,
-                columnWidth: '40%'
+                columnWidth: '30%'
               }
             }
           }
@@ -162,7 +165,7 @@
             plotOptions: {
               bar: {
                 borderRadius: 11,
-                columnWidth: '48%'
+                columnWidth: '28%'
               }
             }
           }
@@ -173,7 +176,7 @@
             plotOptions: {
               bar: {
                 borderRadius: 10,
-                columnWidth: '30%'
+                columnWidth: '20%'
               }
             }
           }
@@ -184,7 +187,7 @@
             plotOptions: {
               bar: {
                 borderRadius: 10,
-                columnWidth: '35%'
+                columnWidth: '25%'
               }
             }
           }
@@ -217,7 +220,7 @@
             plotOptions: {
               bar: {
                 borderRadius: 10,
-                columnWidth: '37%'
+                columnWidth: '35%'
               }
             }
           }
@@ -228,7 +231,7 @@
             plotOptions: {
               bar: {
                 borderRadius: 10,
-                columnWidth: '45%'
+                columnWidth: '42%'
               }
             }
           }
@@ -239,7 +242,7 @@
             plotOptions: {
               bar: {
                 borderRadius: 10,
-                columnWidth: '52%'
+                columnWidth: '42%'
               }
             }
           }
@@ -250,7 +253,7 @@
             plotOptions: {
               bar: {
                 borderRadius: 10,
-                columnWidth: '60%'
+                columnWidth: '50%'
               }
             }
           }
@@ -361,7 +364,7 @@
     profileReportChartConfig = {
       chart: {
         height: 80,
-        // width: 175,
+        // width: 185,
         type: 'line',
         toolbar: {
           show: false
@@ -394,7 +397,7 @@
       },
       series: [
         {
-          data: [110, 270, 145, 245, 205, 285]
+            data: JSON.parse(document.getElementById("total_weekly_expense").value),
         }
       ],
       xaxis: {
@@ -660,3 +663,13 @@
     weeklyExpenses.render();
   }
 })();
+
+function Last7Days () {
+    var result = [];
+    for (var i=6; i>=0; i--) {
+        var d = new Date();
+        d.setDate(d.getDate() - i);
+        result.push( d.getDate()  + "-" + (d.getMonth()+1) + "-" + d.getFullYear() )
+    }
+    return result;
+}

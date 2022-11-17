@@ -42,10 +42,10 @@
             serverSide: true,
             ajax: "{{ route('expense.index') }}",
             columns: [
-                {data: 'name', name: 'name'},
-                {data: 'vendors', name: 'vendors', sortable: false},
-                {data: 'created_at', name: 'created_at'},
-                {data: 'updated_at', name: 'updated_at'},
+                {data: 'name', name: 'expenses.name'},
+                {data: 'vendors', name: 'expenses.vendors', sortable: false},
+                {data: 'created_at', name: 'expenses.created_at'},
+                {data: 'updated_at', name: 'expenses.updated_at'},
                 {data: 'action', 'sortable': false, sortable: false},
             ]
       });

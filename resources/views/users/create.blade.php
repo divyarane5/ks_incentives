@@ -4,7 +4,7 @@
 <!-- Content -->
 
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4"><a href="{{ route('users.index') }}" class="text-muted fw-light">Users/</a> Add User</h4>
+    <h4 class="fw-bold py-3 mb-4"><a href="{{ route('users.index') }}" class="text-muted fw-light">Users</a>/ Add User</h4>
     <!-- Basic Layout -->
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -54,8 +54,8 @@
                     </div>
                     <div class="mb-3 col-md-6">
                         <label class="form-label" for="entity">Company<span class="start-mark">*</span></label>
-                        <select id="entity" name="entity" class="form-select" @error('entity') autofocus @enderror required>
-                            <option>Select Company</option>
+                        <select id="entity" name="entity" class="" @error('entity') autofocus @enderror required>
+                            <option value="">Select Company</option>
                             @php
                                 $companies = config('constants.COMPANY_OPTIONS');
                             @endphp
@@ -71,8 +71,8 @@
                     </div>
                     <div class="mb-3 col-md-6">
                         <label class="form-label" for="location_id">Location<span class="start-mark">*</span></label>
-                        <select id="location_id" name="location_id" class="form-select" @error('location_id') autofocus @enderror required>
-                            <option>Select Location</option>
+                        <select id="location_id" name="location_id" class="" @error('location_id') autofocus @enderror required>
+                            <option value="">Select Location</option>
                             @if (!empty($locations))
                                 @foreach ($locations as $key => $location)
                                     <option value="{{ $location->id }}" {{ ($location->id == old('location_id') ? 'selected' : '') }}>{{ $location->name }}</option>
@@ -87,8 +87,8 @@
                     </div>
                     <div class="mb-3 col-md-6">
                         <label class="form-label" for="department_id">Department<span class="start-mark">*</span></label>
-                        <select id="department_id" name="department_id" class="form-select" @error('department_id') autofocus @enderror required>
-                            <option>Select Department</option>
+                        <select id="department_id" name="department_id" class="" @error('department_id') autofocus @enderror required>
+                            <option value="">Select Department</option>
                             @if (!empty($departments))
                                 @foreach ($departments as $key => $department)
                                     <option value="{{ $department->id }}" {{ ($department->id == old('department_id') ? 'selected' : '') }}>{{ $department->name }}</option>
@@ -103,8 +103,8 @@
                     </div>
                     <div class="mb-3 col-md-6">
                         <label class="form-label" for="designation_id">Designation<span class="start-mark">*</span></label>
-                        <select id="designation_id" name="designation_id" class="form-select" @error('designation_id') autofocus @enderror required>
-                            <option>Select Designation</option>
+                        <select id="designation_id" name="designation_id" class="" @error('designation_id') autofocus @enderror required>
+                            <option value="">Select Designation</option>
                             @if (!empty($designations))
                                 @foreach ($designations as $key => $designation)
                                     <option value="{{ $designation->id }}" {{ ($designation->id == old('designation_id') ? 'selected' : '') }}>{{ $designation->name }}</option>
@@ -119,8 +119,8 @@
                     </div>
                     <div class="mb-3 col-md-6">
                         <label class="form-label" for="gender">Gender</label>
-                        <select id="gender" name="gender" class="form-select" @error('gender') autofocus @enderror>
-                            <option>Select Gender</option>
+                        <select id="gender" name="gender" class="" @error('gender') autofocus @enderror>
+                            <option value="">Select Gender</option>
                             @php
                                 $genders = config('constants.GENDER_OPTIONS');
                             @endphp
@@ -136,8 +136,8 @@
                     </div>
                     <div class="mb-3 col-md-6">
                         <label class="form-label" for="reporting_user_id">Reporting To</label>
-                        <select id="reporting_user_id" name="reporting_user_id" class="form-select" @error('reporting_user_id') autofocus @enderror>
-                            <option>Select Reporting</option>
+                        <select id="reporting_user_id" name="reporting_user_id" class="" @error('reporting_user_id') autofocus @enderror>
+                            <option value="">Select Reporting</option>
                             @if (!empty($reportingUsers))
                                 @foreach ($reportingUsers as $key => $reportingUser)
                                     <option value="{{ $reportingUser->id }}" {{ ($reportingUser->id == old('reporting_user_id') ? 'selected' : '') }}>{{ $reportingUser->name }}</option>
@@ -170,8 +170,8 @@
                     </div>
                     <div class="mb-3 col-md-6">
                         <label class="form-label" for="role_id">Role<span class="start-mark">*</span></label>
-                        <select id="role_id" name="role_id" class="form-select" required>
-                            <option>Select Role</option>
+                        <select id="role_id" name="role_id" class="" required>
+                            <option value="">Select Role</option>
                             @if (!empty($roles))
                                 @foreach ($roles as $key => $role)
                                     <option value="{{ $role->id }}" {{ ($role->id == old('role_id') ? 'selected' : '') }}>{{ $role->name }}</option>
