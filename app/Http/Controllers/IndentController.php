@@ -231,8 +231,15 @@ class IndentController extends Controller
         Indent::where('id', $id)->delete();
         IndentItem::where('indent_id', $id)->delete();
         IndentPayment::where('indent_id', $id)->delete();
-        IndentAttachment::where('indent_id', $id)->delete();
+        // IndentAttachment::where('indent_id', $id)->delete();
         IndentComment::where('indent_id', $id)->delete();
+        $indentAttachments = IndentAttachment::where('indent_id', $id)->get();
+        if (!$indentAttachments->isEmpty()) {
+            foreach ($indentAttachments as $attachment) {
+                unlink(storage_path('app/'.$attachment->file_path));
+                $attachment->delete();
+            }
+        }
         return redirect()->route('indent.index')->with('success', 'Indent Deleted Successfully');
     }
 

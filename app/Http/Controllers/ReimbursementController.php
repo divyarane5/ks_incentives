@@ -118,7 +118,7 @@ class ReimbursementController extends Controller
                     }
 
                     if (auth()->user()->can('reimbursement-delete')) {
-                        $actions .= '<button class="dropdown-item" onclick="deleteReimbursement('.$row->id.')"
+                        $actions .= '<button type="button" class="dropdown-item" onclick="deleteReimbursement('.$row->id.')"
                                         ><i class="bx bx-trash me-1"></i> Delete</button>
                                     <form id="'.$row->id.'" action="'.route('reimbursement.destroy', $row->id).'" method="POST" class="d-none">
                                         '.csrf_field().'
@@ -220,7 +220,11 @@ class ReimbursementController extends Controller
 
     public function destroy($id)
     {
-        Reimbursement::where('id', $id)->delete();
+        $reimbursement = Reimbursement::find($id);
+        if ($reimbursement->file_path != "") {
+            unlink(storage_path('app/'.$reimbursement->file_path));
+        }
+        $reimbursement->delete();
         return redirect()->route('reimbursement.index')->with('success', 'Reimbursement Deleted Successfully');
     }
 
