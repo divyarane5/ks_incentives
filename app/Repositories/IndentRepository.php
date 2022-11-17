@@ -13,6 +13,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
+use Exception;
 
 class IndentRepository implements IndentRepositoryInterface
 {
@@ -324,14 +325,18 @@ class IndentRepository implements IndentRepositoryInterface
 
     public function indentApprovalEmail($indentItem)
     {
-        $user = User::find($indentItem->created_by);
-        $arr = [
-            'user' => $user->name,
-            'indent_id' => $indentItem->indent_id,
-            'indent_code' => $indentItem->indent->indent_code
-        ];
-        $approvalToEmails = User::whereIn('id', explode(",", $indentItem->next_approver_id))->get()->pluck('email')->toArray();
-        Mail::to('vrushali.bangar@homebazaar.com')->send(new IndentApprovalEmail($arr)); //$approvalToEmails
+        try {
+            $user = User::find($indentItem->created_by);
+            $arr = [
+                'user' => $user->name,
+                'indent_id' => $indentItem->indent_id,
+                'indent_code' => $indentItem->indent->indent_code
+            ];
+            $approvalToEmails = User::whereIn('id', explode(",", $indentItem->next_approver_id))->get()->pluck('email')->toArray();
+            Mail::to($approvalToEmails)->send(new IndentApprovalEmail($arr)); //$approvalToEmails
+        } catch (Exception $e) {
+            \Log::emergency($e);
+        }
     }
 
     public function IndentCountByStatus()
