@@ -41,11 +41,12 @@
             serverSide: true,
             ajax: "{{ route('template.index') }}",
             columns: [
-                {data: 'name', name: 'name'},
-                {data: 'created_at', name: 'created_at'},
-                {data: 'updated_at', name: 'updated_at'},
+                {data: 'name', name: 'templates.name'},
+                {data: 'created_at', name: 'templates.created_at'},
+                {data: 'updated_at', name: 'templates.updated_at'},
                 {data: 'action', 'sortable': false},
-            ]
+            ],
+            order: [1, 'desc']
       });
 
     });

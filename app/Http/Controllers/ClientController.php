@@ -1,10 +1,11 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Client;
 use App\Models\Template;
-use App\Models\User;
 use App\Http\Requests\ClientRequest;
+use App\Interfaces\ClientRepositoryInterface;
 use DataTables;
 use Illuminate\Http\Request;
 use App\Models\ClientReference;
@@ -14,23 +15,24 @@ use Illuminate\Support\Facades\Mail;
 
 class ClientController extends Controller
 {
-    function __construct()
+    private $clientRepository;
+    function __construct(ClientRepositoryInterface $clientRepository)
     {
         $this->middleware('permission:referral-client-view', ['only' => ['index']]);
         $this->middleware('permission:referral-client-create', ['only' => ['create','store']]);
         $this->middleware('permission:referral-client-edit', ['only' => ['edit','update']]);
         $this->middleware('permission:referral-client-delete', ['only' => ['destroy']]);
-        $this->_Client=new Client();
+        $this->clientRepository = $clientRepository;
     }
 
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Client::all();
+            $data = Client::select(['clients.*', 'templates.name as template_name'])->join('templates', 'clients.template_id', '=', 'templates.id');
             return DataTables::of($data)
-                // ->addColumn('template_name', function ($row) {
-                //     return $row->template_name;
-                // })
+                ->addColumn('template_name', function ($row) {
+                    return $row->template_name;
+                })
                 ->addColumn('sales_person', function ($row) {
                     return $row->sales_person;
                 })
@@ -43,7 +45,7 @@ class ClientController extends Controller
                 ->addColumn('subject_name', function ($row) {
                     return $row->subject_name;
                 })
-                ->addColumn('click', function ($row) {
+                ->addColumn('status', function ($row) {
                     if($row->click == 1){
                         $click = 'Read';
                     }else{
@@ -59,6 +61,9 @@ class ClientController extends Controller
                 })
                 ->addColumn('action', function ($row) {
                     $actions = '';
+                    $actions .= '<a class="dropdown-item" target=”_blank”  href="'.route('client.show', $row->id).'"
+                                        ><i class="bx bx-show me-1"></i> View</a>';
+
                     if (auth()->user()->can('referral-client-edit')) {
                         $actions .= '<a class="dropdown-item" href="'.route('client.edit', $row->id).'"
                                         ><i class="bx bx-edit-alt me-1"></i> Edit</a>';
@@ -72,13 +77,9 @@ class ClientController extends Controller
                                         '.method_field('delete').'
                                     </form>';
                     }
-                    if (auth()->user()->can('referral-client-view')) {
-                        $actions .= '<a class="dropdown-item" target=”_blank”  href="'.route('client.show', $row->id).'"
-                                        ><i class="bx bx-edit-alt me-1"></i> View</a>';
-                    }
-                    if (auth()->user()->can('referral-client-view')) {
+                    if (auth()->user()->can('referral-client-send-email')) {
                         $actions .= '<a class="dropdown-item" target=”_blank”  href="'.url('send_referral_mail/'.$row->id).'"
-                                        ><i class="bx bx-edit-alt me-1"></i> Send Email</a>';
+                                        ><i class="bx bx-send me-1"></i> Send Email</a>';
                     }
                     if (!empty($actions)) {
                         return '<div class="dropdown">
@@ -106,7 +107,7 @@ class ClientController extends Controller
 
     public function store(ClientRequest $request)
     {
-        //create location
+        //create client
         $client = new Client();
         $client->template_id = $request->input('template_id');
         $client->sales_person = $request->input('sales_person');
@@ -140,53 +141,39 @@ class ClientController extends Controller
 
     public function destroy($id)
     {
-        Location::where('id', $id)->delete();
+        Client::where('id', $id)->delete();
         return redirect()->route('client.index')->with('success', 'Client Deleted Successfully');
     }
 
     public function show($id)
     {
-       
-        $client=$this->_Client->getAllData($id);
-       // $client = Client::find($id);
+        $client = $this->clientRepository->getClientDetails($id);
         return view('client.show', compact('id', 'client'));
     }
 
     public function click($id)
     {
-        Client::where('id', $id)
-                ->update([
-                    'click' => 1
-                    ]);
+        Client::where('id', $id)->update(['click' => 1]);
     }
-    
+
     public function sendReferralMail($id)
     {
-        $client=$this->_Client->getAllData($id);
+        $client = $this->clientRepository->getClientDetails($id);
         $arr = [
             'id' => $id,
-            'client' => $client,
-           // 'user' => $user
+            'client' => $client
         ];
-        Mail::to('divya.rane@homebazaar.com')->send(new ReferralMail($arr)); //$approvalTo->email
+        Mail::to('vrushali.bangar@homebazaar.com')->send(new ReferralMail($arr));// $client->client_email
         return redirect()->route('client.index')->with('success', 'Mail Sent Successfully');
     }
 
     public function reference($id)
     {
-       
-        $client=$this->_Client->getAllData($id);
-        
-        // $user = User::find($client->u_id);
-        // print_r($user); exit;
+        $client = $this->clientRepository->getClientDetails($id);
         return view('client.reference', compact('id', 'client'));
-        //return view('client.show', ['client' => $client]);
-
     }
     public function rthankyou(ClientRequest $request)
     {
-       //echo $client_name1; 
-      
         $rclient = new ReferralClient();
         $rclient->name = $request->input('name_inquiry');
         $rclient->email = $request->input('email_inquiry');
@@ -194,7 +181,7 @@ class ClientController extends Controller
         $rclient->userid = $request->input('userid');
         $rclient->form_type = $request->input('referrals');
         $rclient->save();
-        
+
         if(!empty($request->input('client_name1'))){
             $crclient = new ClientReference();
             $crclient->referral_client_id = $rclient->id;
@@ -236,46 +223,33 @@ class ClientController extends Controller
             $crclient->save();
         }
         $name = $request->input('name_inquiry');
-      return view('client.rthankyou',compact('name'));
-     //  return redirect()->route('client.rthankyou')->with('success', 'abcd');
+        return view('client.rthankyou',compact('name'));
 
     }
-    
+
     public function service($id,$sname)
     {
-      // echo $id; echo $sname; exit;
-        $client=$this->_Client->getAllData($id);
-        
-        // $user = User::find($client->u_id);
-        // print_r($user); exit;
+        $client = $this->clientRepository->getClientDetails($id);
         return view('client.service', compact('id', 'client','sname'));
-        //return view('client.show', ['client' => $client]);
-
     }
-    
+
     public function sthankyou(ClientRequest $request)
     {
-       //echo $client_name1; 
-      
-       $rclient = new ReferralClient();
-       $rclient->name = $request->input('name_inquiry');
-       $rclient->email = $request->input('email_inquiry');
-       $rclient->mobile = $request->input('mobileno');
-       $rclient->userid = $request->input('userid');
-       $rclient->form_type = $request->input('form_type');
-       $rclient->loanamount = $request->input('loanamount');
-       $rclient->preferredbank = $request->input('preferredbank');
-       $rclient->remarks = $request->input('remarks');
-       $rclient->address = $request->input('address');
-       $rclient->assistance = $request->input('assistance');
-       $rclient->save();
-       
+        $rclient = new ReferralClient();
+        $rclient->name = $request->input('name_inquiry');
+        $rclient->email = $request->input('email_inquiry');
+        $rclient->mobile = $request->input('mobileno');
+        $rclient->userid = $request->input('userid');
+        $rclient->form_type = $request->input('form_type');
+        $rclient->loanamount = $request->input('loanamount');
+        $rclient->preferredbank = $request->input('preferredbank');
+        $rclient->remarks = $request->input('remarks');
+        $rclient->address = $request->input('address');
+        $rclient->assistance = $request->input('assistance');
+        $rclient->save();
+
         $name = $request->input('name_inquiry');
-      return view('client.sthankyou',compact('name'));
-     //  return redirect()->route('client.rthankyou')->with('success', 'abcd');
+        return view('client.sthankyou',compact('name'));
 
     }
-
-        
-        
 }

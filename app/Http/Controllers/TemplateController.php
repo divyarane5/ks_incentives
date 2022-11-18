@@ -1,6 +1,6 @@
 <?php
-
 namespace App\Http\Controllers;
+
 use App\Models\Template;
 use App\Http\Requests\TemplateRequest;
 use DataTables;
@@ -14,13 +14,12 @@ class TemplateController extends Controller
         $this->middleware('permission:referral-template-create', ['only' => ['create','store']]);
         $this->middleware('permission:referral-template-edit', ['only' => ['edit','update']]);
         $this->middleware('permission:referral-template-delete', ['only' => ['destroy']]);
-
     }
 
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Template::all();
+            $data = Template::query();
             return DataTables::of($data)
                 ->addColumn('name', function ($row) {
                     return $row->name;
@@ -36,6 +35,9 @@ class TemplateController extends Controller
                 })
                 ->addColumn('action', function ($row) {
                     $actions = '';
+                    $actions .= '<a class="dropdown-item" href="'.route('template.show', $row->id).'"
+                                        ><i class="bx bx-show me-1"></i> View</a>';
+
                     if (auth()->user()->can('referral-template-edit')) {
                         $actions .= '<a class="dropdown-item" href="'.route('template.edit', $row->id).'"
                                         ><i class="bx bx-edit-alt me-1"></i> Edit</a>';
@@ -48,10 +50,6 @@ class TemplateController extends Controller
                                         '.csrf_field().'
                                         '.method_field('delete').'
                                     </form>';
-                    }
-                    if (auth()->user()->can('referral-template-view')) {
-                        $actions .= '<a class="dropdown-item" href="'.route('template.show', $row->id).'"
-                                        ><i class="bx bx-edit-alt me-1"></i> View</a>';
                     }
                     if (!empty($actions)) {
                         return '<div class="dropdown">

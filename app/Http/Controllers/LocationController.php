@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Location;
 use App\Http\Requests\LocationRequest;
 use DataTables;

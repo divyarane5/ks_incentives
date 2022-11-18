@@ -71,7 +71,7 @@ $json1 = json_decode($response1, TRUE);
                 <div class="row">
                 <div class="mb-3 col-md-6">
                     <label class="form-label" for="project_name">Project Name<span class="start-mark">*</span></label>
-                    <select id="project_name" name="project_name" class="form-select" @error('project_name') autofocus @enderror required>
+                    <select id="project_name" name="project_name" class="" @error('project_name') autofocus @enderror required>
                         <!-- <option>Select Template</option> -->
                         @if (!empty($json))
                             @foreach ($json['data'] as $index => $temp)
@@ -87,7 +87,7 @@ $json1 = json_decode($response1, TRUE);
                 </div>
                 <div class="mb-3 col-md-6">
                     <label class="form-label" for="developer_name">Developer Name<span class="start-mark">*</span></label>
-                    <select id="developer_name" name="developer_name" class="form-select" @error('developer_name') autofocus @enderror required>
+                    <select id="developer_name" name="developer_name" class="" @error('developer_name') autofocus @enderror required>
                         <!-- <option>Select Template</option> -->
                         @if (!empty($json1))
                             @foreach ($json1['data'] as $index => $temp1)
@@ -136,7 +136,7 @@ $json1 = json_decode($response1, TRUE);
                             <strong>{{ $message }}</strong>
                         </span>
                     @enderror
-                </div>    
+                </div>
                 <div class="mb-3 col-md-6">
                     <label class="form-label" for="configuration">Configuration<span class="start-mark">*</span></label>
                     <input name="configuration" class="form-control" id="configuration" value="{{ old('configuration') }}" required/>
@@ -182,7 +182,7 @@ $json1 = json_decode($response1, TRUE);
                         </span>
                     @enderror
                 </div>
-                
+
 
                     <div>
                         <button type="submit" class="btn btn-primary">Submit</button>

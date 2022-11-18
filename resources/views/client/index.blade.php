@@ -18,12 +18,11 @@
             <table id="client-datatable" class="table table-striped" width="100%">
             <thead>
                 <tr>
-                   
-                    <!-- <th>Template Name</th> -->
                     <th>Sales Person</th>
                     <th>Client Name</th>
                     <th>Client Email</th>
                     <th>Subject Name</th>
+                    <th>Template Name</th>
                     <th>Status</th>
                     <th>Created On</th>
                     <th>Modified On</th>
@@ -47,14 +46,14 @@
             serverSide: true,
             ajax: "{{ route('client.index') }}",
             columns: [
-                // {data: 'template_id', name: 'template_id'},
-                {data: 'sales_person', name: 'sales_person'},
-                {data: 'client_name', name: 'client_name'},
-                {data: 'client_email', name: 'client_email'},
-                {data: 'subject_name', name: 'subject_name'},
-                {data: 'click', name: 'click'},
-                {data: 'created_at', name: 'created_at'},
-                {data: 'updated_at', name: 'updated_at'},
+                {data: 'sales_person', name: 'clients.sales_person'},
+                {data: 'client_name', name: 'clients.client_name'},
+                {data: 'client_email', name: 'clients.client_email'},
+                {data: 'subject_name', name: 'clients.subject_name'},
+                {data: 'template_name', name: 'templates.name'},
+                {data: 'status', name: 'click'},
+                {data: 'created_at', name: 'clients.created_at'},
+                {data: 'updated_at', name: 'clients.updated_at'},
                 {data: 'action', 'sortable': false},
             ]
       });

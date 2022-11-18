@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\PaymentMethod;
 use App\Http\Requests\PaymentMethodRequest;
 use DataTables;

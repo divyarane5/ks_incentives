@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Department;
 use App\Http\Requests\DepartmentRequest;
 use DataTables;

@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Booking;
 use App\Models\User;
 use App\Http\Requests\BookingRequest;
@@ -8,7 +9,7 @@ use DataTables;
 use Illuminate\Http\Request;
 use App\Mail\BookingMail;
 use Illuminate\Support\Facades\Mail;
-use DB; 
+use DB;
 class BookingController extends Controller
 {
     function __construct()
@@ -84,7 +85,7 @@ class BookingController extends Controller
                         $actions .= '<a class="dropdown-item" target=”_blank”  href="'.url('send_booking_mail/'.$row->id).'"
                                         ><i class="bx bx-edit-alt me-1"></i> Send Email</a>';
                     }
-                    
+
                     if (!empty($actions)) {
                         return '<div class="dropdown">
                                         <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
@@ -95,7 +96,7 @@ class BookingController extends Controller
                                         </div>
                                     </div>';
                     }
-                    
+
                     return '';
                 })
                 ->rawColumns(['action'])
@@ -168,7 +169,7 @@ class BookingController extends Controller
                    ->join('designations', 'users.designation_id','=','designations.id','inner')
 	               ->where('users.id',$booking->created_by)
 	               ->first();
-                
+
         return view('booking.show', compact('id', 'booking','user'));
 
     }

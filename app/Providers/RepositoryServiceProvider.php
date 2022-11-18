@@ -2,12 +2,14 @@
 
 namespace App\Providers;
 
+use App\Interfaces\ClientRepositoryInterface;
 use App\Interfaces\ExpenseRepositoryInterface;
 use App\Interfaces\IndentConfigurationRepositoryInterface;
 use App\Interfaces\IndentRepositoryInterface;
 use App\Interfaces\ReimbursementRepositoryInterface;
 use App\Interfaces\RoleRepositoryInterface;
 use App\Interfaces\UserRepositoryInterface;
+use App\Repositories\ClientRepository;
 use App\Repositories\ExpenseRepository;
 use App\Repositories\IndentConfigurationRepository;
 use App\Repositories\IndentRepository;
@@ -31,6 +33,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(IndentRepositoryInterface::class, IndentRepository::class);
         $this->app->bind(ExpenseRepositoryInterface::class, ExpenseRepository::class);
         $this->app->bind(ReimbursementRepositoryInterface::class, ReimbursementRepository::class);
+        $this->app->bind(ClientRepositoryInterface::class, ClientRepository::class);
     }
 
     /**

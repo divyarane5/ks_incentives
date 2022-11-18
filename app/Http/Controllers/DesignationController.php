@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Designation;
 use App\Http\Requests\DesignationRequest;
 use DataTables;

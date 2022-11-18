@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\ReferralClient;
 use App\Models\ClientReference;
 use App\Http\Requests\ReferralClientRequest;
@@ -31,13 +32,13 @@ class ReferralClientController extends Controller
                     return $row->mobile;
                 })
                 ->addColumn('status', function ($row) {
-                    if($row->status == 0){ 
-                        $r = "Pending"; 
-                    }elseif($row->status == 1){ 
+                    if($row->status == 0){
+                        $r = "Pending";
+                    }elseif($row->status == 1){
                         $r = "In Progress";
-                    }elseif($row->status == 2){ 
+                    }elseif($row->status == 2){
                         $r = "Completed";
-                    }elseif($row->status == 3){ 
+                    }elseif($row->status == 3){
                         $r = "Deleted (Invalid)";
                     }
                     return $r;
@@ -58,7 +59,7 @@ class ReferralClientController extends Controller
                         $actions .= '<a class="dropdown-item" href="'.route('client_response.show', $row->id).'"
                                         ><i class="bx bx-edit-alt me-1"></i> View Details</a>';
                     }
-       
+
                     if (!empty($actions)) {
                         return '<div class="dropdown">
                                         <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
@@ -77,7 +78,7 @@ class ReferralClientController extends Controller
         return view('response.index');
     }
 
-   
+
     // public function edit($id)
     // {
     //     $location = Location::find($id);
@@ -89,17 +90,17 @@ class ReferralClientController extends Controller
         $rclient = ReferralClient::find($id);
         $rclient->status = $request->input('status');
         $rclient->save();
-   
+
         return redirect()->back()->with(['success' => 'Status Updated Successfully']);
-       
-        
+
+
     }
 
     public function show($id)
     {
         $rclient = ReferralClient::find($id);
         $creferences = ClientReference::where('referral_client_id','=',$id)->get();
-        
+
         return view('response.show', compact('id', 'rclient','creferences'));
     }
 
@@ -112,7 +113,7 @@ class ReferralClientController extends Controller
             $data = ReferralClient::where('form_type','!=','referrals')->get();
             return DataTables::of($data)
                 ->addColumn('form_type', function ($row) {
-                    if($row->form_type == 'homeloan'){ 
+                    if($row->form_type == 'homeloan'){
                         $service = "Home Loan";
                     }elseif($row->form_type == 'collection'){
                         $service = "Collection";
@@ -133,13 +134,13 @@ class ReferralClientController extends Controller
                     return $row->mobile;
                 })
                 ->addColumn('status', function ($row) {
-                    if($row->status == 0){ 
-                        $r = "Pending"; 
-                    }elseif($row->status == 1){ 
+                    if($row->status == 0){
+                        $r = "Pending";
+                    }elseif($row->status == 1){
                         $r = "In Progress";
-                    }elseif($row->status == 2){ 
+                    }elseif($row->status == 2){
                         $r = "Completed";
-                    }elseif($row->status == 3){ 
+                    }elseif($row->status == 3){
                         $r = "Deleted (Invalid)";
                     }
                     return $r;
@@ -160,7 +161,7 @@ class ReferralClientController extends Controller
                         $actions .= '<a class="dropdown-item" href="'.route('client_response.show', $row->id).'"
                                         ><i class="bx bx-edit-alt me-1"></i> View Details</a>';
                     }
-       
+
                     if (!empty($actions)) {
                         return '<div class="dropdown">
                                         <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">

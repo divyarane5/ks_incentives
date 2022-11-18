@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Models\Vendor;
 use App\Http\Requests\VendorRequest;
 use App\Models\Expense;
