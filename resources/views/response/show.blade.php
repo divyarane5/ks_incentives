@@ -125,7 +125,7 @@
             @csrf
             @method('put')
             <input type="hidden" name="id" value="{{ $id }}">
-            @form_hidden('form_type', $rclient->form_type)
+            <input type="hidden" name="form_type" value="{{ $rclient->form_type }}">
             <div class="card-body">
                 <div class="row">
 

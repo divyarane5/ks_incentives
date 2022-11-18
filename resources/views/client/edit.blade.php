@@ -20,7 +20,7 @@
                     <div class="mb-3 col-md-6">
                         <label class="form-label" for="template_id">Template<span class="start-mark">*</span></label>
                         <select id="template_id" name="template_id" class="" @error('template_id') autofocus @enderror required>
-                            <option>Select Template</option>
+                            <option value="">Select Template</option>
                             @if (!empty($template))
                                 @foreach ($template as $key => $temp)
                                     <option value="{{ $temp->id }}" {{ ($temp->id == ((old('template_id') != "") ? old('template_id') : $client->template_id) ? 'selected' : '') }}>{{ $temp->name }}</option>
