@@ -163,7 +163,7 @@ class ClientController extends Controller
             'id' => $id,
             'client' => $client
         ];
-        Mail::to('vrushali.bangar@homebazaar.com')->send(new ReferralMail($arr));// $client->client_email
+        Mail::to($client->client_email)->send(new ReferralMail($arr));// $client->client_email
         return redirect()->route('client.index')->with('success', 'Mail Sent Successfully');
     }
 
