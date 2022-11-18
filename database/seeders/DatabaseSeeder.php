@@ -17,7 +17,8 @@ class DatabaseSeeder extends Seeder
             PermissionTableSeeder::class,
             CreateAdminUserSeeder::class,
             PaymentMethodSeeder::class,
-            BusinessUnitSeeder::class
+            BusinessUnitSeeder::class,
+            CreateTemplateSeeder::class
         ]);
     }
 }
