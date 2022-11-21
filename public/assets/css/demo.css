@@ -367,3 +367,7 @@ select {
     -ms-transform: none;
     -o-transform: none;
 }
+
+#indent_item_table td, #indent_payment_table td {
+    padding: 0.625rem 0.25rem;
+}
