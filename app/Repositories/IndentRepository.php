@@ -50,10 +50,10 @@ class IndentRepository implements IndentRepositoryInterface
                 $indentItem->gst = $gst;
                 $indentItem->tds = $tds;
                 $subTotal = ($indentItem->quantity*$indentItem->unit_price);
-                $total = (($subTotal + $gst) - $tds);
-                $indentItem->total = $total;
+                $subTotal = (($subTotal + $gst) - $tds);
+                $indentItem->total = $subTotal;
                 $indentItem->save();
-                $total += $total;
+                $total += $subTotal;
                 $this->updateIndentItemApproval($indentItem);
 
             }
@@ -140,10 +140,10 @@ class IndentRepository implements IndentRepositoryInterface
             $indentItem->gst = $gst;
             $indentItem->tds = $tds;
             $subTotal = ($indentItem->quantity*$indentItem->unit_price);
-            $total = (($subTotal + $gst) - $tds);
-            $indentItem->total = $total;
+            $subTotal = (($subTotal + $gst) - $tds);
+            $indentItem->total = $subTotal;
             $indentItem->save();
-            $total += $indentItem->total;
+            $total += $subTotal;
 
             $this->updateIndentItemApproval($indentItem);
         }

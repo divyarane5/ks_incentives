@@ -24,7 +24,18 @@ class ClientRequest extends FormRequest
     public function rules()
     {
         return [
-            //
+            'template_id' => 'required',
+            'sales_person' => 'required',
+            'client_name' => 'required',
+            'client_email' => 'required|email',
+            'subject_name' => 'required'
+        ];
+    }
+
+    public function messages()
+    {
+        return [
+            'template_id' => 'The template field is required'
         ];
     }
 }

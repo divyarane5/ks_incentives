@@ -71,7 +71,6 @@
                         <div class="mb-3 approver px-2">
                             <label for="approver1" class="form-label">Approver 1</label>
                             <select name="approver1[]"  class="multiselect-dropdown" id="approver1" aria-label="Approver 1" multiple>
-                            <option value="" >Select Approver</option>
                             @if(!empty($users))
                                 @foreach ($users as $user)
                                     <option value="{{ $user->id }}" {{ (!empty(old('approver1')) && in_array($user->id, old('approver1'))) ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -87,7 +86,6 @@
                         <div class="mb-3 approver px-2">
                             <label for="approver2" class="form-label">Approver 2</label>
                             <select name="approver2[]"  class="multiselect-dropdown" id="approver2" aria-label="Approver 2" multiple>
-                            <option value="" >Select Approver</option>
                             @if(!empty($users))
                                 @foreach ($users as $user)
                                     <option value="{{ $user->id }}" {{ (!empty(old('approver2')) && in_array($user->id, old('approver2'))) ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -103,7 +101,6 @@
                         <div class="mb-3 approver px-2">
                             <label for="approver3" class="form-label">Approver 3</label>
                             <select name="approver3[]"  class="multiselect-dropdown" id="approver3" aria-label="User" multiple>
-                            <option value="" >Select Approver</option>
                             @if(!empty($users))
                                 @foreach ($users as $user)
                                     <option value="{{ $user->id }}" {{ (!empty(old('approver3')) && in_array($user->id, old('approver3'))) ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -119,7 +116,6 @@
                         <div class="mb-3 approver px-2">
                             <label for="approver4" class="form-label">Approver 4</label>
                             <select name="approver4[]"  class="multiselect-dropdown" id="approver4" aria-label="User" multiple>
-                            <option value="" >Select Approver</option>
                             @if(!empty($users))
                                 @foreach ($users as $user)
                                     <option value="{{ $user->id }}" {{ (!empty(old('approver4')) && in_array($user->id, old('approver4'))) ? 'selected' : '' }}>{{ $user->name }}</option>
@@ -135,7 +131,6 @@
                         <div class="mb-3 approver px-2">
                             <label for="approver5" class="form-label">Approver 5</label>
                             <select name="approver5[]"  class="multiselect-dropdown" id="approver5" aria-label="Approver" multiple>
-                            <option value="" >Select Approver</option>
                             @if(!empty($users))
                                 @foreach ($users as $user)
                                     <option value="{{ $user->id }}" {{ (!empty(old('approver5')) && in_array($user->id, old('approver5'))) ? 'selected' : '' }}>{{ $user->name }}</option>

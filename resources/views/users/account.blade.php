@@ -57,7 +57,7 @@
                             </div>
                             <div class="mb-3 col-md-6">
                                 <label for="email" class="form-label">E-mail</label>
-                                <input class="form-control" type="text" id="email" name="email" value="{{ (old('email') != "") ? old('email') : auth()->user()->email }}" placeholder="john.doe@example.com" @error('email') autofocus @enderror readonly />
+                                <input class="form-control" type="text" id="email" value="{{ (old('email') != "") ? old('email') : auth()->user()->email }}" placeholder="john.doe@example.com" @error('email') autofocus @enderror readonly />
                                 @error('email')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
