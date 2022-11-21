@@ -28,7 +28,6 @@
                     <div class="mb-3 col-md-6">
                         <label for="vendors" class="form-label">Vendors</label>
                         <select name="vendors[]" multiple class="" id="vendors" aria-label="Vendors">
-                          <option value="" >Select Vendors</option>
                           @if(!empty($vendors))
                             @foreach ($vendors as $vendor)
                                 <option value="{{ $vendor->id }}" {{ in_array($vendor->id, $expenseVendors) ? 'selected' : '' }}>{{ $vendor->name }}</option>

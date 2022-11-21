@@ -127,7 +127,7 @@ class IndentController extends Controller
     {
         $locations = Location::select(['id', 'name'])->orderBy('name', 'asc')->get();
         $businessUnits = BusinessUnit::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $expenses = Expense::leftJoin('indent_configurations', 'expenses.id', '=', 'indent_configurations.expense_id')->select(['expenses.id', 'expenses.name']);
+        $expenses = Expense::distinct()->select(['expenses.id', 'expenses.name'])->leftJoin('indent_configurations', 'expenses.id', '=', 'indent_configurations.expense_id');
         if (!auth()->user()->can('indent-view-all') && auth()->user()->can('indent-view-own')) {
             $expenses = $expenses->where('indent_configurations.user_id', auth()->user()->id);
         }
@@ -177,7 +177,7 @@ class IndentController extends Controller
         $indent = Indent::where('id', $id)->with('indentItems', 'indentPayments', 'indentAttachments')->first();
         $locations = Location::select(['id', 'name'])->orderBy('name', 'asc')->get();
         $businessUnits = BusinessUnit::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $expenses = Expense::leftJoin('indent_configurations', 'expenses.id', '=', 'indent_configurations.expense_id')->select(['expenses.id', 'expenses.name']);
+        $expenses = Expense::distinct()->select(['expenses.id', 'expenses.name'])->leftJoin('indent_configurations', 'expenses.id', '=', 'indent_configurations.expense_id');
         if (!auth()->user()->can('indent-view-all') && auth()->user()->can('indent-view-own')) {
             $expenses = $expenses->where('indent_configurations.user_id', auth()->user()->id);
         }
