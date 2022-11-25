@@ -113,5 +113,5 @@ Route::group(['middleware' => 'auth'], function() {
 //Joining form
 Route::get('joining_form/create/{id}', [App\Http\Controllers\JoiningFormController::class, 'create'])->name('joining_form.create');
 Route::post('joining_form', [App\Http\Controllers\JoiningFormController::class, 'store'])->name('joining_form.store');
-Route::get('joining_form/thank_you', [App\Http\Controllers\JoiningFormController::class, 'thankYou'])->name('joining_form.thank_you');
-Route::get('joining_form/already_responded', [App\Http\Controllers\JoiningFormController::class, 'alreadyResponded'])->name('joining_form.already_responded');
+Route::get('thank_you_joining_form', [App\Http\Controllers\JoiningFormController::class, 'thankYou'])->name('joining_form.thank_you');
+Route::get('already_responded_joining_form', [App\Http\Controllers\JoiningFormController::class, 'alreadyResponded'])->name('joining_form.already_responded');
