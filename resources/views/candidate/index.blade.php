@@ -51,7 +51,8 @@
                 {data: 'created_at', name: 'candidates.created_at'},
                 {data: 'created_by', name: 'users.name'},
                 {data: 'action', 'sortable': false},
-            ]
+            ],
+            order: [4, 'desc']
       });
 
     });
