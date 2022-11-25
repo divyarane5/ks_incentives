@@ -101,7 +101,7 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('indent_payments', [App\Http\Controllers\ReportController::class, 'indentPayments'])->name('reports.indent_payments');
     Route::get('reimbursement_payments', [App\Http\Controllers\ReportController::class, 'reimbursementPayments'])->name('reports.reimbursement_payments');
 
-    Route::resource('joining_form', App\Http\Controllers\JoiningFormController::class)->except(['create']);
+    Route::resource('joining_form', App\Http\Controllers\JoiningFormController::class)->except(['create', 'store']);
     Route::get('joining_form/download_pdf/{id}', [App\Http\Controllers\JoiningFormController::class, 'downloadPdf'])->name('joining_form.download_pdf');
 
     //Candidate
@@ -112,5 +112,6 @@ Route::group(['middleware' => 'auth'], function() {
 
 //Joining form
 Route::get('joining_form/create/{id}', [App\Http\Controllers\JoiningFormController::class, 'create'])->name('joining_form.create');
+Route::post('joining_form', [App\Http\Controllers\JoiningFormController::class, 'store'])->name('joining_form.store');
 Route::get('joining_form/thank_you', [App\Http\Controllers\JoiningFormController::class, 'thankYou'])->name('joining_form.thank_you');
 Route::get('joining_form/already_responded', [App\Http\Controllers\JoiningFormController::class, 'alreadyResponded'])->name('joining_form.already_responded');
