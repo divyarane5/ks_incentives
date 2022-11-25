@@ -27,6 +27,10 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole('Superadmin') ? true : null;
+        });
+
         Gate::define('indent-approval', function($user) {
             $userId = auth()->user()->id;
             $indentConfigurationCount = IndentConfiguration::whereRaw('FIND_IN_SET("'.$userId.'", approver1)')

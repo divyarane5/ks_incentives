@@ -30,5 +30,6 @@ class IndentApprovalEmail extends Mailable
     public function build()
     {
         return $this->subject('New Indent Approval Request')->with($this->data)->view('email-templates.indent_approval');
+        //return $this->subject('Emailer template')->view('email-templates.test');
     }
 }

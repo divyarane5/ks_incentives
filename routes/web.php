@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\RoleController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -101,6 +100,17 @@ Route::group(['middleware' => 'auth'], function() {
     //Reports
     Route::get('indent_payments', [App\Http\Controllers\ReportController::class, 'indentPayments'])->name('reports.indent_payments');
     Route::get('reimbursement_payments', [App\Http\Controllers\ReportController::class, 'reimbursementPayments'])->name('reports.reimbursement_payments');
+
+    Route::resource('joining_form', App\Http\Controllers\JoiningFormController::class)->except(['create']);
+    Route::get('joining_form/download_pdf/{id}', [App\Http\Controllers\JoiningFormController::class, 'downloadPdf'])->name('joining_form.download_pdf');
+
+    //Candidate
+    Route::resource('candidate', App\Http\Controllers\CandidateController::class);
+    Route::get('send_joining_form/{id}', [App\Http\Controllers\CandidateController::class, 'sendJoiningForm'])->name('candidate.send_form');
+    Route::get('candidate.change_status/{id}/{status}', [App\Http\Controllers\CandidateController::class, 'changeStatus'])->name('candidate.change_status');
 });
 
-
+//Joining form
+Route::get('joining_form/create/{id}', [App\Http\Controllers\JoiningFormController::class, 'create'])->name('joining_form.create');
+Route::get('joining_form/thank_you', [App\Http\Controllers\JoiningFormController::class, 'thankYou'])->name('joining_form.thank_you');
+Route::get('joining_form/already_responded', [App\Http\Controllers\JoiningFormController::class, 'alreadyResponded'])->name('joining_form.already_responded');

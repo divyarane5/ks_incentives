@@ -62,7 +62,7 @@
                                 $companies = config('constants.COMPANY_OPTIONS');
                             @endphp
                             @foreach ($companies as $key => $company)
-                                <option value="{{ $company }}" {{ ($key == ((old('entity') != "") ? old('entity') : $user->entity) ? 'selected' : '') }}>{{ $company }}</option>
+                                <option value="{{ $company }}" {{ ($company == ((old('entity') != "") ? old('entity') : $user->entity) ? 'selected' : '') }}>{{ $company }}</option>
                             @endforeach
                         </select>
                         @error('entity')

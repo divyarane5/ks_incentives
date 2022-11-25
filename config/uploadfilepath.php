@@ -3,7 +3,8 @@
 return [
     'USER_PROFILE_PHOTO' => 'uploads/users',
     'INDENT_FILES' => 'uploads/indents',
-    'REIMBURSEMENT_FILES' => 'uploads/reimbursement'
+    'REIMBURSEMENT_FILES' => 'uploads/reimbursement',
+    'CANDIDATE_PROFILE_PHOTO' => 'uploads/candidate'
 ]
 
 ?>

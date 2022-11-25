@@ -231,5 +231,14 @@
         </ul>
     </li>
     @endcanany
+
+    @can('candidate-view')
+    <li class="menu-item {{ (Request::segment(1) == 'candidate') ? 'active': '' }}">
+        <a href="{{ route('candidate.index') }}" class="menu-link">
+            <i class="menu-icon tf-icons bx bx-user"></i>
+            <div data-i18n="Analytics">Candidate</div>
+        </a>
+    </li>
+    @endcan
     </ul>
 </aside>

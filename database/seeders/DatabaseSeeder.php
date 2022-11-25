@@ -18,7 +18,8 @@ class DatabaseSeeder extends Seeder
             CreateAdminUserSeeder::class,
             PaymentMethodSeeder::class,
             BusinessUnitSeeder::class,
-            CreateTemplateSeeder::class
+            CreateTemplateSeeder::class,
+            JoiningFormPermissionsSeeder::class
         ]);
     }
 }

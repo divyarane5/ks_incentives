@@ -47,6 +47,20 @@ return [
                     'settled' => 'Settled'
                 ],
     'REIMBURSEMENT_CODE_PREFIX' => 'HB-RMB-',
+    'MARITAL_STATUS_OPTIONS' => [
+                    'single' => 'Single',
+                    'married' => 'Married',
+                    'divorced' => 'Divorced'
+                ],
+    'CANDIDATE_STATUS' => [
+        'ready' => 'Ready to process',
+        'sent' => 'Application Sent',
+        'submitted' => 'Application Submitted',
+        'approved' => 'Approved',
+        'rejected' => 'Rejected',
+        'closed' => 'Closed'
+    ],
+    'EMPLOYEE_REACHED_TIME' => '11:00 AM',
 ]
 
 ?>
