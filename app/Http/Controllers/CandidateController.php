@@ -36,7 +36,7 @@ class CandidateController extends Controller
                                         ><i class="bx bx-edit-alt me-1"></i> Edit Joining Form</a>';
                     }
 
-                    if ($row->status == "ready" && $row->status == "sent") {
+                    if ($row->status == "ready" || $row->status == "sent") {
                         $actions .= '<a class="dropdown-item" href="'.route('candidate.send_form', $row->id).'"
                                     ><i class="bx bx-send  me-1"></i> Send Joining Form</a>';
                     }
