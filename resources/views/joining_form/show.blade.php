@@ -52,7 +52,9 @@
                 <td style="width: 40%"><b>First Name:</b> {{ $joiningForm->first_name }}</td>
                 <td style="width: 40%"><b>Last Name:</b> {{ $joiningForm->last_name }}</td>
                 <td rowspan="3" style="border-left: 1px solid black;width: 20%;padding:0;text-align:center">
+                    @if ($joiningForm->photo != "")
                     <img src="{{ url('storage/app/'.$joiningForm->photo) }}" alt="Test" style="width: 90%;max-height: 100px;margin:auto">
+                    @endif
                 </td>
             </tr>
             <tr style="border-bottom: 1px solid black;">

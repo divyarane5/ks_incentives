@@ -135,7 +135,7 @@ class CandidateController extends Controller
             $encodedId = base64_encode($id);
             $url = route('joining_form.create', $encodedId);
             $candidate->url = $url;
-            Mail::to('vrushali.bangar@homebazaar.com')->send(new JoiningFormMail(['candidate' => $candidate]));
+            Mail::to($candidate->email)->send(new JoiningFormMail(['candidate' => $candidate]));
             unset($candidate->url);
             if ($candidate->status == "ready") {
                 $candidate->status = 'sent';
