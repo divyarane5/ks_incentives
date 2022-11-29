@@ -69,17 +69,19 @@ class ClientController extends Controller
                                         ><i class="bx bx-edit-alt me-1"></i> Edit</a>';
                     }
 
-                    if (auth()->user()->can('referral-client-delete')) {
-                        $actions .= '<button class="dropdown-item" onclick="deleteClient('.$row->id.')"
-                                        ><i class="bx bx-trash me-1"></i> Delete</button>
-                                    <form id="'.$row->id.'" action="'.route('client.destroy', $row->id).'" method="POST" class="d-none">
-                                        '.csrf_field().'
-                                        '.method_field('delete').'
-                                    </form>';
-                    }
+                    // if (auth()->user()->can('referral-client-delete')) {
+                    //     $actions .= '<button class="dropdown-item" onclick="deleteClient('.$row->id.')"
+                    //                     ><i class="bx bx-trash me-1"></i> Delete</button>
+                    //                 <form id="'.$row->id.'" action="'.route('client.destroy', $row->id).'" method="POST" class="d-none">
+                    //                     '.csrf_field().'
+                    //                     '.method_field('delete').'
+                    //                 </form>';
+                    // }
+                    if($row->click == 0){
                     if (auth()->user()->can('referral-client-send-email')) {
                         $actions .= '<a class="dropdown-item" target=”_blank”  href="'.url('send_referral_mail/'.$row->id).'"
                                         ><i class="bx bx-send me-1"></i> Send Email</a>';
+                    }
                     }
                     if (!empty($actions)) {
                         return '<div class="dropdown">
