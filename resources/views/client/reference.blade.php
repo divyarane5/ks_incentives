@@ -504,7 +504,7 @@ input.btn.btn-primary.btn-block {
                     }
                 });
                 jQuery.ajax({
-                    url: "/homebazaar_hrms/rthankyou",
+                    url: "https://hbserviceportal.com/rthankyou",
                     data:'name_inquiry='+$("#name_inquiry").val()+'&email_inquiry='+
                     $("#email_inquiry").val()+'&userid='+
                     $("#userid").val()+'&mobileno='+

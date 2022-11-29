@@ -513,7 +513,7 @@ section.section-content.padding-y.bg.mt-2.mb-2.imp {
             valid = validateContact();
             if(valid) {
                 jQuery.ajax({
-                    url: "/homebazaar_hrms/sthankyou",
+                    url: "https://hbserviceportal.com/sthankyou",
                     data:'name_inquiry='+$("#name_inquiry").val()+'&email_inquiry='+
                     $("#email_inquiry").val()+'&userid='+
                     $("#userid").val()+'&mobileno='+

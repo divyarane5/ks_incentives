@@ -472,7 +472,7 @@ margin: 10px auto;
                                   <table border="0" cellpadding="0" cellspacing="0" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;" width="100%">
                                     <tbody>
                                       <tr>
-                                        <td class="pc-fb-font" style="vertical-align: cursor:pointer top; text-align: center; line-height: 1.43; font-family: 'Fira Sans', Helvetica, Arial, sans-serif; font-size: 14px; color: #9B9B9B; " valign="top" align="center">   <a href="/homebazaar_hrms/reference/[pid]" target="_blank" style="text-decoration: none; color: #fff;
+                                        <td class="pc-fb-font" style="vertical-align: cursor:pointer top; text-align: center; line-height: 1.43; font-family: 'Fira Sans', Helvetica, Arial, sans-serif; font-size: 14px; color: #9B9B9B; " valign="top" align="center">   <a href="https://hbserviceportal.com/reference/[pid]" target="_blank" style="text-decoration: none; color: #fff;
     background:#ee6a29;
     padding: 0.3rem 3rem 0.3rem 3rem;
     border-radius: 10px; font-size: 15px; color:#fff!important">Refer Now</a> </td>

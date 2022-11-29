@@ -210,7 +210,7 @@ font-size: 14px;">
                         <tbody>
                           <tr>
                             <td align="center" height="200"  >
-                              <a href="homebazaar_hrms/service/[pid]/homeloan" target="_blank">
+                              <a href="https://hbserviceportal.com/service/[pid]/homeloan" target="_blank">
                              <div style="border-radius: 10px; background: #FFFFFF;
                             border: 1px solid #ea6b2e; height: 210px;">
                                 <img src="https://projectslaunch.com/referral-program/img/icon1.png" width="200" height="" border="0" style="width: 55%; max-width: 200px; height: auto; font-family: Verdana, Arial, Helvetica, sans-serif; font-size: 15px; line-height: 20px; color: #555555; border-radius:5px;     padding-top: 5px;">
@@ -240,7 +240,7 @@ font-size: 14px;">
                         <tbody>
                           <tr>
                             <td align="center" height="200" >
-                              <a href="/homebazaar_hrms/service/[pid]/collection" target="_blank">
+                              <a href="/https://hbserviceportal.com/service/[pid]/collection" target="_blank">
                               <div style="border-radius: 10px; background: #FFFFFF;
                             border: 1px solid #ea6b2e; height: 210px;">
                               
@@ -272,7 +272,7 @@ font-size: 14px;">
                         <tbody>
                           <tr>
                             <td align="center" height="200" >
-                              <a href="homebazaar_hrms/service/[pid]/document" target="_blank">
+                              <a href="https://hbserviceportal.com/service/[pid]/document" target="_blank">
                               
                             <div style="border-radius: 10px; background: #FFFFFF;
                             border: 1px solid #ea6b2e; height: 210px;" >
@@ -303,7 +303,7 @@ font-size: 14px;">
                         <tbody>
                           <tr>
                             <td align="center" height="200" >
-                               <a href="homebazaar_hrms/service/[pid]/property" target="_blank">
+                               <a href="https://hbserviceportal.com/service/[pid]/property" target="_blank">
                                
                             <div style="border-radius: 10px; background: #FFFFFF;
                             border: 1px solid #ea6b2e; height: 210px;">
@@ -341,7 +341,7 @@ font-size: 14px;">
 <div style="max-width:53%; padding:30px; border-radius: 15px;border:1px solid #2e72bb; margin-left: auto; margin-right: auto; text-align: center; color:#010101; font-size:18px;">
     <table style="text-align:center; width: 100%;"><tr><td>Refer and Earn with <span style="color:#2e72bb; font-weight: bold;">Home<span style="color:#de7a43; font-weight: bold;">bazaar</span>.com</span></td></tr>
   <tr><td><button style="background: linear-gradient(90deg, rgba(254,124,0,1) 15%, rgba(255,166,0,1) 46%, rgba(255,163,0,1) 59%, rgba(254,124,0,1) 84%); font-size:16px; color: #FFF; border-radius: 5px; padding: 8px 17px; margin-top: 10px;
-    border: none;"><a href="/homebazaar_hrms/reference/[pid]">Refer Now</a></button></td></tr></table>
+    border: none;"><a href="https://hbserviceportal.com/reference/[pid]">Refer Now</a></button></td></tr></table>
 </div>
   </td>
 </tr>
