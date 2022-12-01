@@ -28,7 +28,7 @@ class ClientController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Client::select(['clients.*', 'templates.name as template_name'])->join('templates', 'clients.template_id', '=', 'templates.id')->where('clients.created_by','=',Auth::id());
+            $data = Client::select(['clients.*', 'templates.name as template_name','users.reporting_user_id'])->join('templates', 'clients.template_id', '=', 'templates.id')->join('users', 'clients.created_by', '=', 'users.id')->where('clients.created_by','=',Auth::id())->orWhere('users.reporting_user_id','=',Auth::id());
             return DataTables::of($data)
                 ->addColumn('template_name', function ($row) {
                     return $row->template_name;
@@ -47,11 +47,11 @@ class ClientController extends Controller
                 })
                 ->addColumn('status', function ($row) {
                     if($row->click == 1){
-                        $click = 'Read';
+                        return '<span class="badge bg-label-success me-1">Read</span>';
                     }else{
-                        $click= '';
+                        return '<span class="badge bg-label-warning me-1">Unread</span>';
                     }
-                    return $click;
+                    //return $click;
                 })
                 ->addColumn('created_at', function ($row) {
                     return date("d-m-Y", strtotime($row->created_at));
@@ -95,7 +95,7 @@ class ClientController extends Controller
                     }
                     return '';
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['action','status'])
                 ->make(true);
         }
         return view('client.index');
