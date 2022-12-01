@@ -13,7 +13,7 @@ curl_setopt_array($curl, array(
   CURLOPT_FOLLOWLOCATION => true,
   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
   CURLOPT_CUSTOMREQUEST => 'POST',
-  CURLOPT_POSTFIELDS =>'{"city_name":"Mumbai","city_id":1,"module_type":"buy","limit":10}',
+  CURLOPT_POSTFIELDS =>'{"city_name":"Mumbai","city_id":1,"module_type":"buy","limit":5000}',
   CURLOPT_HTTPHEADER => array(
     'Content-Type: application/json'
   ),
@@ -35,7 +35,7 @@ $json = json_decode($response, TRUE);
 $curl1 = curl_init();
 
 curl_setopt_array($curl1, array(
-  CURLOPT_URL => 'https://www.homebazaar.com/api/v2/developers?skip=0&limit=10',
+  CURLOPT_URL => 'https://www.homebazaar.com/api/v2/developers?skip=0&limit=5000',
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_ENCODING => '',
   CURLOPT_MAXREDIRS => 10,
@@ -67,7 +67,7 @@ $json1 = json_decode($response1, TRUE);
         <form action="{{ route('booking.update', $id) }}" method="post" enctype="multipart/form-data">
             @csrf
             @method('put')
-            @form_hidden('id', $id)
+            <input type="hidden" name="id" value="{{ $id }}">
             <div class="card-body">
                 <div class="row">
                     <div class="mb-3 col-md-6">

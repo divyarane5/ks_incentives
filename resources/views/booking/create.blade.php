@@ -14,7 +14,7 @@ curl_setopt_array($curl, array(
   CURLOPT_FOLLOWLOCATION => true,
   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
   CURLOPT_CUSTOMREQUEST => 'POST',
-  CURLOPT_POSTFIELDS =>'{"city_name":"Mumbai","city_id":1,"module_type":"buy","limit":10}',
+  CURLOPT_POSTFIELDS =>'{"city_name":"Mumbai","city_id":1,"module_type":"buy","limit":5000}',
   CURLOPT_HTTPHEADER => array(
     'Content-Type: application/json'
   ),
@@ -36,7 +36,7 @@ $json = json_decode($response, TRUE);
 $curl1 = curl_init();
 
 curl_setopt_array($curl1, array(
-  CURLOPT_URL => 'https://www.homebazaar.com/api/v2/developers?skip=0&limit=10',
+  CURLOPT_URL => 'https://www.homebazaar.com/api/v2/developers?skip=0&limit=5000',
   CURLOPT_RETURNTRANSFER => true,
   CURLOPT_ENCODING => '',
   CURLOPT_MAXREDIRS => 10,

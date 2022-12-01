@@ -149,11 +149,11 @@
         </li>
     @endcanany
 
-    @canany(['template-view','referral-client-view'])
+    @canany(['template-view','referral-client-view','booking-view'])
         <li class="menu-item {{ in_array(Request::segment(1), ['template', 'client', 'client_response', 'client_response_service']) ? 'active open': '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle ">
                 <i class="menu-icon tf-icons bx bx-layout"></i>
-                <div data-i18n="Layouts">Referral Program</div>
+                <div data-i18n="Layouts">After Sales</div>
             </a>
             <ul class="menu-sub ">
                 @can('referral-template-view')
@@ -166,7 +166,7 @@
                 @can('referral-client-view')
                     <li class="menu-item {{ ((Request::segment(1) == 'client')) ? 'active': '' }}">
                         <a href="{{ route('client.index') }}" class="menu-link">
-                            <div data-i18n="Without menu"> Clients</div>
+                            <div data-i18n="Without menu"> Referral Clients</div>
                         </a>
                     </li>
                 @endcan
@@ -184,20 +184,20 @@
                         </a>
                     </li>
                 @endcan
-
+                @can('booking-view')
+                <li class="menu-item {{ (Request::segment(1) == 'booking') ? 'active': '' }}">
+                    <a href="{{ route('booking.index') }}" class="menu-link">
+                        
+                        <div data-i18n="Analytics">Booking</div>
+                    </a>
+                </li>
+                @endcan
 
             </ul>
 
         </li>
     @endcanany
-    @can('booking-view')
-    <li class="menu-item {{ (Request::segment(1) == 'booking') ? 'active': '' }}">
-        <a href="{{ route('booking.index') }}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-copy"></i>
-            <div data-i18n="Analytics">Booking</div>
-        </a>
-    </li>
-    @endcan
+  
     @can('user-view')
     <li class="menu-item {{ (Request::segment(1) == 'users') ? 'active': '' }}">
         <a href="{{ route('users.index') }}" class="menu-link">
