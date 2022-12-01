@@ -12,7 +12,7 @@ use App\Models\ClientReference;
 use App\Models\ReferralClient;
 use App\Mail\ReferralMail;
 use Illuminate\Support\Facades\Mail;
-
+use Auth;
 class ClientController extends Controller
 {
     private $clientRepository;
@@ -28,7 +28,7 @@ class ClientController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Client::select(['clients.*', 'templates.name as template_name'])->join('templates', 'clients.template_id', '=', 'templates.id');
+            $data = Client::select(['clients.*', 'templates.name as template_name'])->join('templates', 'clients.template_id', '=', 'templates.id')->where('clients.created_by','=',Auth::id());
             return DataTables::of($data)
                 ->addColumn('template_name', function ($row) {
                     return $row->template_name;

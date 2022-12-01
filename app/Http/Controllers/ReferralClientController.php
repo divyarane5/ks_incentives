@@ -20,7 +20,7 @@ class ReferralClientController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = ReferralClient::where('form_type','=','referrals')->get();
+            $data = ReferralClient::where('form_type','=','referrals')->where('created_by','=',Auth::id())->get();
             return DataTables::of($data)
                 ->addColumn('name', function ($row) {
                     return $row->name;
@@ -110,7 +110,7 @@ class ReferralClientController extends Controller
         // $data = ReferralClient::where('form_type','=',$sname)->get();
         // print_r($data); exit;
         if ($request->ajax()) {
-            $data = ReferralClient::where('form_type','!=','referrals')->get();
+            $data = ReferralClient::where('form_type','!=','referrals')->where('created_by','=',Auth::id())->get();
             return DataTables::of($data)
                 ->addColumn('form_type', function ($row) {
                     if($row->form_type == 'homeloan'){
