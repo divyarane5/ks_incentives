@@ -7,6 +7,7 @@ use App\Models\ClientReference;
 use App\Http\Requests\ReferralClientRequest;
 use DataTables;
 use Illuminate\Http\Request;
+use Auth;
 
 class ReferralClientController extends Controller
 {
