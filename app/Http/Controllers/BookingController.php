@@ -177,7 +177,7 @@ class BookingController extends Controller
     public function sendBookingMail($id){
         $booking = Booking::find($id);
         $user = DB::table('users')
-                    ->select('users.name as u_name','users.id as u_id','designations.name as d_name','users.mobile')
+                    ->select('users.name as u_name','users.id as u_id','users.email as u_email','designations.name as d_name','users.mobile')
                    ->join('designations', 'users.designation_id','=','designations.id','inner')
 	               ->where('users.id',$booking->created_by)
 	               ->first();

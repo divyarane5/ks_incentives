@@ -29,7 +29,7 @@ class ReferralMail extends Mailable
      */
     public function build()
     {
-         //echo $this->data['client']->subject_name;  exit;
-        return $this->subject($this->data['client']->subject_name)->with($this->data)->view('client.show');
+        // print_r($this->data); echo $this->data['client']->u_email;  exit;
+        return $this->from($this->data['client']->u_email, $this->data['client']->u_name)->subject($this->data['client']->subject_name)->with($this->data)->view('client.show');
     }
 }
