@@ -111,7 +111,7 @@ class ReferralClientController extends Controller
         // $data = ReferralClient::where('form_type','=',$sname)->get();
         // print_r($data); exit;
         if ($request->ajax()) {
-            $data = ReferralClient::where('form_type','!=','referrals')->join('users', 'referral_clients.created_by', '=', 'users.id')->where('referral_clients.created_by','=',Auth::id())->orWhere('users.reporting_user_id','=',Auth::id())->orderBy('referral_clients.id','desc')->get();
+            $data = ReferralClient::where('form_type','!=','referrals')->where('referral_clients.created_by','=',Auth::id())->orderBy('referral_clients.id','desc')->get();
             return DataTables::of($data)
                 ->addColumn('form_type', function ($row) {
                     if($row->form_type == 'homeloan'){
