@@ -150,7 +150,7 @@
     @endcanany
 
     @canany(['template-view','referral-client-view','booking-view'])
-        <li class="menu-item {{ in_array(Request::segment(1), ['template', 'client', 'client_response', 'client_response_service']) ? 'active open': '' }}">
+        <li class="menu-item {{ in_array(Request::segment(1), ['template', 'client', 'client_response', 'client_response_service', 'booking']) ? 'active open': '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle ">
                 <i class="menu-icon tf-icons bx bx-layout"></i>
                 <div data-i18n="Layouts">After Sales</div>

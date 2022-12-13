@@ -13,6 +13,7 @@ use App\Models\ReferralClient;
 use App\Mail\ReferralMail;
 use Illuminate\Support\Facades\Mail;
 use Auth;
+use Exception;
 class ClientController extends Controller
 {
     private $clientRepository;
@@ -109,6 +110,27 @@ class ClientController extends Controller
 
     public function store(ClientRequest $request)
     {
+    $api_key = '653d394114dbd2a366a4a3ccfee7d2b5c46384ed819787f150385ff32025';
+    $emailToValidate = $request->input('client_email');
+    $IPToValidate = '99.123.12.122';
+    // use curl to make the request
+    //$url = 'https://api.zerobounce.net/v2/validate?api_key='.$api_key.'&email='.urlencode($emailToValidate).'&ip_address='.urlencode($IPToValidate);
+    $url = 'https://api.quickemailverification.com/v1/verify?email='.urlencode($emailToValidate).'&apikey='.urlencode($api_key);
+   // echo $url; exit;
+    $ch = curl_init($url);
+    //PHP 5.5.19 and higher has support for TLS 1.2
+    curl_setopt($ch, CURLOPT_SSLVERSION, 6);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15); 
+    curl_setopt($ch, CURLOPT_TIMEOUT, 150); 
+    $response = curl_exec($ch);
+    curl_close($ch);
+    //echo '<pre>' ;
+    $json = json_decode($response, true);
+  //print_r($json); 
+  //die;
+   //     echo $json['status']; exit;
+    if($json['result'] == 'valid'){
         //create client
         $client = new Client();
         $client->template_id = $request->input('template_id');
@@ -119,6 +141,11 @@ class ClientController extends Controller
         $client->save();
 
         return redirect()->route('client.index')->with('success', 'Client Added Successfully');
+    }else{
+        //echo "ssss"; exit;
+     //   echo "<p class='aaa'>Email address Invalid.</p>";
+        echo "<p class='bbb'>Email address Invalid.</p>";
+    }   
     }
 
     public function edit($id)
@@ -130,6 +157,27 @@ class ClientController extends Controller
 
     public function update(ClientRequest $request, $id)
     {
+        $api_key = '653d394114dbd2a366a4a3ccfee7d2b5c46384ed819787f150385ff32025';
+        $emailToValidate = $request->input('client_email');
+        $IPToValidate = '99.123.12.122';
+        // use curl to make the request
+        //$url = 'https://api.zerobounce.net/v2/validate?api_key='.$api_key.'&email='.urlencode($emailToValidate).'&ip_address='.urlencode($IPToValidate);
+        $url = 'https://api.quickemailverification.com/v1/verify?email='.urlencode($emailToValidate).'&apikey='.urlencode($api_key);
+       // echo $url; exit;
+        $ch = curl_init($url);
+        //PHP 5.5.19 and higher has support for TLS 1.2
+        curl_setopt($ch, CURLOPT_SSLVERSION, 6);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 15); 
+        curl_setopt($ch, CURLOPT_TIMEOUT, 150); 
+        $response = curl_exec($ch);
+        curl_close($ch);
+        //echo '<pre>' ;
+        $json = json_decode($response, true);
+      //print_r($json); 
+      //die;
+       //     echo $json['status']; exit;
+        if($json['result'] == 'valid'){
         $client = Client::find($id);
         $client->template_id = $request->input('template_id');
         $client->sales_person = $request->input('sales_person');
@@ -139,6 +187,11 @@ class ClientController extends Controller
         $client->save();
 
         return redirect()->route('client.index')->with('success', 'Client Updated Successfully');
+        }else{
+            //echo "ssss"; exit;
+        //   echo "<p class='aaa'>Email address Invalid.</p>";
+            echo "<p class='bbb'>Email address Invalid.</p>";
+        }
     }
 
     public function destroy($id)
@@ -160,13 +213,21 @@ class ClientController extends Controller
 
     public function sendReferralMail($id)
     {
-        $client = $this->clientRepository->getClientDetails($id);
-        $arr = [
-            'id' => $id,
-            'client' => $client
-        ];
-        Mail::to($client->client_email)->send(new ReferralMail($arr));// $client->client_email
-        return redirect()->route('client.index')->with('success', 'Mail Sent Successfully');
+        try {
+           // echo "ff"; exit;
+            $client = $this->clientRepository->getClientDetails($id);
+            $arr = [
+                'id' => $id,
+                'client' => $client
+            ];
+            Mail::to($client->client_email)->send(new ReferralMail($arr));// $client->client_email
+            return redirect()->route('client.index')->with('success', 'Mail Sent Successfully');
+        } catch (Exception $e) {
+          //  echo "ss"; exit;
+            \Log::emergency($e);
+            return redirect()->route('client.index')->with('error', 'Failed to send email');
+        }
+
     }
 
     public function reference($id)
