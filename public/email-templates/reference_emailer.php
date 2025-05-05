@@ -551,7 +551,7 @@ margin: 10px auto;
 <div><a href="https://in.linkedin.com/company/homebazaarcom" target="_blank"><img src="https://www.homebazzar.com/emailer/img/linkdln.jpg" alt="HomeBazaar.com" style=" border-radius: 4px; margin-top:4px  "></a></div>
 
 
-<a href="https://www.homebazaar.com/" target="_blank"><img src="https://www.homebazzar.com/emailer/img/homebazaar.png" alt="HomeBazaar.com" style="width:30%; border:0;     margin-top: 2px;"></a>
+<a href="https://www.homebazaar.com/" target="_blank"><img src="https://keystonerealestateadvisory.com/public/img/gallery/ks-logo.webp" alt="HomeBazaar.com" style="width:30%; border:0;     margin-top: 2px;"></a>
   </div>
 </body>
 

@@ -58,7 +58,7 @@
         <div class="">
             <div class="m-3">
                 <a href="{{ url('/') }}" class="app-brand-link">
-                    <img class="auto_margin" src="{{ asset("assets/img/logo/logo_sidebar.png") }}" >
+                    <img class="auto_margin" src="{{ asset("assets/img/logo/ks-logos.webp") }}" >
                 </a>
             </div>
             <!-- Layout container -->

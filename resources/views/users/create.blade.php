@@ -231,5 +231,5 @@
 
 @section('script')
 <!-- Page JS -->
-<script src="{{ asset("assets/js/pages-account-settings-account.js") }}"></script>
+<script src="{{ asset('assets/js/pages-account-settings-account.js') }}"></script>
 @endsection
