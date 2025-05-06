@@ -377,3 +377,7 @@ h5 span {
 .vertically-middle {
     vertical-align: middle;
 }
+.card img.logo {
+    background: #011e48;
+    width: 50%;
+}
