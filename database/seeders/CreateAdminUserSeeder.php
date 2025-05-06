@@ -20,8 +20,8 @@ class CreateAdminUserSeeder extends Seeder
             'email' => 'admin@homebazaar.com',
             'password' => bcrypt('123456'),
             'employee_code' => 'VSH_OP_001',
-            'entity' => 'Homebazaar',
-            'name' => 'Homebazaar Admin',
+            'entity' => 'Keystone',
+            'name' => 'Keystone Admin',
             'created_by' => 1
         ]);
 
