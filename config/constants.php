@@ -2,7 +2,7 @@
 
 return [
     'GENDER_OPTIONS' => ['Male' => 'Male','Female' => 'Female'],
-    'COMPANY_OPTIONS' => ['Home Bazaar Services Pvt Ltd', 'Policy Adda Insurance Brokers Pvt. Ltd.'],
+    'COMPANY_OPTIONS' => ['Keystone Real Estate Advisory Pvt. Ltd.', 'Keystone Finserv Pvt. Ltd.'],
     'BILL_MODES' => ['advance' => 'Advance', 'partial' => 'Partial Advance', 'against' => 'Against'],
     'INDENT_STATUS' => [
                         'pending' => 'Pending',
@@ -31,7 +31,7 @@ return [
                         'approve4' => 'approver5',
                         'approve5' => '',
                 ],
-    'INDENT_CODE_PREFIX' => 'HB-IND-',
+    'INDENT_CODE_PREFIX' => 'KS-IND-',
     'TRANSPORT_MODE' => [
                     'car' => 'Car',
                     'bike' => 'Bike',

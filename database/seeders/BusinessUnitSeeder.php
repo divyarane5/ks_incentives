@@ -14,8 +14,8 @@ class BusinessUnitSeeder extends Seeder
      */
     public function run()
     {
-        BusinessUnit::create(['name' => 'Homebazaar-CP']);
-        BusinessUnit::create(['name' => 'Homebazaar-Home Loans']);
-        BusinessUnit::create(['name' => 'Homebazaar-Website']);
+        BusinessUnit::create(['name' => 'Designo Palette']);
+        BusinessUnit::create(['name' => 'Keystone Finserv']);
+        BusinessUnit::create(['name' => 'Keystone Real Estate Advisory Pvt Ltd']);
     }
 }
