@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\User;
+use App\Models\Project;
 use App\Http\Requests\BookingRequest;
 use DataTables;
 use Illuminate\Http\Request;
@@ -107,7 +108,9 @@ class BookingController extends Controller
 
     public function create()
     {
-        return view('booking.create');
+        $project_name = Project::select(['id', 'name'])->orderBy('name', 'asc')->get();
+       // return view('booking.create');
+        return view('booking.create', compact('project_name'));
     }
 
     public function store(BookingRequest $request)

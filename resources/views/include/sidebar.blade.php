@@ -61,6 +61,7 @@
                     </li>
                 @endcan
             </ul>
+            
             <!-- <ul class="menu-sub ">
                 @can('vendor-view')
                     <li class="menu-item {{ ((Request::segment(1) == 'vendor')) ? 'active': '' }}">
@@ -84,6 +85,24 @@
                     <li class="menu-item {{ ((Request::segment(1) == 'business_unit')) ? 'active': '' }}">
                         <a href="{{ route('business_unit.index') }}" class="menu-link">
                             <div data-i18n="Without menu">Business Unit</div>
+                        </a>
+                    </li>
+                @endcan
+            </ul>
+            <ul class="menu-sub ">
+                @can('project-view')
+                    <li class="menu-item {{ ((Request::segment(1) == 'project')) ? 'active': '' }}">
+                        <a href="{{ route('project.index') }}" class="menu-link">
+                            <div data-i18n="Without menu">Project</div>
+                        </a>
+                    </li>
+                @endcan
+            </ul>
+            <ul class="menu-sub ">
+                @can('developer-view')
+                    <li class="menu-item {{ ((Request::segment(1) == 'developer')) ? 'active': '' }}">
+                        <a href="{{ route('developer.index') }}" class="menu-link">
+                            <div data-i18n="Without menu">Developer</div>
                         </a>
                     </li>
                 @endcan
@@ -241,12 +260,12 @@
     @endcanany
 
     @can('candidate-view')
-    <!-- <li class="menu-item {{ (Request::segment(1) == 'candidate') ? 'active': '' }}">
+    <li class="menu-item {{ (Request::segment(1) == 'candidate') ? 'active': '' }}">
         <a href="{{ route('candidate.index') }}" class="menu-link">
             <i class="menu-icon tf-icons bx bx-user"></i>
             <div data-i18n="Analytics">Candidate</div>
         </a>
-    </li> -->
+    </li>
     @endcan
     </ul>
 </aside>

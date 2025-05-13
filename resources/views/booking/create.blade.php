@@ -70,37 +70,22 @@ $json1 = json_decode($response1, TRUE);
             <div class="card-body">
                 <div class="row">
                 <div class="mb-3 col-md-6">
-                    <label class="form-label" for="project_name">Project Name<span class="start-mark">*</span></label>
-                    <select id="project_name" name="project_name" class="" @error('project_name') autofocus @enderror required>
-                        <!-- <option>Select Template</option> -->
-                        @if (!empty($json))
-                            @foreach ($json['data'] as $index => $temp)
-                                <option value="{{ $temp['projectName'] }}" {{ ($temp['projectName'] == old('project_name') ? 'selected' : '') }}>{{ $temp['projectName'] }}</option>
+                        <label for="project_name" class="form-label">Project Name</label>
+                        <select name="user_id"  class="" id="user_id" aria-label="User" required>
+                          <option value="" >Select User</option>
+                          @if(!empty($project_name))
+                            @foreach ($project_name as $project_name)
+                                <option value="{{ $project_name->id }}" {{ (old('project_name') == $project_name->id) ? 'selected' : '' }}>{{ $project_name->name }}</option>
                             @endforeach
-                        @endif
-                    </select>
-                    @error('project_name')
-                        <span class="invalid-feedback" role="alert">
-                            <strong>{{ $message }}</strong>
-                        </span>
-                    @enderror
-                </div>
-                <div class="mb-3 col-md-6">
-                    <label class="form-label" for="developer_name">Developer Name<span class="start-mark">*</span></label>
-                    <select id="developer_name" name="developer_name" class="" @error('developer_name') autofocus @enderror required>
-                        <!-- <option>Select Template</option> -->
-                        @if (!empty($json1))
-                            @foreach ($json1['data'] as $index => $temp1)
-                                <option value="{{ $temp1['developer_name'] }}" {{ ($temp1['developer_name'] == old('developer_name') ? 'selected' : '') }}>{{ $temp1['developer_name'] }}</option>
-                            @endforeach
-                        @endif
-                    </select>
-                    @error('developer_name')
-                        <span class="invalid-feedback" role="alert">
-                            <strong>{{ $message }}</strong>
-                        </span>
-                    @enderror
-                </div>
+                          @endif
+                        </select>
+                        @error('project_name')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+              
                 <div class="mb-3 col-md-6">
                     <label class="form-label" for="developer_email">Developer Email<span class="start-mark">*</span></label>
                     <input name="developer_email" class="form-control" id="developer_email" value="{{ old('developer_email') }}" required/>

@@ -17,9 +17,9 @@ class CreateAdminUserSeeder extends Seeder
     public function run()
     {
         $user = User::create([
-            'email' => 'admin@homebazaar.com',
+            'email' => 'admin@keystone.com',
             'password' => bcrypt('123456'),
-            'employee_code' => 'VSH_OP_001',
+            'employee_code' => 'KRE008',
             'entity' => 'Keystone',
             'name' => 'Keystone Admin',
             'created_by' => 1

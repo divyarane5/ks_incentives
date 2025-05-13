@@ -34,6 +34,12 @@ Route::group(['middleware' => 'auth'], function() {
     //Location
     Route::resource('location', App\Http\Controllers\LocationController::class);
 
+    //project
+    Route::resource('project', App\Http\Controllers\ProjectController::class);
+    
+    //developer
+    Route::resource('developer', App\Http\Controllers\DeveloperController::class);
+    
     //Department
     Route::resource('department', App\Http\Controllers\DepartmentController::class);
 

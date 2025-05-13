@@ -5,7 +5,7 @@
         <script>
         document.write(new Date().getFullYear());
         </script>
-        <a href="https://homebazaar.com" target="_blank" class="footer-link fw-bolder">Homebazaar</a>
+        <a href="https://keystonerealestateadvisory.com/" target="_blank" class="footer-link fw-bolder">Keystone Real Estate Advisory</a>
     </div>
     <div>
 
