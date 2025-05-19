@@ -40,6 +40,12 @@ Route::group(['middleware' => 'auth'], function() {
     //developer
     Route::resource('developer', App\Http\Controllers\DeveloperController::class);
     
+    //aop ladder
+    Route::resource('developer_ladder', App\Http\Controllers\DeveloperLadderController::class);
+    
+    //aop ladder
+    Route::resource('project_ladder', App\Http\Controllers\ProjectLadderController::class);
+    
     //Department
     Route::resource('department', App\Http\Controllers\DepartmentController::class);
 

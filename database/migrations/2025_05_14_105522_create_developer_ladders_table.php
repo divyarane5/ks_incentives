@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateProjectsTable extends Migration
+class CreateDeveloperLaddersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,14 +13,20 @@ class CreateProjectsTable extends Migration
      */
     public function up()
     {
-        Schema::create('projects', function (Blueprint $table) {
+        Schema::create('developer_ladders', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('brokerage');
+            $table->unsignedBigInteger('developer_id')->index();
+            $table->foreign('developer_id')->references('id')->on('developers');
+            $table->string('aop');
+            $table->string('ladder');
+            $table->date('aop_s_date');
+            $table->date('aop_e_date');
             $table->tinyInteger('status')->default(1);
             $table->unsignedInteger('created_by');
             $table->timestamps();
             $table->softDeletes();
+
+            
         });
     }
 
@@ -31,6 +37,6 @@ class CreateProjectsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('projects');
+        Schema::dropIfExists('developer_ladders');
     }
 }

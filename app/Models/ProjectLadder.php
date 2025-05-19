@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Auth;
 
 
-class Project extends Model
+class ProjectLadder extends Model
 {
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name','borkerage',
+        'project_id','aop_id','booking','ladder','project_s_date','project_e_date'
     ];
 
     protected static function boot() { 

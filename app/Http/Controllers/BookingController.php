@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\User;
 use App\Models\Project;
+use App\Models\Developer;
 use App\Http\Requests\BookingRequest;
 use DataTables;
 use Illuminate\Http\Request;
@@ -28,13 +29,21 @@ class BookingController extends Controller
             $data = Booking::all();
             return DataTables::of($data)
                 ->addColumn('project_name', function ($row) {
-                    return $row->project_name;
+                    $project = DB::table('projects')
+                    ->select('projects.name')
+                    ->where('projects.id',$row->project_id)
+                    ->first();
+                    return $project->name;
                 })
                 ->addColumn('developer_name', function ($row) {
-                    return $row->developer_name;
+                    $developer = DB::table('developers')
+                    ->select('developers.name')
+                    ->where('developers.id',$row->developer_id)
+                    ->first();
+                    return $developer->name;
                 })
-                ->addColumn('developer_email', function ($row) {
-                    return $row->developer_email;
+                ->addColumn('client_name', function ($row) {
+                    return $row->client_name;
                 })
                 ->addColumn('configuration', function ($row) {
                     return $row->configuration;
@@ -51,11 +60,66 @@ class BookingController extends Controller
                 ->addColumn('wing', function ($row) {
                     return $row->wing;
                 })
-                ->addColumn('sales_person', function ($row) {
-                    return $row->sales_person;
-                })
+                
                 ->addColumn('sourcing_manager', function ($row) {
                     return $row->sourcing_manager;
+                })
+                ->addColumn('sourcing_contact', function ($row) {
+                    return $row->sourcing_contact;
+                })
+                ->addColumn('sales_person', function ($row) {
+                    $user = DB::table('users')
+                    ->select('users.name','reporting_user_id')
+                    ->where('users.id',$row->sales_person)
+                    ->first();
+                    return $user->name;
+                })
+                ->addColumn('reporting_person', function ($row) {
+                    $user = DB::table('users')
+                    ->select('users.name','reporting_user_id')
+                    ->where('users.id',$row->sales_person)
+                    ->first();
+                    
+                    $ruser = DB::table('users')
+                    ->select('users.name','reporting_user_id')
+                    ->where('users.id',$user->reporting_user_id)
+                    ->first();
+                    if(!empty($ruser)){ $reporting = $ruser->name; }else{ $reporting = "-"; }
+                    return $reporting;
+                })
+                ->addColumn('agreement_value', function ($row) {
+                    return "Rs. ".number_format($row->agreement_value);
+                })
+                
+                ->addColumn('booking_amount', function ($row) {
+                    return "Rs. ".number_format($row->booking_amount);
+                })
+                ->addColumn('brokerage', function ($row) {
+                    $brokerage = DB::table('projects')
+                    ->select('projects.brokerage')
+                    ->where('projects.id',$row->project_id)
+                    ->first();
+                    return $brokerage->brokerage." %";
+                })
+                ->addColumn('revenue', function ($row) {
+                    $brokerage = DB::table('projects')
+                    ->select('projects.brokerage')
+                    ->where('projects.id',$row->project_id)
+                    ->first();
+                    $revenue = (($brokerage->brokerage /100)* $row->agreement_value);
+                    return "Rs. ".number_format($revenue);
+                })
+                ->addColumn('passback', function ($row) {
+                    return "Rs. ".number_format($row->passback);
+                })
+                ->addColumn('company_revenue', function ($row) {
+                    $brokerage = DB::table('projects')
+                    ->select('projects.brokerage')
+                    ->where('projects.id',$row->project_id)
+                    ->first();
+                    $revenue = (($brokerage->brokerage /100)* $row->agreement_value);
+                    $company_revenue = $revenue - $row->passback;
+                    return "Rs. ".number_format($company_revenue);
                 })
                 ->addColumn('created_at', function ($row) {
                     return date("d-m-Y", strtotime($row->created_at));
@@ -109,25 +173,32 @@ class BookingController extends Controller
     public function create()
     {
         $project_name = Project::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        $developer_name = Developer::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        $user_name = User::select(['id', 'name'])->orderBy('name', 'asc')->get();
        // return view('booking.create');
-        return view('booking.create', compact('project_name'));
+        return view('booking.create', compact('project_name','developer_name','user_name'));
     }
 
     public function store(BookingRequest $request)
     {
         //create booking
         $booking = new Booking();
-        $booking->project_name = $request->input('project_name');
-        $booking->developer_name = $request->input('developer_name');
-        $booking->developer_email = $request->input('developer_email');
+        $booking->project_id = $request->input('project_id');
+        $booking->developer_id = $request->input('developer_id');
         $booking->client_name = $request->input('client_name');
         $booking->booking_date = $request->input('booking_date');
+        $booking->client_contact = $request->input('client_contact');
         $booking->configuration = $request->input('configuration');
         $booking->flat_no = $request->input('flat_no');
         $booking->wing = $request->input('wing');
         $booking->tower = $request->input('tower');
         $booking->sales_person = $request->input('sales_person');
+        $booking->lead_source = $request->input('lead_source');
         $booking->sourcing_manager = $request->input('sourcing_manager');
+        $booking->sourcing_contact = $request->input('sourcing_contact');
+        $booking->booking_amount = $request->input('booking_amount');
+        $booking->agreement_value = $request->input('agreement_value');
+        $booking->passback = $request->input('passback');
         $booking->save();
 
         return redirect()->route('booking.index')->with('success', 'Booking Added Successfully');
@@ -189,7 +260,7 @@ class BookingController extends Controller
             'booking' => $booking,
             'user' => $user
         ];
-        Mail::to('divya.rane@homebazaar.com')->send(new BookingMail($arr)); //$approvalTo->email
+        Mail::to('keystonedivya@gmail.com')->send(new BookingMail($arr)); //$approvalTo->email
         return redirect()->route('booking.index')->with('success', 'Mail Sent Successfully');
     }
 }

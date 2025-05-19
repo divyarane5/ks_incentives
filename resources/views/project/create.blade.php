@@ -26,7 +26,15 @@
                             </span>
                         @enderror
                     </div>
-
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label" for="brokerage">Base Brokerage (in %)<span class="start-mark">*</span></label>
+                        <input name="brokerage" class="form-control" id="brokerage" value="{{ old('brokerage') }}" required/>
+                        @error('brokerage')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
                     <div>
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </div>

@@ -3,23 +3,26 @@
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="row">
-        <h4 class="fw-bold py-3 mb-4 col-md-6"><span class="text-muted fw-light">Project /</span> List</h4>
+        <h4 class="fw-bold py-3 mb-4 col-md-6"><span class="text-muted fw-light">AOP Ladder /</span> List</h4>
         <div class="col-md-6">
-            @can('project-create')
-            <a href="{{ route('project.create') }}" type="button" class="btn btn-primary pull-right my-3 mb-4 ">Add Project</a>
+            @can('developer_ladder-create')
+            <a href="{{ route('developer_ladder.create') }}" type="button" class="btn btn-primary pull-right my-3 mb-4 ">Add AOP Ladder</a>
             @endcan
         </div>
     </div>
 
     <!-- Striped Rows -->
     <div class="card">
-        <h5 class="card-header">Projects</h5>
+        <h5 class="card-header">AOP Ladders</h5>
         <div class="table-responsive text-nowrap">
-            <table id="project-datatable" class="table table-striped" width="100%">
+            <table id="developer_ladder-datatable" class="table table-striped" width="100%">
             <thead>
                 <tr>
-                    <th>Name</th>
-                    <th>Base Brokerage</th>
+                    <th>Developer Name</th>
+                    <th>AOP Amount</th>
+                    <th>Ladder</th>
+                    <th>AOP Start Date</th>
+                    <th>AOP End Date</th>
                     <th>Created On</th>
                     <th>Modified On</th>
                     <th>Actions</th>
@@ -37,26 +40,29 @@
 @section('script')
 <script type="text/javascript">
     $(document).ready(function () {
-      var table = $('#project-datatable').DataTable({
+      var table = $('#developer_ladder-datatable').DataTable({
             processing: true,
             serverSide: true,
-            ajax: "{{ route('project.index') }}",
+            ajax: "{{ route('developer_ladder.index') }}",
             columns: [
-                {data: 'name', name: 'projects.name'},
-                {data: 'brokerage', name: 'projects.brokerage'},
-                {data: 'created_at', name: 'projects.created_at'},
-                {data: 'updated_at', name: 'projects.updated_at'},
+                {data: 'developer_id', name: 'developer_ladders.developer_id'},
+                {data: 'aop', name: 'developer_ladders.aop'},
+                {data: 'ladder', name: 'developer_ladders.ladder'},
+                {data: 'aop_s_date', name: 'developer_ladders.aop_s_date'},
+                {data: 'aop_e_date', name: 'developer_ladders.aop_e_date'},
+                {data: 'created_at', name: 'developer_ladders.created_at'},
+                {data: 'updated_at', name: 'developer_ladders.updated_at'},
                 {data: 'action', 'sortable': false},
             ]
       });
 
     });
 
-    function deleteLocation(id)
+    function deleteDeveloperLadder(id)
     {
         $.confirm({
-            title: 'Delete Location',
-            content: 'Are you sure you want to delete location?',
+            title: 'Delete AOP Ladder',
+            content: 'Are you sure you want to delete developer_ladder?',
             type: 'red',
             typeAnimated: true,
             buttons: {

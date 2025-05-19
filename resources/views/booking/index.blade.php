@@ -20,15 +20,23 @@
                 <tr>
                     <th>Project Name</th>
                     <th>Developer Name</th>
-                    <th>Developer Email</th>
                     <th>Client Name</th>
+                    <th>Client Contact</th>
                     <th>Booking Date</th>
                     <th>Configuration</th>
                     <th>Tower</th>
                     <th>Wing</th>
                     <th>Flat No.</th>
-                    <th>Sales Person</th>
                     <th>Sourcing Manager</th>
+                    <th>Sourcing Contact</th>
+                    <th>Sales Person</th>
+                    <th>Team Manager</th>
+                    <th>Agreement Value</th>
+                    <th>Booking Amount</th>
+                    <th>Base Brokerage</th>
+                    <th>Revenue</th>
+                    <th>Passback Given</th>
+                    <th>Company Revenue</th>
                     <th>Created On</th>
                     <th>Modified On</th>
                     <th>Actions</th>
@@ -53,15 +61,23 @@
             columns: [
                 {data: 'project_name', name: 'project_name'},
                 {data: 'developer_name', name: 'developer_name'},
-                {data: 'developer_email', name: 'developer_name'},
                 {data: 'client_name', name: 'client_name'},
+                {data: 'client_contact', name: 'client_contact'},
                 {data: 'booking_date', name: 'booking_date'},
                 {data: 'configuration', name: 'configuration'},
                 {data: 'tower', name: 'tower'},
                 {data: 'wing', name: 'wing'},
                 {data: 'flat_no', name: 'flat_no'},
+                {data: 'sourcing_manager', name: 'sourcing_manager'}, 
+                {data: 'sourcing_contact', name: 'sourcing_contact'}, 
                 {data: 'sales_person', name: 'sales_person'},
-                {data: 'sourcing_manager', name: 'sourcing_manager'},
+                {data: 'reporting_person'},
+                {data: 'agreement_value', name: 'agreement_value'},
+                {data: 'booking_amount', name: 'booking_amount'},
+                {data: 'brokerage'},
+                {data: 'revenue'},
+                {data: 'passback', name: 'passback'},
+                {data: 'company_revenue'},
                 {data: 'created_at', name: 'created_at'},
                 {data: 'updated_at', name: 'updated_at'},
                 {data: 'action', 'sortable': false},

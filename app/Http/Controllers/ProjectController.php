@@ -26,6 +26,9 @@ class ProjectController extends Controller
                 ->addColumn('name', function ($row) {
                     return $row->name;
                 })
+                ->addColumn('brokerage', function ($row) {
+                    return $row->brokerage." %";
+                })
                 ->addColumn('status', function ($row) {
                     return $row->status;
                 })
@@ -78,6 +81,7 @@ class ProjectController extends Controller
         //create project
         $project = new Project();
         $project->name = $request->input('name');
+        $project->brokerage = $request->input('brokerage');
         $project->save();
 
         return redirect()->route('project.index')->with('success', 'Project Added Successfully');
@@ -93,6 +97,7 @@ class ProjectController extends Controller
     {
         $project = Project::find($id);
         $project->name = $request->input('name');
+        $project->brokerage = $request->input('brokerage');
         $project->save();
 
         return redirect()->route('project.index')->with('success', 'Project Updated Successfully');

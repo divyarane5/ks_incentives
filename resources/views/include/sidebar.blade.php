@@ -119,6 +119,54 @@
 
         </li>
     @endcanany
+    @canany(['developer-view','project-view','developer_ladder-view'])
+        <li class="menu-item {{ in_array(Request::segment(1), ['role','location','department','designation','expense','vendor','business_unit','payment_method']) ? 'active open': '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle ">
+                <i class="menu-icon tf-icons bx bx-layout"></i>
+                <div data-i18n="Layouts">Ladders</div>
+            </a>
+            
+            
+            <ul class="menu-sub ">
+                @can('developer-view')
+                    <li class="menu-item {{ ((Request::segment(1) == 'developer')) ? 'active': '' }}">
+                        <a href="{{ route('developer.index') }}" class="menu-link">
+                            <div data-i18n="Without menu">Developer</div>
+                        </a>
+                    </li>
+                @endcan
+            </ul>
+            <ul class="menu-sub ">
+                @can('develop_ladder-view')
+                    <li class="menu-item {{ ((Request::segment(1) == 'developer_ladder')) ? 'active': '' }}">
+                        <a href="{{ route('developer_ladder.index') }}" class="menu-link">
+                            <div data-i18n="Without menu">AOP Ladder</div>
+                        </a>
+                    </li>
+                @endcan
+            </ul>
+            <ul class="menu-sub ">
+                @can('project-view')
+                    <li class="menu-item {{ ((Request::segment(1) == 'project')) ? 'active': '' }}">
+                        <a href="{{ route('project.index') }}" class="menu-link">
+                            <div data-i18n="Without menu">Project</div>
+                        </a>
+                    </li>
+                @endcan
+            </ul>
+            <ul class="menu-sub ">
+                @can('project_ladder-view')
+                    <li class="menu-item {{ ((Request::segment(1) == 'project_ladder')) ? 'active': '' }}">
+                        <a href="{{ route('project_ladder.index') }}" class="menu-link">
+                            <div data-i18n="Without menu">Project Ladder</div>
+                        </a>
+                    </li>
+                @endcan
+            </ul>
+           
+
+        </li>
+    @endcanany
 
     @canany(['configuration-view', 'indent-view-all', 'indent-view-own', 'indent-approval', 'indent-payment-conclude'])
         <!-- <li class="menu-item {{ in_array(Request::segment(1), ['indent_configuration', 'indent', 'indent-approval', 'indent-closure']) ? 'active open': '' }}">

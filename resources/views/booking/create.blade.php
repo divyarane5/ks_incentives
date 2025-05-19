@@ -70,32 +70,29 @@ $json1 = json_decode($response1, TRUE);
             <div class="card-body">
                 <div class="row">
                 <div class="mb-3 col-md-6">
-                        <label for="project_name" class="form-label">Project Name</label>
-                        <select name="user_id"  class="" id="user_id" aria-label="User" required>
-                          <option value="" >Select User</option>
-                          @if(!empty($project_name))
-                            @foreach ($project_name as $project_name)
-                                <option value="{{ $project_name->id }}" {{ (old('project_name') == $project_name->id) ? 'selected' : '' }}>{{ $project_name->name }}</option>
-                            @endforeach
-                          @endif
-                        </select>
-                        @error('project_name')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
-              
-                <div class="mb-3 col-md-6">
-                    <label class="form-label" for="developer_email">Developer Email<span class="start-mark">*</span></label>
-                    <input name="developer_email" class="form-control" id="developer_email" value="{{ old('developer_email') }}" required/>
-                    @error('developer_email')
+                    <label for="booking_date" class="form-label">Booking Date<span class="start-mark">*</span></label>
+                    <input class="form-control" name="booking_date" type="date" value="{{ old('booking_date') }}" id="booking_date" name="booking_date" @error('booking_date') autofocus @enderror required />
+                    @error('booking_date')
                         <span class="invalid-feedback" role="alert">
                             <strong>{{ $message }}</strong>
                         </span>
                     @enderror
                 </div>
-                <div class="mb-3 col-md-6">
+                
+               
+                
+                
+               
+                <!-- <div class="mb-3 col-md-6">
+                    <label class="form-label" for="sales_person">Sales Person<span class="start-mark">*</span></label>
+                    <input name="sales_person" class="form-control" id="sales_person" value="{{ old('sales_person') }}" required/>
+                    @error('sales_person')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div> -->
+               <div class="mb-3 col-md-6">
                     <label class="form-label" for="client_name">Client Name<span class="start-mark">*</span></label>
                     <input name="client_name" class="form-control" id="client_name" value="{{ old('client_name') }}" required/>
                     @error('client_name')
@@ -105,18 +102,79 @@ $json1 = json_decode($response1, TRUE);
                     @enderror
                 </div>
                 <div class="mb-3 col-md-6">
-                        <label for="booking_date" class="form-label">Booking Date<span class="start-mark">*</span></label>
-                        <input class="form-control" name="booking_date" type="date" value="{{ old('booking_date') }}" id="booking_date" name="booking_date" @error('booking_date') autofocus @enderror required />
-                        @error('booking_date')
+                    <label class="form-label" for="client_contact">Client Contact<span class="start-mark">*</span></label>
+                    <input name="client_contact" class="form-control" id="client_contact" value="{{ old('client_contact') }}" required/>
+                    @error('client_contact')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="lead_source">Lead Source<span class="start-mark">*</span></label>
+                    <input name="lead_source" class="form-control" id="lead_source" value="{{ old('lead_source') }}" required/>
+                    @error('lead_source')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+                
+                    <div class="mb-3 col-md-6">
+                        <label for="developer_id" class="form-label">Developer Name</label>
+                        <select name="developer_id"  class="" id="user_id" aria-label="User" required>
+                          <option value="" >Select Developer</option>
+                          @if(!empty($developer_name))
+                            @foreach ($developer_name as $developer_name)
+                                <option value="{{ $developer_name->id }}" {{ (old('developer_id') == $developer_name->id) ? 'selected' : '' }}>{{ $developer_name->name }}</option>
+                            @endforeach
+                          @endif
+                        </select>
+                        @error('developer_id')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>
                         @enderror
                     </div>
+                    <div class="mb-3 col-md-6">
+                        <label for="project_id" class="form-label">Project Name</label>
+                        <select name="project_id"  class="" id="project_id" aria-label="User" required>
+                          <option value="" >Select Project</option>
+                          @if(!empty($project_name))
+                            @foreach ($project_name as $project_name)
+                                <option value="{{ $project_name->id }}" {{ (old('project_id') == $project_name->id) ? 'selected' : '' }}>{{ $project_name->name }}</option>
+                            @endforeach
+                          @endif
+                        </select>
+                        @error('project_name')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+                    <div class="mb-3 col-md-6">
+                    <label class="form-label" for="sourcing_manager">Sourcing Manager<span class="start-mark">*</span></label>
+                    <input name="sourcing_manager" class="form-control" id="sourcing_manager" value="{{ old('sourcing_manager') }}" required/>
+                    @error('sourcing_manager')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+                
                 <div class="mb-3 col-md-6">
-                    <label class="form-label" for="tower">Tower<span class="start-mark">*</span></label>
-                    <input name="tower" class="form-control" id="tower" value="{{ old('tower') }}" required/>
-                    @error('tower')
+                    <label class="form-label" for="sourcing_contact">Sourcing Contact<span class="start-mark">*</span></label>
+                    <input name="sourcing_contact" class="form-control" id="sourcing_contact" value="{{ old('sourcing_contact') }}" required/>
+                    @error('sourcing_contact')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="booking_amount">Booking Amount</label>
+                    <input name="booking_amount" class="form-control" id="booking_amount" value="{{ old('booking_amount') }}" required/>
+                    @error('booking_amount')
                         <span class="invalid-feedback" role="alert">
                             <strong>{{ $message }}</strong>
                         </span>
@@ -132,7 +190,16 @@ $json1 = json_decode($response1, TRUE);
                     @enderror
                 </div>
                 <div class="mb-3 col-md-6">
-                    <label class="form-label" for="flat_no">Flat No.<span class="start-mark">*</span></label>
+                    <label class="form-label" for="tower">Tower<span class="start-mark">*</span></label>
+                    <input name="tower" class="form-control" id="tower" value="{{ old('tower') }}" required/>
+                    @error('tower')
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+                <div class="mb-3 col-md-6">
+                    <label class="form-label" for="flat_no">Flat No./ Unit No.<span class="start-mark">*</span></label>
                     <input name="flat_no" class="form-control" id="flat_no" value="{{ old('flat_no') }}" required/>
                     @error('flat_no')
                         <span class="invalid-feedback" role="alert">
@@ -149,26 +216,45 @@ $json1 = json_decode($response1, TRUE);
                         </span>
                     @enderror
                 </div>
+                
+                
+                
                 <div class="mb-3 col-md-6">
-                    <label class="form-label" for="sales_person">Sales Person<span class="start-mark">*</span></label>
-                    <input name="sales_person" class="form-control" id="sales_person" value="{{ old('sales_person') }}" required/>
-                    @error('sales_person')
+                    <label class="form-label" for="agreement_value">Agreement Value<span class="start-mark">*</span></label>
+                    <input name="agreement_value" class="form-control" id="agreement_value" value="{{ old('agreement_value') }}" required/>
+                    @error('agreement_value')
                         <span class="invalid-feedback" role="alert">
                             <strong>{{ $message }}</strong>
                         </span>
                     @enderror
                 </div>
                 <div class="mb-3 col-md-6">
-                    <label class="form-label" for="sourcing_manager">Sourcing Manager<span class="start-mark">*</span></label>
-                    <input name="sourcing_manager" class="form-control" id="sourcing_manager" value="{{ old('sourcing_manager') }}" required/>
-                    @error('sourcing_manager')
+                    <label class="form-label" for="agreement_value">Passback Amount</label>
+                    <input name="passback" class="form-control" id="passback" value="{{ old('passback') }}" required/>
+                    @error('passback')
                         <span class="invalid-feedback" role="alert">
                             <strong>{{ $message }}</strong>
                         </span>
                     @enderror
                 </div>
-
-
+                <div class="mb-3 col-md-6">
+                        <label for="project_name" class="form-label">Sales Person</label>
+                        <select name="sales_person"  class="" id="sales_person" aria-label="User" required>
+                          <option value="" >Select Sales Person</option>
+                          @if(!empty($user_name))
+                            @foreach ($user_name as $user_name)
+                                <option value="{{ $user_name->id }}" {{ (old('sales_person') == $user_name->id) ? 'selected' : '' }}>{{ $user_name->name }}</option>
+                            @endforeach
+                          @endif
+                        </select>
+                        @error('user_name')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                </div>
+                    
+                  
                     <div>
                         <button type="submit" class="btn btn-primary">Submit</button>
                     </div>

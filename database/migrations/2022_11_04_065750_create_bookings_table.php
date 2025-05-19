@@ -15,17 +15,22 @@ class CreateBookingsTable extends Migration
     {
         Schema::create('bookings', function (Blueprint $table) {
             $table->id();
-            $table->string('project_name');
-            $table->string('developer_name');
-            $table->string('developer_email');
-            $table->string('client_name');
+            $table->string('sales_person');
             $table->date('booking_date')->nullable();
+            $table->string('client_name');
+            $table->string('client_contact');
+            $table->string('project_id');
+            $table->string('developer_id');
+            $table->string('lead_source');
+            $table->string('sourcing_manager');
+            $table->string('sourcing_contact');
+            $table->string('tower');
             $table->string('configuration');
             $table->string('flat_no');
             $table->string('wing');
-            $table->string('tower');
-            $table->string('sales_person');
-            $table->string('sourcing_manager');
+            $table->string('booking_amount')->nullable();
+            $table->string('agreement_value');
+            $table->string('passback')->nullable();
             $table->unsignedInteger('created_by');
             $table->timestamps();
             $table->softDeletes();

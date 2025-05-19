@@ -351,8 +351,8 @@
                   <table role="presentation" border="0" cellpadding="0" cellspacing="0">
                     <tr>
                       <td>
-                        <p>Dear {{$booking->developer_name}},</p>
-                        <p>Greetings of the day from Homebazaar.com!</p>
+                        <p>Dear {{$booking->developer_id}},</p>
+                        <p>Greetings of the day from Keystone Real Esate Advisory Pvt Ltd.</p>
                         <p>We are excited to inform you that we have successfully closed a booking with {{$booking->developer_name}} with the below-mentioned details :</p>
                         <table class="w3-table-all w3-centered" style="border: 1px solid #ccc;     border-collapse: collapse;">
                             <tr style="border-bottom: 1px solid #ddd;">
@@ -364,7 +364,7 @@
                             <th style="padding: 8px 8px;">Wing</th>
                             <th style="padding: 8px 8px;">Cluster / Tower</th>
                             <th style="padding: 8px 8px;">Sales Executive </th>
-                            <th>( Homebazaar)	Sourcing Manager </th>
+                            <th>Sourcing Manager </th>
                             </tr>
                             <tr style="background-color: #f1f1f1; border-bottom: 1px solid #ddd;">
                             <td style="padding: 8px 8px; text-align: center;">{{$booking->project_name}}</td>
@@ -398,26 +398,26 @@
             <!-- END CENTERED WHITE CONTAINER -->
             <div style="">
                 <div class="email-d" style="display:flex; align-items:center">
-                    <h3 style="font-size: 16px; color: #6b6765;  font-weight: 500; margin-bottom: 0;">{{$user->u_name}}</h3>
+                    <h3 style="font-size: 16px; color: #6b6765;  font-weight: 500; margin-bottom: 0;">Username</h3>
                     
                 </div>
                 <div class="email-d" style="display:flex; align-items:center">
-                    <h3 style="font-size: 16px; color: #6b6765;  font-weight: 500; margin-bottom: 0;">{{$user->d_name}}</h3>
-                    <h3 style="font-size: 16px; color: #6b6765;  font-weight: 500; margin-bottom: 0;"> | HomeBazaar.com</h3>  
+                    <h3 style="font-size: 16px; color: #6b6765;  font-weight: 500; margin-bottom: 0;">D Name</h3>
+                    <h3 style="font-size: 16px; color: #6b6765;  font-weight: 500; margin-bottom: 0;"> | keystonerealestateadvisory.com</h3>  
                 </div>
                 <div class="email-f">
 
-                    <h3 style="color: #6b6765; font-weight: 500; font-size:16px; margin-bottom: 0;">Mobile : {{$user->mobile}}</h3>
+                    <h3 style="color: #6b6765; font-weight: 500; font-size:16px; margin-bottom: 0;">Mobile : 555555</h3>
                 </div>
                 <div class="email-f">
 
-                    <h3 style="color: #6b6765; font-weight: 500; font-size:16px; margin-bottom: 0;">2301, Cyber One, Sec 30(A),<br> Vashi, Navi Mumbai, 400703.</h3>
+                    <h3 style="color: #6b6765; font-weight: 500; font-size:16px; margin-bottom: 0;">Andheri</h3>
                 </div>
                 <div>
-                    <a href="https://in.linkedin.com/company/homebazaarcom" target="_blank"><img src="https://www.homebazzar.com/emailer/img/linkdln.jpg" alt="HomeBazaar.com" style=" border-radius: 4px; margin-top:4px  "></a></div>
+                    <!-- <a href="#" target="_blank"><img src="https://www.homebazzar.com/emailer/img/linkdln.jpg" alt="HomeBazaar.com" style=" border-radius: 4px; margin-top:4px  "></a></div> -->
 
 
-                    <a href="https://www.homebazaar.com/" target="_blank"><img src="https://keystonerealestateadvisory.com/public/img/gallery/ks-logo.webp" alt="HomeBazaar.com" style="width:30%; border:0;     margin-top: 2px;"></a>
+                    <a href="https://keystonerealestateadvisory.com/" target="_blank"><img src="https://keystonerealestateadvisory.com/public/img/gallery/ks-logo.webp" alt="keystonerealestateadvisory.com" style="width:30%; border:0;     margin-top: 2px;"></a>
                 </div>
             </div>
 
