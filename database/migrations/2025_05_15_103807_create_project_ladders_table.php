@@ -17,9 +17,10 @@ class CreateProjectLaddersTable extends Migration
             $table->id();
             $table->unsignedBigInteger('project_id')->index();
             $table->foreign('project_id')->references('id')->on('projects');
-            $table->unsignedBigInteger('aop_id')->index();
-            $table->foreign('aop_id')->references('id')->on('developer_ladders');
-            $table->string('booking');
+            $table->unsignedBigInteger('developer_id')->index();
+            $table->foreign('developer_id')->references('id')->on('developers');
+            $table->string('s_booking');
+            $table->string('e_booking');
             $table->string('ladder');
             $table->date('project_s_date');
             $table->date('project_e_date');

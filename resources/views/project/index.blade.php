@@ -19,7 +19,6 @@
             <thead>
                 <tr>
                     <th>Name</th>
-                    <th>Base Brokerage</th>
                     <th>Created On</th>
                     <th>Modified On</th>
                     <th>Actions</th>
@@ -43,7 +42,6 @@
             ajax: "{{ route('project.index') }}",
             columns: [
                 {data: 'name', name: 'projects.name'},
-                {data: 'brokerage', name: 'projects.brokerage'},
                 {data: 'created_at', name: 'projects.created_at'},
                 {data: 'updated_at', name: 'projects.updated_at'},
                 {data: 'action', 'sortable': false},

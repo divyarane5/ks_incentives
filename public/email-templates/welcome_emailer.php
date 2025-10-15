@@ -354,7 +354,7 @@ font-size: 14px;">
 </div>
 <div class="email-d" style="display:flex; align-items:center">
     <h3 style="font-size: 16px; color: #6b6765;  font-weight: 500;">[designation]</h3>
-    <h3 style="font-size: 16px; color: #6b6765;  font-weight: 500;"> | HomeBazaar.com</h3>  
+    <h3 style="font-size: 16px; color: #6b6765;  font-weight: 500;"> | Keystone Real Estate Advisory</h3>  
 </div>
 <div class="email-f">
 

@@ -33,28 +33,38 @@
                             </span>
                         @enderror
                     </div>
-                    <?php //print_r($developer_ladders); ?>
+                    <?php //print_r($developers); ?>
                     <div class="mb-3 col-md-6">
-                        <label class="form-label" for="aop_id">AOP<span class="start-mark">*</span></label>
-                        <select id="aop_id" name="aop_id" class="" @error('aop_id') autofocus @enderror>
-                            <option value="">Select AOP</option>
-                            @if (!empty($developer_ladders))
-                                @foreach ($developer_ladders as $key => $developer_ladder)
-                                    <option value="{{ $developer_ladder->id }}" {{ ($developer_ladder->id == old('aop_id') ? 'selected' : '') }}>{{ $developer_ladder->name }} {{$developer_ladder->ladder}}% ({{date('F', strtotime($developer_ladder->aop_s_date))}} {{date('Y', strtotime($developer_ladder->aop_s_date))}} - {{date('F', strtotime($developer_ladder->aop_e_date))}} {{date('Y', strtotime($developer_ladder->aop_e_date))}})</option>
+                        <label class="form-label" for="developer_id">Developer<span class="start-mark">*</span></label>
+                        <select id="developer_id" name="developer_id" class="" @error('developer_id') autofocus @enderror>
+                            <option value="">Select Developer</option>
+                            @if (!empty($developers))
+                                @foreach ($developers as $key => $developer)
+                                    <option value="{{ $developer->id }}" {{ ($developer->id == old('developer_id') ? 'selected' : '') }}>{{ $developer->name }}</option>
                                 @endforeach
                             @endif
                         </select>
-                        @error('aop_id')
+                        @error('developer_id')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>
                         @enderror
                     </div>
                     <div class="mb-3 col-md-6">
-                        <label class="form-label" for="name">No. of Booking<span class="start-mark">*</span></label>
-                        <input name="booking" class="form-control" id="booking" value="{{ old('booking') }}" required/>
+                        <label class="form-label" for="name">No. of Booking (From)<span class="start-mark">*</span></label>
+                        <input name="s_booking" class="form-control" id="s_booking" value="{{ old('s_booking') }}" required/>
           
-                        @error('booking')
+                        @error('s_booking')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label" for="name">No. of Booking (To)<span class="start-mark">*</span></label>
+                        <input name="e_booking" class="form-control" id="e_booking" value="{{ old('e_booking') }}" required/>
+          
+                        @error('e_booking')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>

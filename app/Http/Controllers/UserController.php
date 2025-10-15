@@ -12,16 +12,20 @@ use App\Models\Designation;
 use App\Models\Location;
 use App\Models\User;
 use Illuminate\Http\Request;
-use DataTables;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 use Maatwebsite\Excel\Facades\Excel;
+use Carbon\Carbon;
+use DataTables;
+use App\Helpers\ExcelSanitizer;
 
 class UserController extends Controller
 {
     private $userRepository;
 
-    function __construct(UserRepositoryInterface $userRepository)
+    public function __construct(UserRepositoryInterface $userRepository)
     {
         $this->middleware('permission:user-view', ['only' => ['index']]);
         $this->middleware('permission:user-create', ['only' => ['create','store']]);
@@ -32,108 +36,251 @@ class UserController extends Controller
     }
 
     public function index(Request $request)
-    {
-        if ($request->ajax()) {
-            $userRequest = $request->only(['entity', 'location_id', 'department_id', 'designation_id', 'role_id']);
-            $users = $this->userRepository->getUsers($userRequest);
-            return DataTables::of($users)
-                ->addColumn('role', function ($row) {
-                    return $row->getRoleNames()[0];
-                })
-                ->addColumn('action', function ($row) {
-                    $actions = '';
-                    $actions .= '<a class="dropdown-item" href="'.route('users.show', $row->id).'"><i class="bx bx-show  me-1"></i> View</a>';
-                    if (auth()->user()->can('user-edit')) {
-                        $actions .= '<a class="dropdown-item" href="'.route('users.edit', $row->id).'"
-                                        ><i class="bx bx-edit-alt me-1"></i> Edit</a>';
+{
+    if ($request->ajax()) {
+        $filters = array_filter($request->only([
+            'entity',
+            'work_location_id',
+            'department_id',
+            'designation_id',
+            'role_id'
+        ]));
+
+        $users = $this->userRepository->getUsers($filters);
+
+        return DataTables::of($users)
+            ->addColumn('role', function ($row) {
+                    // If Spatie roles exist, display them
+                    if ($row->roles && $row->roles->count()) {
+                        return $row->roles->pluck('name')->join(', ');
                     }
 
-                    if (auth()->user()->can('user-delete')) {
-                        $actions .= '<button class="dropdown-item" onclick="deleteUser('.$row->id.')"
-                                        ><i class="bx bx-trash me-1"></i> Delete</button>
-                                    <form id="'.$row->id.'" action="'.route('users.destroy', $row->id).'" method="POST" class="d-none">
-                                        '.csrf_field().'
-                                        '.method_field('delete').'
-                                    </form>';
+                    // Else fallback to role_id column (for legacy data)
+                    if ($row->role_id) {
+                        return \Spatie\Permission\Models\Role::find($row->role_id)->name ?? '';
                     }
-                    if (auth()->user()->can('configuration-view')) {
-                        $actions .= '<a class="dropdown-item" href="'.route('indent_configuration.index').'?user_id='.$row->id.'"><i class="bx bx-list-ul me-1"></i> Indent Configuration</a>';
-                    }
-                    if (!empty($actions)) {
-                        return '<div class="dropdown">
-                                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                        <i class="bx bx-dots-vertical-rounded"></i>
-                                        </button>
-                                        <div class="dropdown-menu">
-                                        '.$actions.'
-                                        </div>
-                                    </div>';
-                    }
+
                     return '';
                 })
-                ->rawColumns(['action'])
-                ->make(true);
-        }
-        $locations = Location::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $departments = Department::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $designations = Designation::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $roles = Role::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        return view('users.index', compact('locations', 'departments', 'designations', 'roles'));
+            ->addColumn('designation', function($row) {
+                return $row->designation->name ?? '';
+            })
+            ->addColumn('department', function($row) {
+                return $row->department->name ?? '';
+            })
+            ->addColumn('location', function($row) {
+                return $row->location->name ?? '';
+            })
+            ->addColumn('action', function ($row) {
+                $actions = '<a class="dropdown-item" href="'.route('users.show', $row->id).'">
+                                <i class="bx bx-show me-1"></i> View
+                            </a>';
+
+                if (auth()->user()->can('user-edit')) {
+                    $actions .= '<a class="dropdown-item" href="'.route('users.edit', $row->id).'">
+                                    <i class="bx bx-edit-alt me-1"></i> Edit
+                                </a>';
+                }
+
+                if (auth()->user()->can('user-delete')) {
+                    $actions .= '<button class="dropdown-item" type="button" onclick="deleteUser('.$row->id.')">
+                                    <i class="bx bx-trash me-1"></i> Delete
+                                </button>
+                                <form id="delete-form-'.$row->id.'" action="'.route('users.destroy', $row->id).'" method="POST" class="d-none">'
+                                .csrf_field()
+                                .method_field('DELETE').'
+                                </form>';
+                }
+
+                if (auth()->user()->can('configuration-view')) {
+                    $actions .= '<a class="dropdown-item" href="'.route('indent_configuration.index').'?user_id='.$row->id.'">
+                                    <i class="bx bx-list-ul me-1"></i> Indent Configuration
+                                </a>';
+                }
+
+                return '<div class="dropdown">
+                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu">'.$actions.'</div>
+                        </div>';
+            })
+            ->rawColumns(['action'])
+            ->make(true);
     }
+
+    $locations = Location::select(['id', 'name'])->orderBy('name')->get();
+    $departments = Department::select(['id', 'name'])->orderBy('name')->get();
+    $designations = Designation::select(['id', 'name'])->orderBy('name')->get();
+    $roles = Role::select(['id', 'name'])->orderBy('name')->get();
+
+    return view('users.index', compact('locations', 'departments', 'designations', 'roles'));
+}
+
+
 
     public function create()
     {
-        $locations = Location::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $departments = Department::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $designations = Designation::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $reportingUsers = User::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $roles = Role::select(['id', 'name'])->orderBy('name', 'asc')->get();
+        $locations = Location::select(['id', 'name'])->orderBy('name')->get();
+        $departments = Department::select(['id', 'name'])->orderBy('name')->get();
+        $designations = Designation::select(['id', 'name'])->orderBy('name')->get();
+        $reportingUsers = User::select(['id', 'name'])->orderBy('name')->get();
+        $roles = Role::select(['id', 'name'])->orderBy('name')->get();
         return view('users.create', compact('locations', 'departments', 'designations', 'reportingUsers', 'roles'));
     }
 
-    public function store(UserRequest $request)
+   public function store(Request $request)
     {
-        //store user
-        $user = new User();
-        $this->userRepository->updateUser($user, $request);
+        //dd("1");
+        // ✅ Validate core required fields
+        // $validated = $request->validate([
+        //     'employee_code' => 'required|unique:users,employee_code',
+        //     'entity' => 'required|string',
+        //     'first_name' => 'required|string|max:255',
+        //     'last_name' => 'required|string|max:255',
+        //     'role_id' => 'required|numeric',
+        //     'official_email' => 'nullable|email|unique:users,official_email',
+        //     'photo' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
+        // ]);
+        //dd("2");
+        // ✅ Handle photo upload
+        $photoPath = $request->hasFile('photo') ? $request->file('photo')->store('user_photos', 'public') : null;
 
-        //profile photo
-        if ($request->has('photo')) {
-            $user->photo = uploadFile($request->file('photo'), config('uploadfilepath.USER_PROFILE_PHOTO'));
-            $user->save();
+        // ✅ Calculate salary components server-side
+        $ctc = floatval($request->current_ctc ?? 0);
+        $monthly = $ctc / 12;
+        $monthly_basic = $monthly * 0.5;
+        $monthly_hra = $monthly_basic * 0.5;
+        $special_allowance = $monthly * 0.1;
+        $conveyance_allowance = $monthly * 0.1;
+        $medical_reimbursement = $monthly * 0.05;
+        $pfEmployer = 1800;
+        $pfEmployee = 1800;
+        $profTax = 200;
+        $deductions = $pfEmployee + $pfEmployer + $profTax;
+        $net_salary = $monthly - $deductions;
+
+        // ✅ Create new user
+        $user = new User();
+        $user->employee_code = $request->employee_code;
+        $user->entity = $request->entity;
+        $user->title = $request->title;
+        $user->first_name = $request->first_name;
+        $user->middle_name = $request->middle_name;
+        $user->last_name = $request->last_name;
+        $user->gender = $request->gender;
+        $user->photo = $photoPath;
+        $user->status = $request->status ?? 'Active';
+        $user->name = trim($request->title . ' ' . $request->first_name . ' ' . $request->middle_name . ' ' . $request->last_name);
+
+        // Contact info
+        $user->official_contact = $request->official_contact;
+        $user->personal_contact = $request->personal_contact;
+        $user->official_email = $request->official_email;
+        $user->personal_email = $request->personal_email;
+        $user->email = $request->official_email; // login email
+
+        // Employment details
+        $user->department_id = $request->department_id;
+        $user->designation_id = $request->designation_id;
+        $user->role_id = $request->role_id;
+        $user->reporting_manager_id = $request->reporting_manager_id;
+        $user->location_handled = $request->location_handled;
+        $user->work_location_id = $request->work_location_id;
+        $user->joining_date = $request->joining_date;
+        $user->confirm_date = $request->confirm_date;
+        $user->leaving_date = $request->leaving_date;
+        $user->exit_status = $request->exit_status;
+        $user->reason_for_leaving = $request->reason_for_leaving;
+        $user->fnf_status = $request->fnf_status;
+
+        // Salary & Compensation (server-side calculated)
+        $user->current_ctc = $ctc;
+        $user->monthly_basic = $monthly_basic;
+        $user->monthly_hra = $monthly_hra;
+        $user->special_allowance = $special_allowance;
+        $user->conveyance_allowance = $conveyance_allowance;
+        $user->medical_reimbursement = $medical_reimbursement;
+        $user->professional_tax = $profTax;
+        $user->pf_employer = $pfEmployer;
+        $user->pf_employee = $pfEmployee;
+        $user->net_deductions = $deductions;
+        $user->net_salary = $net_salary;
+
+        // Statutory & Banking
+        $user->pf_status = $request->pf_status;
+        $user->uan_number = $request->uan_number;
+        $user->bank_name = $request->bank_name;
+        $user->ifsc_code = $request->ifsc_code;
+        $user->bank_account_number = $request->bank_account_number;
+        
+        // Personal & Emergency
+        $personal_fields = [
+            'dob', 'blood_group', 'communication_address', 'permanent_address',
+            'languages_known', 'education_qualification', 'marital_status', 'marriage_date',
+            'spouse_name', 'parents_contact', 'emergency_contact_name', 'emergency_contact_relationship',
+            'emergency_contact_number', 'pan_no', 'aadhar_no'
+        ];
+        foreach ($personal_fields as $field) {
+            $user->$field = $request->$field;
         }
 
-        return redirect()->route('users.index')->with('success', 'User Added Successfully');
+        // Assets & Misc
+        $user->work_off = $request->work_off;
+        $user->additional_comments = $request->additional_comments;
+
+        // Default password
+        $user->password = Hash::make('Welcome@123');
+        //dd("3");
+        $user->save();
+        //dd("4");
+        return redirect()->route('users.index')->with('success', 'User created successfully!');
     }
 
     public function edit($id)
     {
-        $user = User::find($id);
-        $locations = Location::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $departments = Department::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $designations = Designation::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $reportingUsers = User::select(['id', 'name'])->where('id', '!=', $id)->orderBy('name', 'asc')->get();
-        $roles = Role::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        return view('users.edit', compact('user', 'locations', 'departments', 'designations', 'reportingUsers', 'roles'));
+        $user = User::findOrFail($id);
+        $departments = Department::all();
+        $designations = Designation::all();
+        $roles = Role::all();
+        $reportingUsers = User::all();
+        $locations = Location::all();
+        $users = User::where('id', '!=', $id)->get(); // for reporting user dropdown
+
+        return view('users.edit', compact(
+            'user',
+            'roles',
+            'departments',
+            'designations',
+            'reportingUsers',
+            'locations',
+            'users'
+        ));
     }
 
     public function update(UserRequest $request, $id)
     {
-        //store user
-        $user = User::find($id);
+        $user = User::findOrFail($id);
         $this->userRepository->updateUser($user, $request);
 
-        //profile photo
-        if ($request->has('photo')) {
-            if ($user->photo != "") {
+        // ✅ Handle photo upload separately
+        if ($request->hasFile('photo')) {
+            if (!empty($user->photo) && file_exists(storage_path('app/'.$user->photo))) {
                 unlink(storage_path('app/'.$user->photo));
             }
             $user->photo = uploadFile($request->file('photo'), config('uploadfilepath.USER_PROFILE_PHOTO'));
             $user->save();
         }
 
-        return redirect()->route('users.index')->with('success', 'User Updated Successfully');
+        // ✅ Update role
+        if ($request->filled('role_id')) {
+            $user->syncRoles([$request->role_id]);
+        }
+
+        return redirect()->route('users.index')->with('success', 'User updated successfully!');
     }
+
+
 
     public function destroy($id)
     {
@@ -141,7 +288,6 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'User Deleted Successfully');
     }
 
-    //profile section
     public function account()
     {
         return view('users.account');
@@ -150,15 +296,14 @@ class UserController extends Controller
     public function updateProfile(UserProfileRequest $request)
     {
         $user = User::find(auth()->user()->id);
-        $user->name = $request->input('name');
-        $user->dob = $request->input('dob');
-        $user->gender = $request->input('gender');
+        $user->name = $request->name;
+        $user->dob = $request->dob;
+        $user->gender = $request->gender;
         $user->save();
 
-        //profile photo
         if ($request->has('photo')) {
-            if (auth()->user()->photo != "") {
-                unlink(storage_path('app/'.auth()->user()->photo));
+            if ($user->photo != "") {
+                unlink(storage_path('app/'.$user->photo));
             }
             $user->photo = uploadFile($request->file('photo'), config('uploadfilepath.USER_PROFILE_PHOTO'));
             $user->save();
@@ -169,15 +314,78 @@ class UserController extends Controller
 
     public function importUser()
     {
+      //  echo "dd"; exit;
         Excel::import(new ImportUser, storage_path('app/employees.xlsx'));
         Excel::import(new UpdateUserReporting, storage_path('app/employees.xlsx'));
-        //return redirect()->back();
     }
-
     public function show($id)
     {
         $user = User::find($id);
         return view('users.view', compact('user'));
     }
+
+
+    // ✅ Show the import page (upload form)
+    // public function showprocess()
+    // {
+    //     return view('users.import');
+    // }
+
+    // // ✅ Handle the import upload
+    // public function import(Request $request)
+    // {
+    //     $request->validate([
+    //         'file' => 'required|mimes:xlsx,csv'
+    //     ]);
+
+    //     $file = $request->file('file');
+
+    //     // Sanitize headers first (optional, just for logging/debug)
+    //     $cleanHeaders = ExcelSanitizer::sanitizeHeaders($file->getRealPath());
+    //     logger('Sanitized Headers: ' . implode(', ', $cleanHeaders));
+
+    //     $import = new ImportUser();
+    //     Excel::import($import, $file);
+
+    //     // Get skipped rows including duplicates
+    //     $skipped = $import->failures(); 
+
+    //     $messages = [];
+    //     foreach ($skipped as $failure) {
+    //         $messages[] = "Row {$failure->row()}: " . implode(', ', $failure->errors());
+    //     }
+
+    //     // You can also log duplicates separately
+    //     logger('Skipped duplicates during import');
+
+    //     return redirect()->back()->with('success', 'Users imported successfully!')
+    //                             ->with('skipped', $messages);
+    // }
+
+    // // ✅ Download import template
+    // public function downloadTemplate()
+    // {
+    //     $headers = [
+    //         'employee_code', 'entity', 'title', 'first_name', 'middle_name', 'last_name', 'gender', 'status',
+    //         'official_contact', 'personal_contact', 'official_email', 'personal_email',
+    //         'department', 'designation', 'role', 'reporting_manager', 'location_handled', 'work_location',
+    //         'joining_date', 'confirm_date', 'leaving_date', 'exit_status', 'reason_for_leaving', 'fnf_status',
+    //         'current_ctc', 'monthly_basic', 'monthly_hra', 'special_allowance', 'conveyance_allowance',
+    //         'medical_reimbursement', 'professional_tax', 'pf_employer', 'pf_employee', 'net_deductions', 'net_salary',
+    //         'pf_status', 'uan_number', 'bank_name', 'ifsc_code', 'bank_account_number',
+    //         'dob', 'blood_group', 'communication_address', 'permanent_address', 'languages_known', 'education_qualification',
+    //         'marital_status', 'marriage_date', 'spouse_name', 'parents_contact', 'emergency_contact_name',
+    //         'emergency_contact_relationship', 'emergency_contact_number', 'pan_no', 'aadhar_no',
+    //         'work_off', 'additional_comments'
+    //     ];
+
+    //     $filePath = storage_path('app/public/user_import_template.csv');
+    //     $file = fopen($filePath, 'w');
+    //     fputcsv($file, $headers);
+    //     fclose($file);
+
+    //     return response()->download($filePath, 'user_import_template.csv');
+    // }
+
 
 }

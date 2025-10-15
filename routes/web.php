@@ -31,6 +31,10 @@ Route::group(['middleware' => 'auth'], function() {
     Route::resource('users', App\Http\Controllers\UserController::class);
     Route::get('/import_users', [App\Http\Controllers\UserController::class, 'importUser'])->name('user.import');
 
+    // Route::get('/users/import', [App\Http\Controllers\UserController::class, 'showprocess'])->name('users.import.showprocess');
+    // Route::post('/users/import', [App\Http\Controllers\UserController::class, 'import'])->name('users.import');
+    // Route::get('/users/import/template', [App\Http\Controllers\UserController::class, 'downloadTemplate'])->name('users.import.template');
+    
     //Location
     Route::resource('location', App\Http\Controllers\LocationController::class);
 
@@ -43,7 +47,7 @@ Route::group(['middleware' => 'auth'], function() {
     //aop ladder
     Route::resource('developer_ladder', App\Http\Controllers\DeveloperLadderController::class);
     
-    //aop ladder
+    //site ladder
     Route::resource('project_ladder', App\Http\Controllers\ProjectLadderController::class);
     
     //Department
@@ -51,6 +55,26 @@ Route::group(['middleware' => 'auth'], function() {
 
     //Designation
     Route::resource('designation', App\Http\Controllers\DesignationController::class);
+
+    //Business Unit
+    Route::resource('business_unit', App\Http\Controllers\BusinessUnitController::class);
+
+    //Booking
+    Route::resource('booking', App\Http\Controllers\BookingController::class);
+    Route::post('booking/update_status', [App\Http\Controllers\BookingController::class, 'updateStatus'])->name('booking.update_status');
+    Route::post('booking/update_istatus', [App\Http\Controllers\BookingController::class, 'updateIStatus'])->name('booking.update_istatus');
+    Route::post('booking/update_bstatus', [App\Http\Controllers\BookingController::class, 'updateBStatus'])->name('booking.update_bstatus');
+    Route::get('send_booking_mail/{id}', [App\Http\Controllers\BookingController::class, 'sendBookingMail']);
+
+    //Business Unit
+    Route::resource('invoice', App\Http\Controllers\InvoiceController::class);
+
+    //profile
+    Route::get('/account', [App\Http\Controllers\UserController::class, 'account'])->name('account');
+    Route::post('/update_profile', [App\Http\Controllers\UserController::class, 'updateProfile'])->name('update_profile');
+
+    //roles and permissions
+    Route::resource('role', App\Http\Controllers\RoleController::class)->except(['show']);
 
     //Expense
     Route::resource('expense', App\Http\Controllers\ExpenseController::class);
@@ -63,9 +87,6 @@ Route::group(['middleware' => 'auth'], function() {
     Route::get('vendor_dropdown/{expense_id}', [App\Http\Controllers\VendorController::class, 'getVendorDropdown'])->name('vendor.dropdown');
     Route::post('vendor/ajax/store', [App\Http\Controllers\VendorController::class, 'ajaxStore'])->name('vendor.ajax.store');
     Route::post('vendor/update_status', [App\Http\Controllers\VendorController::class, 'updateStatus'])->name('vendor.update_status');
-
-    //Business Unit
-    Route::resource('business_unit', App\Http\Controllers\BusinessUnitController::class);
 
     //Payment Method
     Route::resource('payment_method', App\Http\Controllers\PaymentMethodController::class);
@@ -80,17 +101,6 @@ Route::group(['middleware' => 'auth'], function() {
     //Client Response
     Route::resource('client_response', App\Http\Controllers\ReferralClientController::class);
     Route::get('client_response_service', [App\Http\Controllers\ReferralClientController::class, 'sresponse']);
-
-    //Booking
-    Route::resource('booking', App\Http\Controllers\BookingController::class);
-    Route::get('send_booking_mail/{id}', [App\Http\Controllers\BookingController::class, 'sendBookingMail']);
-
-    //profile
-    Route::get('/account', [App\Http\Controllers\UserController::class, 'account'])->name('account');
-    Route::post('/update_profile', [App\Http\Controllers\UserController::class, 'updateProfile'])->name('update_profile');
-
-    //roles and permissions
-    Route::resource('role', App\Http\Controllers\RoleController::class)->except(['show']);
 
     //Indent configuration
     Route::resource('indent_configuration', App\Http\Controllers\IndentConfigurationController::class)->except(['show']);

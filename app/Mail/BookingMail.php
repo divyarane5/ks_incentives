@@ -29,7 +29,8 @@ class BookingMail extends Mailable
      */
     public function build()
     {
-       // print_r($this->data);   echo $this->data['booking']->email;  exit;
-        return $this->from($this->data['booking']->u_email, $this->data['booking']->u_name)->subject('Congratulations ! Keystone Real Esate Advisory needs confirmation over booking of Client Name: '.$this->data['booking']->client_name.' in Project : '.$this->data['booking']->project_name.'')->with($this->data)->view('booking.show');
+        //print_r($this->data); 
+        //echo $this->data['user']->u_email;  exit;
+        return $this->from($this->data['user']->u_email, $this->data['user']->u_name)->subject('Congratulations ! Keystone Real Esate Advisory needs confirmation over booking of Client Name: '.$this->data['booking']->client_name.' in Project : '.$this->data['booking']->project_name.'')->with($this->data)->view('booking.show');
     }
 }

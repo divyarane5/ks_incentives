@@ -18,6 +18,7 @@ class CreateDeveloperLaddersTable extends Migration
             $table->unsignedBigInteger('developer_id')->index();
             $table->foreign('developer_id')->references('id')->on('developers');
             $table->string('aop');
+            $table->enum('ladder_type', ['flat', 'stepup'])->nullable();
             $table->string('ladder');
             $table->date('aop_s_date');
             $table->date('aop_e_date');

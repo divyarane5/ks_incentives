@@ -34,12 +34,12 @@
                         @enderror
                     </div>
                     <div class="mb-3 col-md-6">
-                        <label class="form-label" for="aop_id">Project<span class="start-mark">*</span></label>
-                        <select id="aop_id" name="aop_id" class="" @error('aop_id') autofocus @enderror required>
+                        <label class="form-label" for="developer_id">Developer<span class="start-mark">*</span></label>
+                        <select id="developer_id" name="developer_id" class="" @error('developer_id') autofocus @enderror required>
                             <option value="">Select Project</option>
-                            @if (!empty($developer_ladders))
-                                @foreach ($developer_ladders as $key => $developer_ladder)
-                                    <option value="{{ $developer_ladder->id }}" {{ ($developer_ladder->id == ((old('aop_id') != "") ? old('aop_id') : $project_ladder->aop_id) ? 'selected' : '') }}>{{ $developer_ladder->name }} {{$developer_ladder->ladder}}% ({{date('F', strtotime($developer_ladder->aop_s_date))}} {{date('Y', strtotime($developer_ladder->aop_s_date))}} - {{date('F', strtotime($developer_ladder->aop_e_date))}} {{date('Y', strtotime($developer_ladder->aop_e_date))}})</option>
+                            @if (!empty($developers))
+                                @foreach ($developers as $key => $developer)
+                                    <option value="{{ $developer->id }}" {{ ($developer->id == ((old('developer_id') != "") ? old('developer_id') : $project_ladder->developer_id) ? 'selected' : '') }}>{{ $developer->name }}</option>
                                 @endforeach
                             @endif
                         </select>
@@ -50,9 +50,18 @@
                         @enderror
                     </div>
                     <div class="mb-3 col-md-6">
-                        <label class="form-label" for="name">No. Of Bookings<span class="start-mark">*</span></label>
-                        <input name="booking" class="form-control" id="booking" value="{{ (old('booking') != "") ? old('booking') : $project_ladder->booking }}" required />
-                        @error('booking')
+                        <label class="form-label" for="name">No. Of Bookings (From)<span class="start-mark">*</span></label>
+                        <input name="s_booking" class="form-control" id="s_booking" value="{{ (old('s_booking') != "") ? old('s_booking') : $project_ladder->s_booking }}" required />
+                        @error('s_booking')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </div>
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label" for="name">No. Of Bookings (To)<span class="start-mark">*</span></label>
+                        <input name="e_booking" class="form-control" id="e_booking" value="{{ (old('e_booking') != "") ? old('e_booking') : $project_ladder->e_booking }}" required />
+                        @error('e_booking')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>

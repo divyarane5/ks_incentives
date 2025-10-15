@@ -2,56 +2,56 @@
 
 @section('content')
 <?php
-$curl = curl_init();
+// $curl = curl_init();
 
-curl_setopt_array($curl, array(
-  CURLOPT_URL => 'https://www.homebazaar.com/api/v2/searchfilter',
-  CURLOPT_RETURNTRANSFER => true,
-  CURLOPT_ENCODING => '',
-  CURLOPT_MAXREDIRS => 10,
-  CURLOPT_TIMEOUT => 0,
-  CURLOPT_FOLLOWLOCATION => true,
-  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-  CURLOPT_CUSTOMREQUEST => 'POST',
-  CURLOPT_POSTFIELDS =>'{"city_name":"Mumbai","city_id":1,"module_type":"buy","limit":5000}',
-  CURLOPT_HTTPHEADER => array(
-    'Content-Type: application/json'
-  ),
-));
+// curl_setopt_array($curl, array(
+//   CURLOPT_URL => 'https://www.homebazaar.com/api/v2/searchfilter',
+//   CURLOPT_RETURNTRANSFER => true,
+//   CURLOPT_ENCODING => '',
+//   CURLOPT_MAXREDIRS => 10,
+//   CURLOPT_TIMEOUT => 0,
+//   CURLOPT_FOLLOWLOCATION => true,
+//   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+//   CURLOPT_CUSTOMREQUEST => 'POST',
+//   CURLOPT_POSTFIELDS =>'{"city_name":"Mumbai","city_id":1,"module_type":"buy","limit":5000}',
+//   CURLOPT_HTTPHEADER => array(
+//     'Content-Type: application/json'
+//   ),
+// ));
 
-$response = curl_exec($curl);
+// $response = curl_exec($curl);
 
 
-curl_close($curl);
+// curl_close($curl);
 
-$json = json_decode($response, TRUE);
-//print_r($json); exit;
-// foreach ($json['data'] as $index => $v) {
-//   echo $v['projectName'].'<br>';
-// }  exit;
-?>
-<?php
+// $json = json_decode($response, TRUE);
+// //print_r($json); exit;
+// // foreach ($json['data'] as $index => $v) {
+// //   echo $v['projectName'].'<br>';
+// // }  exit;
+// ?>
+// <?php
 
-$curl1 = curl_init();
+// $curl1 = curl_init();
 
-curl_setopt_array($curl1, array(
-  CURLOPT_URL => 'https://www.homebazaar.com/api/v2/developers?skip=0&limit=5000',
-  CURLOPT_RETURNTRANSFER => true,
-  CURLOPT_ENCODING => '',
-  CURLOPT_MAXREDIRS => 10,
-  CURLOPT_TIMEOUT => 0,
-  CURLOPT_FOLLOWLOCATION => true,
-  CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-  CURLOPT_CUSTOMREQUEST => 'GET',
-  CURLOPT_HTTPHEADER => array(
-    'Cookie: AWSALBTG=uGODxQPrbEwmiONbQm7WMr7P3VsN74W8sg0Vk4rmMJTjlAEtwxAbATR2TqBUFEf9fdQBYGDILS4KtdqgSp9lnJdJuP6/betV+JRaddSmvzWiqkCiDi1APjMPOdTool23W4CoIj/BeS50o9oI/hKBUcEhFdEF9DH/crPcOjP1Hzy+Wa+QicM=; AWSALBTGCORS=uGODxQPrbEwmiONbQm7WMr7P3VsN74W8sg0Vk4rmMJTjlAEtwxAbATR2TqBUFEf9fdQBYGDILS4KtdqgSp9lnJdJuP6/betV+JRaddSmvzWiqkCiDi1APjMPOdTool23W4CoIj/BeS50o9oI/hKBUcEhFdEF9DH/crPcOjP1Hzy+Wa+QicM='
-  ),
-));
+// curl_setopt_array($curl1, array(
+//   CURLOPT_URL => 'https://www.homebazaar.com/api/v2/developers?skip=0&limit=5000',
+//   CURLOPT_RETURNTRANSFER => true,
+//   CURLOPT_ENCODING => '',
+//   CURLOPT_MAXREDIRS => 10,
+//   CURLOPT_TIMEOUT => 0,
+//   CURLOPT_FOLLOWLOCATION => true,
+//   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+//   CURLOPT_CUSTOMREQUEST => 'GET',
+//   CURLOPT_HTTPHEADER => array(
+//     'Cookie: AWSALBTG=uGODxQPrbEwmiONbQm7WMr7P3VsN74W8sg0Vk4rmMJTjlAEtwxAbATR2TqBUFEf9fdQBYGDILS4KtdqgSp9lnJdJuP6/betV+JRaddSmvzWiqkCiDi1APjMPOdTool23W4CoIj/BeS50o9oI/hKBUcEhFdEF9DH/crPcOjP1Hzy+Wa+QicM=; AWSALBTGCORS=uGODxQPrbEwmiONbQm7WMr7P3VsN74W8sg0Vk4rmMJTjlAEtwxAbATR2TqBUFEf9fdQBYGDILS4KtdqgSp9lnJdJuP6/betV+JRaddSmvzWiqkCiDi1APjMPOdTool23W4CoIj/BeS50o9oI/hKBUcEhFdEF9DH/crPcOjP1Hzy+Wa+QicM='
+//   ),
+// ));
 
-$response1 = curl_exec($curl1);
+// $response1 = curl_exec($curl1);
 
-curl_close($curl1);
-$json1 = json_decode($response1, TRUE);
+// curl_close($curl1);
+// $json1 = json_decode($response1, TRUE);
 //print_r($json1); exit;
 ?>
 

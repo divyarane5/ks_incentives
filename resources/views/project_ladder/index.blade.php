@@ -19,8 +19,9 @@
             <thead>
                 <tr>
                     <th>Project Name</th>
-                    <th>AOP </th>
-                    <th>No. of Bookings</th>
+                    <th>Developer Name </th>
+                    <th>No. of Bookings (From)</th>
+                    <th>No. of Bookings (To)</th>
                     <th>Ladder</th>
                     <th>Project Start Date</th>
                     <th>Project End Date</th>
@@ -47,8 +48,9 @@
             ajax: "{{ route('project_ladder.index') }}",
             columns: [
                 {data: 'project_id', name: 'project_ladders.project_id'},
-                {data: 'aop_id', name: 'project_ladders.aop_id'},
-                {data: 'booking', name: 'project_ladders.booking'},
+                {data: 'developer_id', name: 'project_ladders.developer_id'},
+                {data: 's_booking', name: 'project_ladders.s_booking'},
+                {data: 'e_booking', name: 'project_ladders.e_booking'},
                 {data: 'ladder', name: 'project_ladders.ladder'},
                 {data: 'project_s_date', name: 'project_ladders.project_s_date'},
                 {data: 'project_e_date', name: 'project_ladders.project_e_date'},

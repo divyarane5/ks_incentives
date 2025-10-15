@@ -20,6 +20,7 @@ class CreateBookingsTable extends Migration
             $table->string('client_name');
             $table->string('client_contact');
             $table->string('project_id');
+            $table->string('brokerage');
             $table->string('developer_id');
             $table->string('lead_source');
             $table->string('sourcing_manager');
@@ -31,6 +32,14 @@ class CreateBookingsTable extends Migration
             $table->string('booking_amount')->nullable();
             $table->string('agreement_value');
             $table->string('passback')->nullable();
+            $table->string('additional_kicker')->nullable();
+           // $table->tinyInteger('booking_confirm')->default(0);
+            $table->enum('booking_confirm', ['pending', 'approved', 'cancelled'])->nullable();
+            $table->text('remark')->nullable();
+            $table->string('payment_done')->nullable();
+            $table->tinyInteger('registration_confirm')->default(0);
+            $table->date('registration_date')->nullable();
+            $table->tinyInteger('invoice_raised')->default(0);
             $table->unsignedInteger('created_by');
             $table->timestamps();
             $table->softDeletes();

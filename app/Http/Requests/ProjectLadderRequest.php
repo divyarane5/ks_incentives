@@ -25,8 +25,9 @@ class ProjectLadderRequest extends FormRequest
     {
         return [
             'project_id' => 'required',
-            'aop_id' => 'required',
-            'booking' => 'required',
+            'developer_id' => 'required',
+            's_booking' => 'required',
+            'e_booking' => 'required',
             'ladder' => 'required',
             'project_s_date' => 'required',
             'project_e_date' => 'required'

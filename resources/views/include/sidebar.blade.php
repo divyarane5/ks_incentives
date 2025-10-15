@@ -89,7 +89,7 @@
                     </li>
                 @endcan
             </ul>
-            <ul class="menu-sub ">
+            <!-- <ul class="menu-sub ">
                 @can('project-view')
                     <li class="menu-item {{ ((Request::segment(1) == 'project')) ? 'active': '' }}">
                         <a href="{{ route('project.index') }}" class="menu-link">
@@ -106,7 +106,7 @@
                         </a>
                     </li>
                 @endcan
-            </ul>
+            </ul> -->
             <!-- <ul class="menu-sub ">
                 @can('payment_method-view')
                     <li class="menu-item {{ ((Request::segment(1) == 'payment_method')) ? 'active': '' }}">

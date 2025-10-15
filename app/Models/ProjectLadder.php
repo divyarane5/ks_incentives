@@ -13,7 +13,7 @@ class ProjectLadder extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'project_id','aop_id','booking','ladder','project_s_date','project_e_date'
+        'project_id','developer_id','s_booking','e_booking','ladder','project_s_date','project_e_date'
     ];
 
     protected static function boot() { 

@@ -3,10 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\ProjectLadder;
-use App\Models\DeveloperLadder;
+use App\Models\Developer;
 use App\Models\Project;
 use App\Http\Requests\ProjectLadderRequest;
-use App\Http\Requests\DeveloperLadderRequest;
+use App\Http\Requests\DeveloperRequest;
 use DataTables;
 use Illuminate\Http\Request;
 use DB;
@@ -35,16 +35,18 @@ class ProjectLadderController extends Controller
                             ->first();
                     return $project->name;
                 })
-                ->addColumn('aop_id', function ($row) {
-                    $developer_ladder = DeveloperLadder::select([ 'developer_ladders.id','name','aop','ladder','aop_s_date','aop_e_date'])
-                    ->leftJoin('developers', 'developer_ladders.developer_id', '=', 'developers.id')->orderBy('developer_ladders.id', 'asc')
-                    ->where('developer_ladders.id',$row->aop_id)->first();
-                    return $developer_ladder->name." "
-                    ."(".date('F', strtotime($developer_ladder->aop_s_date))." ".date('Y', strtotime($developer_ladder->aop_s_date))
-                    ." - ".date('F', strtotime($developer_ladder->aop_e_date))." ".date('Y', strtotime($developer_ladder->aop_e_date)).")";
+                ->addColumn('developer_id', function ($row) {
+                    $developer = DB::table('developers')
+                            ->select('developers.name')
+                            ->where('developers.id',$row->developer_id)
+                            ->first();
+                    return $developer->name;
                 })
-                ->addColumn('booking', function ($row) {
-                    return $row->booking;
+                ->addColumn('s_booking', function ($row) {
+                    return $row->s_booking;
+                })
+                ->addColumn('e_booking', function ($row) {
+                    return $row->e_booking;
                 })
                 ->addColumn('ladder', function ($row) {
                     return $row->ladder." %";
@@ -100,21 +102,21 @@ class ProjectLadderController extends Controller
     public function create()
     {
         $projects = Project::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $developer_ladders = DeveloperLadder::select([ 'developer_ladders.id','name','aop','ladder','aop_s_date','aop_e_date'])
-        ->leftJoin('developers', 'developer_ladders.developer_id', '=', 'developers.id')->orderBy('developer_ladders.id', 'asc')->get();
-       // print_r($developer_ladders); exit;
-        return view('project_ladder.create', compact('projects','developer_ladders'));
+        $developers = Developer::select(['id', 'name'])->orderBy('name', 'asc')->get();
+      //  print_r($developers); exit;
+        return view('project_ladder.create', compact('projects','developers'));
        // return view('project_ladder.create');
     }
 
     public function store(ProjectLadderRequest $request)
     {
-      //  print_r($_REQUEST); exit;
+        //print_r($_REQUEST); exit;
         //create project_ladder
         $project_ladder = new ProjectLadder();
         $project_ladder->project_id = $request->input('project_id');
-        $project_ladder->aop_id = $request->input('aop_id');
-        $project_ladder->booking = $request->input('booking');
+        $project_ladder->developer_id = $request->input('developer_id');
+        $project_ladder->s_booking = $request->input('s_booking');
+        $project_ladder->e_booking = $request->input('e_booking');
         $project_ladder->ladder = $request->input('ladder');
         $project_ladder->project_s_date = $request->input('project_s_date');
         $project_ladder->project_e_date = $request->input('project_e_date');
@@ -126,19 +128,19 @@ class ProjectLadderController extends Controller
     public function edit($id)
     {
         $projects = Project::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $developer_ladders = DeveloperLadder::select([ 'developer_ladders.id','name','aop','ladder','aop_s_date','aop_e_date'])
-        ->leftJoin('developers', 'developer_ladders.developer_id', '=', 'developers.id')->orderBy('developer_ladders.id', 'asc')->get();
-     
+        $developers = Developer::select(['id', 'name'])->orderBy('name', 'asc')->get();
         $project_ladder = ProjectLadder::find($id);
-        return view('project_ladder.edit', compact('id', 'project_ladder','projects','developer_ladders'));
+        return view('project_ladder.edit', compact('id', 'project_ladder','projects','developers'));
     }
 
     public function update(ProjectLadderRequest $request, $id)
     {
+       // echo "sss"; exit;
         $project_ladder = ProjectLadder::find($id);
         $project_ladder->project_id = $request->input('project_id');
-        $project_ladder->aop_id = $request->input('aop_id');
-        $project_ladder->booking = $request->input('booking');
+        $project_ladder->developer_id = $request->input('developer_id');
+        $project_ladder->s_booking = $request->input('s_booking');
+        $project_ladder->e_booking = $request->input('e_booking');
         $project_ladder->ladder = $request->input('ladder');
         $project_ladder->project_s_date = $request->input('project_s_date');
         $project_ladder->project_e_date = $request->input('project_e_date');

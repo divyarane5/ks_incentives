@@ -20,7 +20,7 @@ class CreateAdminUserSeeder extends Seeder
             'email' => 'admin@keystone.com',
             'password' => bcrypt('123456'),
             'employee_code' => 'KRE008',
-            'entity' => 'Keystone',
+            'entity' => 'Keystone Real Estate Advisory Pvt. Ltd.',
             'name' => 'Keystone Admin',
             'created_by' => 1
         ]);

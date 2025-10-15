@@ -16,7 +16,7 @@ class CreateProjectsTable extends Migration
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('brokerage');
+            // $table->string('brokerage');
             $table->tinyInteger('status')->default(1);
             $table->unsignedInteger('created_by');
             $table->timestamps();

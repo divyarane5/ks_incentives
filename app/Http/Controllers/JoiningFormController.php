@@ -26,6 +26,7 @@ class JoiningFormController extends Controller
 
     public function store(JoiningFormRequest $request)
     {
+        print_r($request->all()); exit;
         $data = $request->only([
             'candidate_id',
             'joining_date',
