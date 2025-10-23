@@ -44,7 +44,7 @@ class AuthServiceProvider extends ServiceProvider
 
         Gate::define('reimbursement-approval', function($user) {
             $userId = auth()->user()->id;
-            $asParentCount = User::where('reporting_user_id', $userId)
+            $asParentCount = User::where('reporting_manager_id', $userId)
                                         ->count();
             return ($asParentCount > 0 || auth()->user()->hasRole('Superadmin'));
         });

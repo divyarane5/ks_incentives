@@ -26,13 +26,13 @@ class ReimbursementController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $reimbursements = Reimbursement::select(['reimbursements.*', 'attended_of.name as visit_attended_of_user', 'created_by_user.name as visit_attended_by', 'created_by_user.reporting_user_id', 'reimbursement_date'])
+            $reimbursements = Reimbursement::select(['reimbursements.*', 'attended_of.name as visit_attended_of_user', 'created_by_user.name as visit_attended_by', 'created_by_user.reporting_manager_id ', 'reimbursement_date'])
                                 ->join('users as attended_of', 'reimbursements.visit_attended_of_id', '=', 'attended_of.id')
                                 ->join('users as created_by_user', 'reimbursements.created_by', '=', 'created_by_user.id');
             if (!auth()->user()->can('reimbursement-view-all') && auth()->user()->can('reimbursement-view-own')) {
                 $reimbursements = $reimbursements->where(function($query) {
                     $query = $query->where('reimbursements.created_by', auth()->user()->id)
-                        ->orWhere('created_by_user.reporting_user_id', auth()->user()->id);
+                        ->orWhere('created_by_user.reporting_manager_id ', auth()->user()->id);
                     if (auth()->user()->can('reimbursement-settlement')) {
                         $query = $query->orWhere('reimbursements.status', 'approved');
                     }
@@ -41,7 +41,7 @@ class ReimbursementController extends Controller
 
             return DataTables::of($reimbursements)
                 ->addColumn("approval", function ($row) {
-                    if (($row->reporting_user_id == auth()->user()->id || auth()->user()->hasRole('Superadmin')) && $row->status == "pending") {
+                    if (($row->reporting_manager_id  == auth()->user()->id || auth()->user()->hasRole('Superadmin')) && $row->status == "pending") {
                         return '<div class="form-check mt-3">
                                                     <input class="form-check-input reimbursement_approval" name="reimbursement_approval[]" type="checkbox" value="'.$row->id.'">
                                                 </div>';
@@ -83,7 +83,7 @@ class ReimbursementController extends Controller
                                         <li><a class="bg-label-success dropdown-item" href="javascript:void(0);" onclick="updateStatus('.$row->id.', \'settled\')">Settled</a></li>
                                     </ul>
                                 </div>';
-                    } else if (($row->reporting_user_id == auth()->user()->id || auth()->user()->hasRole('Superadmin')) && $row->status == "pending" ) {
+                    } else if (($row->reporting_manager_id  == auth()->user()->id || auth()->user()->hasRole('Superadmin')) && $row->status == "pending" ) {
                         $str .= '<div class="btn-group">
                                     <button type="button" class="btn bg-label-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                     Pending
@@ -210,7 +210,7 @@ class ReimbursementController extends Controller
 
     public function show($id)
     {
-        $reimbursement = Reimbursement::select(["reimbursements.*", "created_by_user.reporting_user_id"])
+        $reimbursement = Reimbursement::select(["reimbursements.*", "created_by_user.reporting_manager_id "])
                             ->join('users as created_by_user', 'reimbursements.created_by', '=', 'created_by_user.id')
                             ->where('reimbursements.id', $id)
                             ->first();

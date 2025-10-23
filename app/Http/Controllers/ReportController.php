@@ -66,7 +66,7 @@ class ReportController extends Controller
             if (!auth()->user()->can('reimbursement-view-all') && !auth()->user()->can('reimbursement-settlement') && auth()->user()->can('reimbursement-view-own')) {
                 $reimbursements = $reimbursements->where(function($query) {
                                     $query = $query->where('reimbursements.created_by', auth()->user()->id)
-                                        ->orWhere('created_by_user.reporting_user_id', auth()->user()->id);
+                                        ->orWhere('created_by_user.reporting_manager_id ', auth()->user()->id);
                                 });
             }
             $reimbursements = $reimbursements->where('reimbursements.status', 'settled')->where('reimbursement_logs.status', 'settled')->get();

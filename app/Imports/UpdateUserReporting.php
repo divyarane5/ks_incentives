@@ -19,7 +19,7 @@ class UpdateUserReporting implements ToModel
             $reportingCode = $row[11];
             $reportingToUser = User::where('employee_code', $reportingCode)->first();
             if (!empty($reportingToUser)) {
-               User::where('employee_code', $employeeCode)->update(['reporting_user_id' => $reportingToUser->id]);
+               User::where('employee_code', $employeeCode)->update(['reporting_manager_id' => $reportingToUser->id]);
             }
         }
     }

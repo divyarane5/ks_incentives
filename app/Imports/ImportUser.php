@@ -10,7 +10,6 @@ use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use PhpOffice\PhpSpreadsheet\Shared\Date;
 use Illuminate\Support\Collection;
 use Carbon\Carbon;
 
@@ -56,9 +55,15 @@ class ImportUser implements ToCollection, WithHeadingRow
                     'role_id' => $role->id,
                     'location_handled' => $row['location_handled'] ?? null,
                     'work_location_id' => $location->id,
-                    'joining_date' => !empty($row['joining_date']) ? Date::excelToDateTimeObject($row['joining_date'])->format('Y-m-d') : null,
-                    'confirm_date' => !empty($row['confirm_date']) ? Date::excelToDateTimeObject($row['confirm_date'])->format('Y-m-d') : null,
-                    'leaving_date' => !empty($row['leaving_date']) ? Date::excelToDateTimeObject($row['leaving_date'])->format('Y-m-d') : null,
+
+                    // ✅ Safe date parsing
+                    'joining_date' => $this->parseExcelDate($row['joining_date'] ?? null),
+                    'confirm_date' => $this->parseExcelDate($row['confirm_date'] ?? null),
+                    'leaving_date' => $this->parseExcelDate($row['leaving_date'] ?? null),
+                    'pf_joining_date' => $this->parseExcelDate($row['joining_date'] ?? null)
+                        ? Carbon::parse($this->parseExcelDate($row['joining_date']))->addMonths(6)->format('Y-m-d')
+                        : null,
+
                     'exit_status' => $row['exit_status'] ?? null,
                     'reason_for_leaving' => $row['reason_for_leaving'] ?? null,
                     'fnf_status' => $row['fnf_status'] ?? null,
@@ -73,22 +78,28 @@ class ImportUser implements ToCollection, WithHeadingRow
                     'pf_employee' => $row['pf_employee'] ?? null,
                     'net_deductions' => $row['net_deductions'] ?? null,
                     'net_salary' => $row['net_salary'] ?? null,
-                    'pf_status' => !empty($row['pf_status']) ? ($row['pf_status'] == 'Yes' ? 1 : 0) : null,
-                    'pf_joining_date' => !empty($row['joining_date']) ? Carbon::parse(Date::excelToDateTimeObject($row['joining_date']))->addMonths(6)->format('Y-m-d') : null,
+                    'pf_status' => in_array(strtolower(trim($row['pf_status'] ?? '')), ['1', 'yes', 'true', 'active']) ? 1 : 0,
+
                     'uan_number' => $row['uan_number'] ?? null,
                     'bank_name' => $row['bank_name'] ?? null,
                     'ifsc_code' => $row['ifsc_code'] ?? null,
                     'bank_account_number' => $row['bank_account_number'] ?? null,
-                    'dob' => !empty($row['dob']) ? Date::excelToDateTimeObject($row['dob'])->format('Y-m-d') : null,
-                    'age' => !empty($row['dob']) ? Carbon::parse(Date::excelToDateTimeObject($row['dob']))->age : null,
-                    'birthday_month' => !empty($row['dob']) ? Carbon::parse(Date::excelToDateTimeObject($row['dob']))->format('F') : null,
+
+                    // ✅ DOB and age with safe parsing
+                    'dob' => $this->parseExcelDate($row['dob'] ?? null),
+                    'age' => !empty($row['dob']) ? Carbon::parse($this->parseExcelDate($row['dob']))->age : null,
+                    'birthday_month' => !empty($row['dob']) ? Carbon::parse($this->parseExcelDate($row['dob']))->format('F') : null,
+
                     'blood_group' => $row['blood_group'] ?? null,
                     'communication_address' => $row['communication_address'] ?? null,
                     'permanent_address' => $row['permanent_address'] ?? null,
                     'languages_known' => $row['languages_known'] ?? null,
                     'education_qualification' => $row['education_qualification'] ?? null,
                     'marital_status' => $row['marital_status'] ?? null,
-                    'marriage_date' => !empty($row['marriage_date']) ? Date::excelToDateTimeObject($row['marriage_date'])->format('Y-m-d') : null,
+
+                    // ✅ Marriage date safe parsing
+                    'marriage_date' => $this->parseExcelDate($row['marriage_date'] ?? null),
+
                     'spouse_name' => $row['spouse_name'] ?? null,
                     'parents_contact' => $row['parents_contact'] ?? null,
                     'emergency_contact_name' => $row['emergency_contact_name'] ?? null,
@@ -101,6 +112,7 @@ class ImportUser implements ToCollection, WithHeadingRow
                     'password' => Hash::make('Welcome@123'),
                 ]
             );
+
             // Assign Spatie role
             $user->syncRoles($role->name);
 
@@ -120,5 +132,36 @@ class ImportUser implements ToCollection, WithHeadingRow
                     ->update(['reporting_manager_id' => $this->userMap[$managerCode]]);
             }
         }
+    }
+
+    /**
+     * Safely parse Excel or text date into Y-m-d format
+     */
+    private function parseExcelDate($value)
+    {
+        if (is_null($value) || $value === '') {
+            return null;
+        }
+
+        // Numeric Excel date (e.g. 45293)
+        if (is_numeric($value)) {
+            try {
+                return \PhpOffice\PhpSpreadsheet\Shared\Date::excelToDateTimeObject($value)->format('Y-m-d');
+            } catch (\Exception $e) {
+                return null;
+            }
+        }
+
+        // If it starts with "=" (formula), skip
+        if (preg_match('/^=/', $value)) {
+            return null;
+        }
+
+        // Text dates like "02-Nov-24", "2 November 2024", "2024-11-02"
+        if (strtotime($value)) {
+            return date('Y-m-d', strtotime($value));
+        }
+
+        return null;
     }
 }

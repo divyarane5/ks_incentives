@@ -15,7 +15,7 @@
             <div class="col-md-6">
                 @if (auth()->user()->can('reimbursement-settlement') && $reimbursement->status == "approved")
                     <button class="btn btn-primary pull-right" onclick="updateStatus({{ $reimbursement->id }}, 'settled')">Settle</button>
-                @elseif (($reimbursement->reporting_user_id == auth()->user()->id || auth()->user()->hasRole('Superadmin')) && $reimbursement->status == "pending" )
+                @elseif (($reimbursement->reporting_manager_id  == auth()->user()->id || auth()->user()->hasRole('Superadmin')) && $reimbursement->status == "pending" )
                     <button class="btn btn-primary pull-right mx-3" onclick="updateStatus({{ $reimbursement->id }}, 'approved')">Approve</button>
                     <button class="btn btn-danger pull-right" onclick="updateStatus({{ $reimbursement->id }}, 'rejected')">Reject</button>
                 @endif

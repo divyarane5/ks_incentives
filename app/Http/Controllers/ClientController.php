@@ -29,7 +29,7 @@ class ClientController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Client::select(['clients.*', 'templates.name as template_name','users.reporting_user_id'])->join('templates', 'clients.template_id', '=', 'templates.id')->join('users', 'clients.created_by', '=', 'users.id')->where('clients.created_by','=',Auth::id())->orWhere('users.reporting_user_id','=',Auth::id())->orderBy('clients.id','desc');
+            $data = Client::select(['clients.*', 'templates.name as template_name','users.reporting_manager_id '])->join('templates', 'clients.template_id', '=', 'templates.id')->join('users', 'clients.created_by', '=', 'users.id')->where('clients.created_by','=',Auth::id())->orWhere('users.reporting_manager_id ','=',Auth::id())->orderBy('clients.id','desc');
             return DataTables::of($data)
                 ->addColumn('template_name', function ($row) {
                     return $row->template_name;

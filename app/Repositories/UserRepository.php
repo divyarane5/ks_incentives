@@ -108,7 +108,11 @@ class UserRepository implements UserRepositoryInterface
         $user->net_salary = $monthly - $user->net_deductions;
 
         // ✅ Statutory & Banking
-        $user->pf_status = $request->pf_status;
+        // ✅ Convert pf_status (Active/Yes/1 → 1, others → 0)
+        if ($request->has('pf_status')) {
+            $status = strtolower(trim($request->pf_status));
+            $user->pf_status = in_array($status, ['1', 'yes', 'true', 'active']) ? 1 : 0;
+        }
         $user->uan_number = $request->uan_number;
         $user->bank_name = $request->bank_name;
         $user->ifsc_code = $request->ifsc_code;

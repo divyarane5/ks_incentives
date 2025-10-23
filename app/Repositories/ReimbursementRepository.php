@@ -49,13 +49,13 @@ class ReimbursementRepository implements ReimbursementRepositoryInterface
 
     public function getReimbursementApproval()
     {
-        $reimbursements = Reimbursement::select(['reimbursements.*', 'attended_of.name as visit_attended_of_user', 'created_by_user.name as visit_created_by', 'created_by_user.reporting_user_id'])
+        $reimbursements = Reimbursement::select(['reimbursements.*', 'attended_of.name as visit_attended_of_user', 'created_by_user.name as visit_created_by', 'created_by_user.reporting_manager_id'])
                                 ->join('users as attended_of', 'reimbursements.visit_attended_of_id', '=', 'attended_of.id')
                                 ->join('users as created_by_user', 'reimbursements.created_by', '=', 'created_by_user.id')
                                 ->where('reimbursements.status', 'pending');
 
         if (!auth()->user()->hasRole('Superadmin')) {
-            $reimbursements = $reimbursements->where('created_by_user.reporting_user_id', auth()->user()->id);
+            $reimbursements = $reimbursements->where('created_by_user.reporting_manager_id', auth()->user()->id);
         }
         return $reimbursements;
     }

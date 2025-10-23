@@ -398,7 +398,7 @@ class BookingController extends Controller
                 })
                 ->addColumn('sales_person', function ($row) {
                     $user = DB::table('users')
-                    ->select('users.name','reporting_user_id')
+                    ->select('users.name','reporting_manager_id ')
                     ->where('users.id',$row->sales_person)
                     ->first();
                     return $user->name;
@@ -406,31 +406,31 @@ class BookingController extends Controller
                 
                 ->addColumn('team_leader', function ($row) {
                     $user = DB::table('users')
-                    ->select('users.name','reporting_user_id')
+                    ->select('users.name','reporting_manager_id ')
                     ->where('users.id',$row->sales_person)
                     ->first();
                     
                     $ruser = DB::table('users')
-                    ->select('users.name','reporting_user_id')
-                    ->where('users.id',$user->reporting_user_id)
+                    ->select('users.name','reporting_manager_id ')
+                    ->where('users.id',$user->reporting_manager_id )
                     ->first();
                     if(!empty($ruser)){ $reporting = $ruser->name; }else{ $reporting = "-"; }
                     return $reporting;
                 })
                 ->addColumn('sr_team_leader', function ($row) {
                     $user = DB::table('users')
-                    ->select('users.name','reporting_user_id')
+                    ->select('users.name','reporting_manager_id ')
                     ->where('users.id',$row->sales_person)
                     ->first();
                     
                     $ruser = DB::table('users')
-                    ->select('users.name','reporting_user_id')
-                    ->where('users.id',$user->reporting_user_id)
+                    ->select('users.name','reporting_manager_id ')
+                    ->where('users.id',$user->reporting_manager_id )
                     ->first();
 
                     $sruser = DB::table('users')
-                    ->select('users.name','reporting_user_id')
-                    ->where('users.id',$ruser->reporting_user_id)
+                    ->select('users.name','reporting_manager_id ')
+                    ->where('users.id',$ruser->reporting_manager_id )
                     ->first();
 
                     if(!empty($sruser)){ $reporting = $sruser->name; }else{ $reporting = "-"; }
@@ -438,28 +438,28 @@ class BookingController extends Controller
                 })
                 ->addColumn('cluster_head', function ($row) {
                     $user = DB::table('users')
-                    ->select('users.name','reporting_user_id')
+                    ->select('users.name','reporting_manager_id ')
                     ->where('users.id',$row->sales_person)
                     ->first();
                     
                     $ruser = DB::table('users')
-                    ->select('users.name','reporting_user_id')
-                    ->where('users.id',$user->reporting_user_id)
+                    ->select('users.name','reporting_manager_id ')
+                    ->where('users.id',$user->reporting_manager_id )
                     ->first();
                     $sruser = DB::table('users')
-                    ->select('users.name','reporting_user_id')
-                    ->where('users.id',$ruser->reporting_user_id)
+                    ->select('users.name','reporting_manager_id ')
+                    ->where('users.id',$ruser->reporting_manager_id )
                     ->first();
                     $chuser = DB::table('users')
-                    ->select('users.name','reporting_user_id')
-                    ->where('users.id',$sruser->reporting_user_id)
+                    ->select('users.name','reporting_manager_id ')
+                    ->where('users.id',$sruser->reporting_manager_id )
                     ->first();
 
                     if(!empty($chuser)){ $reporting = $chuser->name; }else{ $reporting = "-"; }
                     return $reporting;
                 })
                 ->addColumn("booking_confirm", function ($row) {
-                    if (($row->reporting_user_id == auth()->user()->id || auth()->user()->hasRole('Superadmin'))) {
+                    if (($row->reporting_manager_id  == auth()->user()->id || auth()->user()->hasRole('Superadmin'))) {
                     return '<div class="form-check form-switch mb-2">
                                 <input class="form-check-input" type="checkbox" value="1" id="flexSwitchCheckDefault2" '.(($row->booking_confirm == 1) ? "checked" : "").' onclick="updateBStatus(this, '.$row->id.');">
                             </div>';
@@ -467,7 +467,7 @@ class BookingController extends Controller
                     return '';
                 })
                 ->addColumn("registration_confirm", function ($row) {
-                    if (($row->reporting_user_id == auth()->user()->id || auth()->user()->hasRole('Superadmin'))) {
+                    if (($row->reporting_manager_id  == auth()->user()->id || auth()->user()->hasRole('Superadmin'))) {
                     return '<div class="form-check form-switch mb-2">
                                 <input class="form-check-input" type="checkbox" value="1" id="flexSwitchCheckDefault" '.(($row->registration_confirm == 1) ? "checked" : "").' onclick="updateStatus(this, '.$row->id.');">
                             </div>';
@@ -475,7 +475,7 @@ class BookingController extends Controller
                     return '';
                 })
                 ->addColumn("invoice_raised", function ($row) {
-                    if (($row->reporting_user_id == auth()->user()->id || auth()->user()->hasRole('Superadmin'))) {
+                    if (($row->reporting_manager_id  == auth()->user()->id || auth()->user()->hasRole('Superadmin'))) {
                     return '<div class="form-check form-switch mb-2">
                                 <input class="form-check-input" type="checkbox" value="1" id="flexSwitchCheckDefault1" '.(($row->invoice_raised == 1) ? "checked" : "").' onclick="updateIStatus(this, '.$row->id.');">
                             </div>';
