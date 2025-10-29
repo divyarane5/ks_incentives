@@ -79,4 +79,10 @@ class User extends Authenticatable
         return $this->belongsTo(User::class, 'reporting_manager_id', 'id');
     }
 
+    public function businessUnit()
+    {
+        return $this->belongsTo(BusinessUnit::class, 'business_unit_id');
+    }
+
+
 }

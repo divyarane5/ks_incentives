@@ -42,16 +42,7 @@
                                     <input type="text" name="employee_code" value="{{ old('employee_code', $user->employee_code) }}" class="form-control @error('employee_code') is-invalid @enderror" required>
                                     @error('employee_code') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
-                                <div class="mb-3 col-md-6">
-                                    <label class="form-label">Company *</label>
-                                    <select name="entity" class="form-select @error('entity') is-invalid @enderror" required>
-                                        <option value="">Select Company</option>
-                                        @foreach(config('constants.COMPANY_OPTIONS') as $company)
-                                            <option value="{{ $company }}" {{ old('entity', $user->entity) == $company ? 'selected' : '' }}>{{ $company }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('entity') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
+                                
                                 <div class="mb-3 col-md-3">
                                     <label class="form-label">Title</label>
                                     <input type="text" name="title" value="{{ old('title', $user->title) }}" class="form-control @error('title') is-invalid @enderror">
@@ -71,6 +62,27 @@
                                     <label class="form-label">Last Name *</label>
                                     <input type="text" name="last_name" value="{{ old('last_name', $user->last_name) }}" class="form-control @error('last_name') is-invalid @enderror" required>
                                     @error('last_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                                <div class="mb-3 col-md-6">
+                                    <label class="form-label">Company *</label>
+                                    <select name="entity" class="form-select @error('entity') is-invalid @enderror" required>
+                                        <option value="">Select Company</option>
+                                        @foreach(config('constants.COMPANY_OPTIONS') as $company)
+                                            <option value="{{ $company }}" {{ old('entity', $user->entity) == $company ? 'selected' : '' }}>{{ $company }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('entity') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+                                <div class="mb-3 col-md-6">
+                                    <label for="form-label" class="form-label">Business Unit</label>
+                                    <select name="business_unit_id" id="business_unit_id" class="form-select">
+                                        <option value="">Select Business Unit</option>
+                                        @foreach($businessUnits as $id => $name)
+                                            <option value="{{ $id }}" {{ (isset($model) && $model->business_unit_id == $id) ? 'selected' : '' }}>
+                                                {{ $name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
                                 </div>
                                 <div class="mb-3 col-md-6">
                                     <label class="form-label">Gender</label>

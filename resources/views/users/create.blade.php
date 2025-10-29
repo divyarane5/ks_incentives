@@ -25,20 +25,8 @@
                             </h2>
                             <div id="collapseBasic" class="accordion-collapse collapse show" aria-labelledby="headingBasic" data-bs-parent="#userAccordion">
                                 <div class="accordion-body row">
-                                    <div class="mb-3 col-md-6">
-                                        <label class="form-label">Employee Code *</label>
-                                        <input type="text" name="employee_code" class="form-control" required>
-                                    </div>
-
-                                    <div class="mb-3 col-md-6">
-                                        <label class="form-label">Company *</label>
-                                        <select name="entity" class="form-select" required>
-                                            <option value="">Select Company</option>
-                                            @foreach(config('constants.COMPANY_OPTIONS') as $company)
-                                                <option value="{{ $company }}">{{ $company }}</option>
-                                            @endforeach
-                                        </select>
-                                    </div>
+                                    
+                                    
 
                                     <div class="mb-3 col-md-3">
                                         <label class="form-label">Title</label>
@@ -56,7 +44,29 @@
                                         <label class="form-label">Last Name *</label>
                                         <input type="text" name="last_name" class="form-control" required>
                                     </div>
+                                    <div class="mb-3 col-md-6">
+                                        <label class="form-label">Employee Code *</label>
+                                        <input type="text" name="employee_code" class="form-control" required>
+                                    </div>
 
+                                    <div class="mb-3 col-md-6">
+                                        <label class="form-label">Company *</label>
+                                        <select name="entity" class="form-select" required>
+                                            <option value="">Select Company</option>
+                                            @foreach(config('constants.COMPANY_OPTIONS') as $company)
+                                                <option value="{{ $company }}">{{ $company }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="mb-3 col-md-6">
+                                        <label for="form-label" class="form-label">Business Unit</label>
+                                        <select name="business_unit_id" id="business_unit_id" class="form-select">
+                                            <option value=""> Select Business Unit</option>
+                                            @foreach($businessUnits as $id => $name)
+                                                <option value="{{ $id }}">{{ $name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
                                     <div class="mb-3 col-md-6">
                                         <label class="form-label">Gender</label>
                                         <select name="gender" class="form-select">

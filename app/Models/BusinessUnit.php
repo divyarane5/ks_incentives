@@ -13,6 +13,13 @@ class BusinessUnit extends Model
 
     protected $fillable = [
         'name',
+        'code',
+        'logo',
+        'theme_color',
+        'secondary_color',
+        'text_color',
+        'status',
+        'created_by',
     ];
 
     protected static function boot() {
@@ -21,5 +28,8 @@ class BusinessUnit extends Model
         static::creating(function ($model) {
             $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
         });
+    }
+    public function users() {
+        return $this->hasMany(User::class);
     }
 }

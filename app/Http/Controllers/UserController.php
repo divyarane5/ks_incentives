@@ -8,6 +8,7 @@ use App\Imports\ImportUser;
 use App\Imports\UpdateUserReporting;
 use App\Interfaces\UserRepositoryInterface;
 use App\Models\Department;
+use App\Models\BusinessUnit;
 use App\Models\Designation;
 use App\Models\Location;
 use App\Models\User;
@@ -113,8 +114,8 @@ class UserController extends Controller
     $departments = Department::select(['id', 'name'])->orderBy('name')->get();
     $designations = Designation::select(['id', 'name'])->orderBy('name')->get();
     $roles = Role::select(['id', 'name'])->orderBy('name')->get();
-
-    return view('users.index', compact('locations', 'departments', 'designations', 'roles'));
+    $businessUnits = BusinessUnit::where('status', 1)->pluck('name', 'id');
+    return view('users.index', compact('locations', 'departments', 'designations', 'roles','businessUnits'));
 }
 
 
@@ -126,7 +127,8 @@ class UserController extends Controller
         $designations = Designation::select(['id', 'name'])->orderBy('name')->get();
         $reportingUsers = User::select(['id', 'name'])->orderBy('name')->get();
         $roles = Role::select(['id', 'name'])->orderBy('name')->get();
-        return view('users.create', compact('locations', 'departments', 'designations', 'reportingUsers', 'roles'));
+        $businessUnits = BusinessUnit::where('status', 1)->pluck('name', 'id');
+        return view('users.create', compact('locations', 'departments', 'designations', 'reportingUsers', 'roles','businessUnits'));
     }
 
    public function store(Request $request)
@@ -172,6 +174,8 @@ class UserController extends Controller
         $user->photo = $photoPath;
         $user->status = $request->status ?? 'Active';
         $user->name = trim($request->title . ' ' . $request->first_name . ' ' . $request->middle_name . ' ' . $request->last_name);
+        // 🔹 Add business unit
+        $user->business_unit_id = $request->business_unit_id ?: null; 
 
         // Contact info
         $user->official_contact = $request->official_contact;
@@ -232,6 +236,8 @@ class UserController extends Controller
         // Default password
         $user->password = Hash::make('Welcome@123');
         //dd("3");
+        $user->business_unit_id = $request->business_unit_id;
+
         $user->save();
         //dd("4");
         return redirect()->route('users.index')->with('success', 'User created successfully!');
@@ -245,6 +251,7 @@ class UserController extends Controller
         $roles = Role::all();
         $reportingUsers = User::all();
         $locations = Location::all();
+        $businessUnits = BusinessUnit::where('status', 1)->pluck('name', 'id');
         $users = User::where('id', '!=', $id)->get(); // for reporting user dropdown
 
         return view('users.edit', compact(
@@ -254,7 +261,8 @@ class UserController extends Controller
             'designations',
             'reportingUsers',
             'locations',
-            'users'
+            'users',
+            'businessUnits'
         ));
     }
 

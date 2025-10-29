@@ -11,7 +11,7 @@ class CreateUsersTable extends Migration
      *
      * @return void
      */
-    public function up()
+   public function up()
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
@@ -37,6 +37,7 @@ class CreateUsersTable extends Migration
             $table->unsignedBigInteger('department_id')->nullable();
             $table->unsignedBigInteger('designation_id')->nullable();
             $table->unsignedBigInteger('role_id')->nullable();
+            $table->unsignedBigInteger('business_unit_id')->nullable();
             $table->unsignedBigInteger('reporting_manager_id')->nullable();
             $table->unsignedBigInteger('work_location_id')->nullable();
             $table->string('location_handled')->nullable();
@@ -102,16 +103,17 @@ class CreateUsersTable extends Migration
 
             $table->timestamps();
             $table->softDeletes();
-        });
 
-        Schema::table('users', function (Blueprint $table) {
+            // ✅ Foreign keys inside same block
             $table->foreign('department_id')->references('id')->on('departments')->onDelete('set null');
             $table->foreign('designation_id')->references('id')->on('designations')->onDelete('set null');
             $table->foreign('role_id')->references('id')->on('roles')->onDelete('set null');
             $table->foreign('reporting_manager_id')->references('id')->on('users')->onDelete('set null');
             $table->foreign('work_location_id')->references('id')->on('locations')->onDelete('set null');
+            $table->foreign('business_unit_id')->references('id')->on('business_units')->onDelete('set null');
         });
     }
+
 
     public function down(): void
     {
