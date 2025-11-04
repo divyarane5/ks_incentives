@@ -10,14 +10,14 @@ class BusinessUnitSeeder extends Seeder
     public function run()
     {
         BusinessUnit::create([
-            'name' => 'Keystone Real Estate Advisory Pvt Ltd',
+            'name' => 'Keystone Real Estate Advisory',
             'code' => 'KREA',
             'domain' => 'krea.portal.com',
             'theme_color' => '#d97706',
             'secondary_color' => '#fef3c7',
             'status' => 1,
         ]);
-        
+
         BusinessUnit::create([
             'name' => 'Designo Palette',
             'code' => 'DP',

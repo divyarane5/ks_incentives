@@ -103,6 +103,10 @@ class PermissionTableSeeder extends Seeder
             // 'project-offer-edit',
             // 'project-offer-send-image-email',
             // 'project-offer-send-pdf-email',
+            'mandate_project-view',
+            'mandate_project-create',
+            'mandate_project-edit',
+            'mandate_project-delete',
          ];
 
          foreach ($permissions as $permission) {

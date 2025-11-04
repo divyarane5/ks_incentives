@@ -1,13 +1,20 @@
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
     <div class="app-brand demo">
-    <a href="{{ url('/') }}" class="app-brand-link">
-        <img src="{{ asset('assets/img/logo/ks-logos.webp') }}" >
-    </a>
+        <a href="{{ url('/') }}" class="app-brand-link">
+            @php
+                // Example: active business unit logo path
+                $logoPath = isset($activeBusinessUnit) && $activeBusinessUnit->logo_path
+                    ? asset('storage/' . str_replace('public/', '', $activeBusinessUnit->logo_path))
+                    : asset('assets/img/logo/ks-logos.webp');
+            @endphp
+            <img src="{{ $logoPath }}" alt="Logo" class="img-fluid">
+        </a>
 
-    <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
-        <i class="bx bx-chevron-left bx-sm align-middle"></i>
-    </a>
+        <a href="javascript:void(0);" class="layout-menu-toggle menu-link text-large ms-auto d-block d-xl-none">
+            <i class="bx bx-chevron-left bx-sm align-middle"></i>
+        </a>
     </div>
+
 
     <div class="menu-inner-shadow"></div>
 
@@ -119,6 +126,15 @@
 
         </li>
     @endcanany
+    @can('user-view')
+    <li class="menu-item {{ (Request::segment(1) == 'users') ? 'active': '' }}">
+        <a href="{{ route('users.index') }}" class="menu-link">
+            <i class="menu-icon tf-icons bx bx-user"></i>
+            <div data-i18n="Analytics">User</div>
+        </a>
+    </li>
+    @endcan
+
     @canany(['developer-view','project-view','developer_ladder-view'])
         <li class="menu-item {{ in_array(Request::segment(1), ['role','location','department','designation','expense','vendor','business_unit','payment_method']) ? 'active open': '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle ">
@@ -273,15 +289,7 @@
         </li> -->
     @endcanany
   
-    @can('user-view')
-    <li class="menu-item {{ (Request::segment(1) == 'users') ? 'active': '' }}">
-        <a href="{{ route('users.index') }}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-user"></i>
-            <div data-i18n="Analytics">User</div>
-        </a>
-    </li>
-    @endcan
-
+    
     @canany(['indent-view-all', 'indent-view-own', 'indent-approval', 'indent-payment-conclude', 'reimbursement-view-all', 'reimbursement-view-own', 'reimbursement-approval'])
     <!-- <li class="menu-item {{ in_array(Request::segment(1), ['indent_payments', 'reimbursement_payments']) ? 'active open': '' }}">
         <a href="javascript:void(0);" class="menu-link menu-toggle ">
@@ -308,12 +316,12 @@
     @endcanany
 
     @can('candidate-view')
-    <li class="menu-item {{ (Request::segment(1) == 'candidate') ? 'active': '' }}">
+    <!-- <li class="menu-item {{ (Request::segment(1) == 'candidate') ? 'active': '' }}">
         <a href="{{ route('candidate.index') }}" class="menu-link">
             <i class="menu-icon tf-icons bx bx-user"></i>
             <div data-i18n="Analytics">Candidate</div>
         </a>
-    </li>
+    </li> -->
     @endcan
     </ul>
 </aside>
