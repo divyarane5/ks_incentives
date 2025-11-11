@@ -91,7 +91,8 @@ class UserRepository implements UserRepositoryInterface
         $user->exit_status = $request->exit_status;
         $user->reason_for_leaving = $request->reason_for_leaving;
         $user->fnf_status = $request->fnf_status;
-
+        $user->business_unit_id = $request->business_unit_id;
+        
         // ✅ Salary Calculation
         $ctc = floatval($request->current_ctc ?? $user->current_ctc ?? 0);
         $monthly = $ctc / 12;

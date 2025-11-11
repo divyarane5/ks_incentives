@@ -18,7 +18,10 @@ class CreateMandateProjectConfigurationsTable extends Migration
             $table->foreignId('mandate_project_id')->constrained()->onDelete('cascade');
             $table->string('config'); // e.g. 1BHK, 2BHK
             $table->decimal('carpet_area', 8, 2)->nullable(); // e.g. 650.50
+            $table->tinyInteger('status')->default(1);
+            $table->unsignedInteger('created_by');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

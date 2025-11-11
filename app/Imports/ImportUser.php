@@ -30,7 +30,10 @@ class ImportUser implements ToCollection, WithHeadingRow
             // Department / Designation / Location / Role
             $department = Department::firstOrCreate(['name' => $row['department'] ?? '']);
             $designation = Designation::firstOrCreate(['name' => $row['designation'] ?? '']);
-            $location = Location::firstOrCreate(['name' => $row['work_location'] ?? '']);
+            $location = Location::firstOrCreate(
+                ['city' => $row['work_location'] ?? ''],
+                ['created_by' => auth()->id() ?? 1]
+            );
             $role = Role::firstOrCreate(['name' => $row['role'] ?? 'Employee']);
 
             // Create / update user

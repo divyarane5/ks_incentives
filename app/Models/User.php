@@ -38,7 +38,7 @@ class User extends Authenticatable
         'emergency_contact_relationship', 'emergency_contact_number', 
         'pan_no', 'aadhar_no', 'laptop_desktop', 'company_phone', 
         'company_sim', 'work_off', 'additional_comments', 'created_by', 
-        'password', 'remember_token', 'last_login'
+        'password', 'remember_token', 'last_login','business_unit_id'
     ];
 
     /**

@@ -107,6 +107,14 @@ class PermissionTableSeeder extends Seeder
             'mandate_project-create',
             'mandate_project-edit',
             'mandate_project-delete',
+            'channel-partner-view',
+            'channel-partner-create',
+            'channel-partner-edit',
+            'channel-partner-delete',
+            'client-enquiry-view',
+            'client-enquiry-create',
+            'client-enquiry-edit',
+            'client-enquiry-delete'
          ];
 
          foreach ($permissions as $permission) {

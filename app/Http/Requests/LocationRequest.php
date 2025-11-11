@@ -24,7 +24,8 @@ class LocationRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|regex:/^[\pL\s\-]+$/u'
+             'city' => 'required|string|max:255',
+            'locality' => 'nullable|string|max:255',
         ];
     }
 }

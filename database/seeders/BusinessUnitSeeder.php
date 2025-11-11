@@ -13,8 +13,8 @@ class BusinessUnitSeeder extends Seeder
             'name' => 'Keystone Real Estate Advisory',
             'code' => 'KREA',
             'domain' => 'krea.portal.com',
-            'theme_color' => '#d97706',
-            'secondary_color' => '#fef3c7',
+            'theme_color' => '#011e48',
+            'secondary_color' => '#c3b246',
             'status' => 1,
         ]);
 
@@ -35,7 +35,15 @@ class BusinessUnitSeeder extends Seeder
             'secondary_color' => '#c7d2fe',
             'status' => 1,
         ]);
-
+        
+        BusinessUnit::create([
+            'name' => 'Alterra India',
+            'code' => 'AI',
+            'domain' => 'ai.portal.com',
+            'theme_color' => '#1e40af',
+            'secondary_color' => '#c7d2fe',
+            'status' => 1,
+        ]);
         
     }
 }

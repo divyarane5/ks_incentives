@@ -19,8 +19,12 @@ class CreateMandateProjectsTable extends Migration
             $table->string('brand_name')->nullable();
             $table->string('location')->nullable();
             $table->string('rera_number')->nullable();
-            $table->enum('property_type', ['residential', 'commercial'])->nullable();
+            $table->enum('property_type', ['residential', 'commercial','both'])->nullable();
+            $table->foreignId('business_unit_id')->nullable()->constrained()->onDelete('set null');
+            $table->tinyInteger('status')->default(1);
+            $table->unsignedInteger('created_by');
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 

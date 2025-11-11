@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Auth;
 
 class MandateProject extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'project_name',
@@ -15,10 +17,25 @@ class MandateProject extends Model
         'location',
         'rera_number',
         'property_type',
+        'business_unit_id',
+        'created_by',
     ];
 
     public function configurations()
     {
         return $this->hasMany(MandateProjectConfiguration::class);
+    }
+
+    public function businessUnit()
+    {
+        return $this->belongsTo(BusinessUnit::class);
+    }
+
+    protected static function boot() {
+        parent::boot();
+
+        static::creating(function ($model) {
+            $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
+        });
     }
 }

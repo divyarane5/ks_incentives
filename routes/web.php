@@ -34,7 +34,7 @@ Route::group(['middleware' => 'auth'], function() {
     // Route::get('/users/import', [App\Http\Controllers\UserController::class, 'showprocess'])->name('users.import.showprocess');
     // Route::post('/users/import', [App\Http\Controllers\UserController::class, 'import'])->name('users.import');
     // Route::get('/users/import/template', [App\Http\Controllers\UserController::class, 'downloadTemplate'])->name('users.import.template');
-    
+
     //Location
     Route::resource('location', App\Http\Controllers\LocationController::class);
 
@@ -58,6 +58,21 @@ Route::group(['middleware' => 'auth'], function() {
 
     //Business Unit
     Route::resource('business_unit', App\Http\Controllers\BusinessUnitController::class);
+
+    //Mandate
+    Route::resource('mandate_projects', App\Http\Controllers\MandateProjectController::class);
+
+    //channel Partners + dropdown location addition store
+    Route::resource('channel_partners', App\Http\Controllers\ChannelPartnerController::class);
+   
+    // For AJAX search of existing locations
+Route::get('/locations/ajax-search', [App\Http\Controllers\LocationController::class, 'ajaxSearch'])->name('locations.ajaxSearch');
+
+// For checking/storing new location (optional if you still use store-on-submit)
+Route::post('/locations/ajax-check-or-store', [App\Http\Controllers\LocationController::class, 'ajaxCheckOrStore'])->name('locations.ajaxCheckOrStore');
+
+    //client enquiry
+    Route::resource('client-enquiries', App\Http\Controllers\ClientEnquiryController::class);
 
     //Booking
     Route::resource('booking', App\Http\Controllers\BookingController::class);
