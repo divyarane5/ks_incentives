@@ -70,10 +70,10 @@
 <body style="margin: 10px auto; width: 100%; background-color: #eeeeee; font-family: 'Open Sans', arial, sans-serif; color:#000000;">
 
 <table magin="auto" border="0px" cellpadding="0" cellspacing="0" style="margin: 10px auto; background-color: #ffffff; max-width: 800px; width:90%; border: 1px solid #d3e0ed; padding: 30px;" ><tr><td>
-<div><img src="https://myaccount.homebazaar.com/assets/media/image/logo.png" style="width: 200px; height: auto"></div>
+<div><img src="https://myaccount.keystonerealestateadvisory.com/assets/media/image/logo.png" style="width: 200px; height: auto"></div>
     <p><span style="font-size:12px">Dear Manav,</span></p>
 
-    <p><span style="font-size:12px">Greetings&nbsp;from&nbsp;<strong>Homebazaar.com....!</strong></span></p>
+    <p><span style="font-size:12px">Greetings&nbsp;from&nbsp;<strong>keystonerealestateadvisory.com....!</strong></span></p>
 
     <p><span style="font-size:12px">Enclosed is the company profile and detailed&nbsp;<strong>JD</strong>&nbsp;for&nbsp;<strong>Sales Profile</strong>&nbsp;for your reference.</span></p>
 
@@ -87,7 +87,7 @@
     <span style="font-size:12px"><strong>Map :</strong> &nbsp;<a href="https://goo.gl/maps/3zVi9GZZJe6XxGVk9" style="color:#1155cc" target="_blank">View</a></span>
     </p>
 
-    <p><span style="font-size:12px"><strong>Visit Official Website:</strong><a href="https://homebazaar.com/" style="color:#1155cc" target="_blank"><strong>www.Homebazaar.com</strong></a>&nbsp;</span><br>
+    <p><span style="font-size:12px"><strong>Visit Official Website:</strong><a href="https://keystonerealestateadvisory.com/" style="color:#1155cc" target="_blank"><strong>www.keystonerealestateadvisory.com</strong></a>&nbsp;</span><br>
 
     <span style="font-size:12px"><strong>Company Brochure</strong>:&nbsp;<a href="https://drive.google.com/file/d/15IGLxsM9DZXwR7ipdzautrazROVtuW5T/view?usp=share_link" style="color:#1155cc" target="_blank">View</a></span><br>
     <span style="font-size:12px"><strong>Customer Testimonials:</strong>&nbsp;<a href="https://www.youtube.com/watch?v=8F4sFJnP8nA" style="color:#1155cc" target="_blank">View</a>&nbsp;|&nbsp;<a href="https://www.youtube.com/watch?v=EfLZzscjGpw" style="color:#1155cc" target="_blank">View</a></span><br>
@@ -97,9 +97,9 @@
     <p>&nbsp;</p>
 
     <p><strong><span style="font-weight: bold; color:#ee6a2a;font-size:16px;">Who are we?</span></strong><br />
-    <span style="font-size:12px"><strong>Home Bazaar Services Pvt Ltd</strong>&nbsp;is the leading Property Advisor in India which has tuned and upgraded with each and every scratch of the real estate sector. With past experience and immense exposure to this service, we understand the needs of customers and strive hard to meet the same. With the help of the most experienced support system, Homebazaar.com has gone a long way to achieving success in a short span of time. We have also been awarded the best-winning property service company in Navi Mumbai for the Quarter 2018.&nbsp;</span></p>
+    <span style="font-size:12px"><strong>Home Bazaar Services Pvt Ltd</strong>&nbsp;is the leading Property Advisor in India which has tuned and upgraded with each and every scratch of the real estate sector. With past experience and immense exposure to this service, we understand the needs of customers and strive hard to meet the same. With the help of the most experienced support system, keystonerealestateadvisory.com has gone a long way to achieving success in a short span of time. We have also been awarded the best-winning property service company in Navi Mumbai for the Quarter 2018.&nbsp;</span></p>
 
-    <p><span style="font-size:12px"><strong>We market our projects through our brand Homebazaar.com.</strong>&nbsp;For more details please visit our company website:&nbsp;<strong><u>&nbsp;<a href="http://www.homebazaar.com/" rel="noreferrer" style="color:#4285f4; text-decoration-line:none" target="_blank">www.homebazaar.com</a></u></strong></span></p>
+    <p><span style="font-size:12px"><strong>We market our projects through our brand keystonerealestateadvisory.com.</strong>&nbsp;For more details please visit our company website:&nbsp;<strong><u>&nbsp;<a href="http://www.keystonerealestateadvisory.com/" rel="noreferrer" style="color:#4285f4; text-decoration-line:none" target="_blank">www.keystonerealestateadvisory.com</a></u></strong></span></p>
 
     <p>&nbsp;</p>
 
@@ -124,8 +124,8 @@
 
     <ul style="margin-left:1px; font-weight: normal;">
         <li><span style="font-size:12px">Excellent Inputs &amp; Real Time Support given by management to achieve realistic targets </span></li>
-        <li><span style="font-size:12px">Pre-generated quality leads provided by the Homebazaar.com </span></li>
-        <li><span style="font-size:12px">Professional development &amp; career advancement opportunities within the Homebazaar.com </span></li>
+        <li><span style="font-size:12px">Pre-generated quality leads provided by the keystonerealestateadvisory.com </span></li>
+        <li><span style="font-size:12px">Professional development &amp; career advancement opportunities within the keystonerealestateadvisory.com </span></li>
         <li><span style="font-size:12px">Young &amp; Vibrant work Culture. </span></li>
         <li><span style="font-size:12px">Reimbursement of fixed travelling &amp; actual mobile expenses. </span></li>
     </ul>

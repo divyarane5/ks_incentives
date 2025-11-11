@@ -414,7 +414,7 @@
                     <h3 style="color: #6b6765; font-weight: 500; font-size:16px; margin-bottom: 0;">Andheri</h3>
                 </div>
                 <div>
-                    <!-- <a href="#" target="_blank"><img src="https://www.homebazzar.com/emailer/img/linkdln.jpg" alt="HomeBazaar.com" style=" border-radius: 4px; margin-top:4px  "></a></div> -->
+                    <!-- <a href="#" target="_blank"><img src="https://www.keystonerealestateadvisory.com/emailer/img/linkdln.jpg" alt="HomeBazaar.com" style=" border-radius: 4px; margin-top:4px  "></a></div> -->
 
 
                     <a href="https://keystonerealestateadvisory.com/" target="_blank"><img src="https://keystonerealestateadvisory.com/public/img/gallery/ks-logo.webp" alt="keystonerealestateadvisory.com" style="width:30%; border:0;     margin-top: 2px;"></a>

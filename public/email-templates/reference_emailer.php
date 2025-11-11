@@ -251,7 +251,7 @@ margin: 10px auto;
                       <tr>
                         <td>
                           <!-- START MODULE: Header 4 -->
-                          <a href="https://www.homebazaar.com/" target="_blank" style="text-decoration:none; color:#333">
+                          <a href="https://www.keystonerealestateadvisory.com/" target="_blank" style="text-decoration:none; color:#333">
                           <table border="0" cellpadding="0" cellspacing="0" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; cursor:pointer; width: 100%;" width="100%">
                               
                             <tbody>
@@ -310,7 +310,7 @@ margin: 10px auto;
                                               <tr>
                                                 <td class="pc-features-row-s1" style="vertical-align: top; font-size: 0; text-align: center;" valign="top" align="center">
                                                  
-                                                  <a href="https://www.homebazaar.com/" target="_blank" style="text-decoration:none; color:#333">
+                                                  <a href="https://www.keystonerealestateadvisory.com/" target="_blank" style="text-decoration:none; color:#333">
                                                    <div class="pc-features-row-col" style="display: inline-block; margin: 4px; width: 31%; vertical-align: top;">
                                                     <table border="0" cellpadding="0" cellspacing="0" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;" width="100%">
                                                       <tbody>
@@ -356,7 +356,7 @@ margin: 10px auto;
                                                     </table>
                                                   </div>
                                                   </a>
-                                                  <a href="https://www.homebazaar.com/" target="_blank" style="text-decoration:none; color:#333">
+                                                  <a href="https://www.keystonerealestateadvisory.com/" target="_blank" style="text-decoration:none; color:#333">
                                                    <div class="pc-features-row-col" style="display: inline-block; margin: 4px; width: 31%;  vertical-align: top;">
                                                     <table border="0" cellpadding="0" cellspacing="0" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;" width="100%">
                                                       <tbody>
@@ -402,7 +402,7 @@ margin: 10px auto;
                                                     </table>
                                                   </div>
                                                   </a>
-                                                  <a href="https://www.homebazaar.com/" target="_blank" style="text-decoration:none; color:#333">
+                                                  <a href="https://www.keystonerealestateadvisory.com/" target="_blank" style="text-decoration:none; color:#333">
                                                    <div class="pc-features-row-col" style="display: inline-block; margin: 4px; width: 31%; vertical-align: top;">
                                                     <table border="0" cellpadding="0" cellspacing="0" style="mso-table-lspace: 0pt; mso-table-rspace: 0pt; width: 100%;" width="100%">
                                                       <tbody>
@@ -536,7 +536,7 @@ margin: 10px auto;
 </div>
 <div class="email-d" style="display:flex; align-items:center">
     <h3 style="font-size: 16px; color: #6b6765;  font-weight: 500;">[designation]</h3>
-    <h3 style="font-size: 16px; color: #6b6765;  font-weight: 500;"> | HomeBazaar.com</h3>  
+    <h3 style="font-size: 16px; color: #6b6765;  font-weight: 500;"> | keystonerealestateadvisory.com</h3>  
 </div>
 <div class="email-f">
 
@@ -548,10 +548,10 @@ margin: 10px auto;
 </div>
 
 
-<div><a href="https://in.linkedin.com/company/homebazaarcom" target="_blank"><img src="https://www.homebazzar.com/emailer/img/linkdln.jpg" alt="HomeBazaar.com" style=" border-radius: 4px; margin-top:4px  "></a></div>
+<div><a href="https://in.linkedin.com/company/keystonerealestateadvisory" target="_blank"><img src="https://www.keystonerealestateadvisory.com/emailer/img/linkdln.jpg" alt="keystonerealestateadvisory.com" style=" border-radius: 4px; margin-top:4px  "></a></div>
 
 
-<a href="https://www.homebazaar.com/" target="_blank"><img src="https://keystonerealestateadvisory.com/public/img/gallery/ks-logo.webp" alt="HomeBazaar.com" style="width:30%; border:0;     margin-top: 2px;"></a>
+<a href="https://www.keystonerealestateadvisory.com/" target="_blank"><img src="https://keystonerealestateadvisory.com/public/img/gallery/ks-logo.webp" alt="keystonerealestateadvisory.com" style="width:30%; border:0;     margin-top: 2px;"></a>
   </div>
 </body>
 

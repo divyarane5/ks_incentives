@@ -5,7 +5,7 @@
 // $curl = curl_init();
 
 // curl_setopt_array($curl, array(
-//   CURLOPT_URL => 'https://www.homebazaar.com/api/v2/searchfilter',
+//   CURLOPT_URL => 'https://www.keystonerealestateadvisory.com/api/v2/searchfilter',
 //   CURLOPT_RETURNTRANSFER => true,
 //   CURLOPT_ENCODING => '',
 //   CURLOPT_MAXREDIRS => 10,
@@ -35,7 +35,7 @@
 // $curl1 = curl_init();
 
 // curl_setopt_array($curl1, array(
-//   CURLOPT_URL => 'https://www.homebazaar.com/api/v2/developers?skip=0&limit=5000',
+//   CURLOPT_URL => 'https://www.keystonerealestateadvisory.com/api/v2/developers?skip=0&limit=5000',
 //   CURLOPT_RETURNTRANSFER => true,
 //   CURLOPT_ENCODING => '',
 //   CURLOPT_MAXREDIRS => 10,
