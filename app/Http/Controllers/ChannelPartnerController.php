@@ -28,8 +28,18 @@ class ChannelPartnerController extends Controller
                     $locs = is_array($row->office_locations) ? $row->office_locations : json_decode($row->office_locations, true);
                     return $locs ? implode(', ', \App\Models\Location::whereIn('id', $locs)->pluck('name')->toArray()) : '-';
                 })
-                ->addColumn('sourcing_manager', fn($row) => $row->sourcing_manager ?? '-')
-                ->addColumn('acquisition_channel', fn($row) => ucfirst($row->acquisition_channel))
+                // ✅ FIX #1: Get sourcing manager name instead of ID
+                ->addColumn('sourcing_manager', function($row) {
+                    return $row->sourcingManager->name ?? '-';
+                })
+
+                // ✅ FIX #2: Decode acquisition_channel JSON properly
+                ->addColumn('acquisition_channel', function($row) {
+                    $channels = is_array($row->acquisition_channel)
+                        ? $row->acquisition_channel
+                        : json_decode($row->acquisition_channel, true);
+                    return $channels ? implode(', ', $channels) : '-';
+                })
                 ->addColumn('property_type', fn($row) => ucfirst($row->property_type))
                 ->addColumn('action', function ($row) {
                     $actions = '';
@@ -64,8 +74,16 @@ class ChannelPartnerController extends Controller
     public function create()
     {
         $locations = Location::all();
-        return view('channel_partners.create', compact('locations'));
+
+        // Fetch only users from business unit "Alterra India"
+        $users = \App\Models\User::whereHas('businessUnit', function ($query) {
+            $query->where('name', 'Alterra India');
+        })->get(['id', 'name']);
+
+        // Pass both locations and users to the view
+        return view('channel_partners.create', compact('locations', 'users'));
     }
+
 
     // public function store(Request $request)
     // {
@@ -104,78 +122,153 @@ class ChannelPartnerController extends Controller
 
     public function store(Request $request)
     {
-        // Get submitted arrays or empty
-        $operationalLocations = $request->operational_locations ?? [];
-        $officeLocations = $request->office_locations ?? [];
+        // ✅ Validate incoming data
+        $validated = $request->validate([
+            'firm_name' => 'required|string|max:255',
+            'owner_name' => 'required|string|max:255',
+            'contact' => 'required|string|max:15',
+            'rera_number' => 'nullable|string|max:255',
+            'sourcing_manager' => 'nullable|exists:users,id',
+            'acquisition_channel' => 'required|array|min:1', // multi-select
+            'acquisition_channel.*' => 'in:telecalling,digital,reference,BTL',
+            'property_type' => 'required|in:commercial,residential,both',
+            'operational_locations' => 'nullable|array',
+            'office_locations' => 'nullable|array',
+            'new_operational_locations' => 'nullable|array',
+            'new_office_locations' => 'nullable|array',
+        ]);
 
-        // Handle new locations
-        foreach (['operational_locations' => &$operationalLocations, 'office_locations' => &$officeLocations] as $field => &$arr) {
+        // ✅ Handle locations
+        $operationalLocations = $validated['operational_locations'] ?? [];
+        $officeLocations = $validated['office_locations'] ?? [];
+
+        foreach ([
+            'operational_locations' => &$operationalLocations,
+            'office_locations' => &$officeLocations
+        ] as $field => &$arr) {
+
             $newField = 'new_' . $field;
             if ($request->has($newField)) {
                 foreach ($request->input($newField) as $locName) {
-                    // Create new location and get its ID
-                    $location = Location::firstOrCreate(
-                        ['name' => $locName],
-                        ['created_by' => Auth::id() ?? 1]
-                    );
-                    $arr[] = $location->id; // append ID only
+                    if (trim($locName) !== '') {
+                        $location = Location::firstOrCreate(
+                            ['name' => trim($locName)],
+                            ['created_by' => Auth::id() ?? 1]
+                        );
+                        $arr[] = $location->id;
+                    }
                 }
             }
 
-            // Ensure all entries are integers (convert existing IDs if needed)
-            $arr = array_map(function($val) {
-                return (int) $val;
-            }, $arr);
+            // Convert all IDs to integers
+            $arr = array_map('intval', $arr);
         }
 
-        // Save Channel Partner
+        // ✅ Create Channel Partner
         ChannelPartner::create([
-            'firm_name' => $request->firm_name,
-            'owner_name' => $request->owner_name,
-            'contact' => $request->contact,
-            'rera_number' => $request->rera_number,
+            'firm_name' => $validated['firm_name'],
+            'owner_name' => $validated['owner_name'],
+            'contact' => $validated['contact'],
+            'rera_number' => $validated['rera_number'] ?? null,
             'operational_locations' => $operationalLocations,
             'office_locations' => $officeLocations,
-            'sourcing_manager' => $request->sourcing_manager,
-            'acquisition_channel' => $request->acquisition_channel,
-            'property_type' => $request->property_type,
+            'sourcing_manager' => $validated['sourcing_manager'] ?? null,
+            'acquisition_channel' => json_encode($validated['acquisition_channel']), // <-- convert to JSON
+            'property_type' => $validated['property_type'],
+            'created_by' => Auth::id() ?? 1,
         ]);
 
-        return redirect()->route('channel_partners.index')->with('success', 'Channel Partner added!');
+        return redirect()
+            ->route('channel_partners.index')
+            ->with('success', 'Channel Partner added successfully!');
     }
 
 
 
 
-    public function edit($id)
+   public function edit($id)
     {
         $channelPartner = ChannelPartner::findOrFail($id);
 
-        // Fetch locations for dropdown or other usage
-        $locations = Location::all(); // Or filtered list if needed
+        // Decode location arrays (stored as JSON)
+        $operationalLocIds = is_array($channelPartner->operational_locations)
+            ? $channelPartner->operational_locations
+            : json_decode($channelPartner->operational_locations, true) ?? [];
 
-        return view('channel_partners.edit', compact('channelPartner', 'locations'));
+        $officeLocIds = is_array($channelPartner->office_locations)
+            ? $channelPartner->office_locations
+            : json_decode($channelPartner->office_locations, true) ?? [];
+
+        // Fetch location names for pre-selection
+        $operationalLocations = Location::whereIn('id', $operationalLocIds)->get(['id', 'name']);
+        $officeLocations = Location::whereIn('id', $officeLocIds)->get(['id', 'name']);
+
+        // Get sourcing managers (users)
+        //$users = \App\Models\User::select('id', 'name')->get();
+        $users = \App\Models\User::whereHas('businessUnit', function ($query) {
+            $query->where('name', 'Alterra India');
+        })->get(['id', 'name']);
+        return view('channel_partners.edit', compact(
+            'channelPartner',
+            'users',
+            'operationalLocations',
+            'officeLocations'
+        ));
     }
+
     public function update(Request $request, ChannelPartner $channelPartner)
     {
         $request->validate([
             'firm_name' => 'required|string|max:255',
             'owner_name' => 'required|string|max:255',
             'contact' => 'required|string|max:20',
-            'acquisition_channel' => 'required|in:telecalling,digital,reference,BTL',
-            'property_type' => 'required|in:commercial,residential',
+            'property_type' => 'required|in:commercial,residential,both',
+            'acquisition_channel' => 'required|array', // changed to array (multi-select)
+            'acquisition_channel.*' => 'in:telecalling,digital,reference,BTL',
             'operational_locations' => 'nullable|array',
             'office_locations' => 'nullable|array',
         ]);
 
-        $data = $request->all();
+        // Handle base data
+        $data = $request->only([
+            'firm_name',
+            'owner_name',
+            'contact',
+            'rera_number',
+            'sourcing_manager',
+            'property_type',
+        ]);
+
+        // Handle JSON-encoded fields
+        $data['acquisition_channel'] = json_encode($request->acquisition_channel);
         $data['operational_locations'] = $request->operational_locations ? json_encode($request->operational_locations) : null;
         $data['office_locations'] = $request->office_locations ? json_encode($request->office_locations) : null;
 
+        // Handle new custom tags (typed by user)
+        if ($request->has('new_operational_locations')) {
+            foreach ($request->new_operational_locations as $newLoc) {
+                $loc = Location::firstOrCreate(['name' => $newLoc]);
+                $operationalLocs[] = $loc->id;
+            }
+            $existing = json_decode($data['operational_locations'], true) ?? [];
+            $data['operational_locations'] = json_encode(array_merge($existing, $operationalLocs ?? []));
+        }
+
+        if ($request->has('new_office_locations')) {
+            foreach ($request->new_office_locations as $newLoc) {
+                $loc = Location::firstOrCreate(['name' => $newLoc]);
+                $officeLocs[] = $loc->id;
+            }
+            $existing = json_decode($data['office_locations'], true) ?? [];
+            $data['office_locations'] = json_encode(array_merge($existing, $officeLocs ?? []));
+        }
+
+        // Update
         $channelPartner->update($data);
 
         return redirect()->route('channel_partners.index')->with('success', 'Channel Partner updated successfully.');
     }
+
 
     public function destroy(ChannelPartner $channelPartner)
     {

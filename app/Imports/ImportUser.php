@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Models\Department;
 use App\Models\Designation;
 use App\Models\Location;
+use App\Models\BusinessUnit;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\Hash;
 use Maatwebsite\Excel\Concerns\ToCollection;
@@ -34,6 +35,9 @@ class ImportUser implements ToCollection, WithHeadingRow
                 ['city' => $row['work_location'] ?? ''],
                 ['created_by' => auth()->id() ?? 1]
             );
+            $businessUnit = BusinessUnit::firstOrCreate([
+                'name' => $row['business_unit'] ?? ''
+            ]);
             $role = Role::firstOrCreate(['name' => $row['role'] ?? 'Employee']);
 
             // Create / update user
@@ -41,6 +45,7 @@ class ImportUser implements ToCollection, WithHeadingRow
                 ['employee_code' => $row['employee_code']],
                 [
                     'entity' => $row['entity'],
+                    
                     'title' => $row['title'],
                     'first_name' => $row['first_name'],
                     'middle_name' => $row['middle_name'] ?? null,
@@ -58,7 +63,8 @@ class ImportUser implements ToCollection, WithHeadingRow
                     'role_id' => $role->id,
                     'location_handled' => $row['location_handled'] ?? null,
                     'work_location_id' => $location->id,
-
+                    'business_unit_id' => $businessUnit->id,
+                    
                     // ✅ Safe date parsing
                     'joining_date' => $this->parseExcelDate($row['joining_date'] ?? null),
                     'confirm_date' => $this->parseExcelDate($row['confirm_date'] ?? null),

@@ -88,13 +88,14 @@ class ClientEnquiryController extends Controller
 
     public function store(StoreClientEnquiryRequest $request)
     {
+      //  dd($request->all());
         $data = $request->validated();
         $data['created_by'] = Auth::id();
-        $data['team_call_received'] = $request->boolean('team_call_received');
-        $data['source_of_visit'] = $request->source_of_visit ? json_encode($request->source_of_visit) : null;
+        $data['team_call_received'] = $request->team_call_received ?? 0;
+        $data['source_of_visit'] = $request->source_of_visit ?? null;
 
         ClientEnquiry::create($data);
-
+        
         return redirect()->route('client-enquiries.index')
             ->with('success', 'Client Enquiry added successfully.');
     }
@@ -102,14 +103,13 @@ class ClientEnquiryController extends Controller
     public function edit($id)
     {
         $clientEnquiry = ClientEnquiry::findOrFail($id);
+
         $channelPartners = ChannelPartner::all(['id', 'firm_name']);
         $managers = User::all(['id', 'name']);
         $sources = [
             'Reference','Channel Partner','Website','News','Paper Ad','Hoarding','Mailers/SMS',
             'Online Ad','Call Center','Walk in','Exhibition','Insert','Existing Client','Property Portal'
         ];
-
-        $clientEnquiry->source_of_visit = json_decode($clientEnquiry->source_of_visit, true);
 
         return view('client_enquiries.edit', compact('clientEnquiry', 'channelPartners', 'managers', 'sources'));
     }

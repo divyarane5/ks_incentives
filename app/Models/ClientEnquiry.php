@@ -22,6 +22,7 @@ class ClientEnquiry extends Model
         'residential_status',
         'nri_country',
         'channel_partner_id',
+        'sourcing_manager_id', // added
         'property_type',
         'budget',
         'purchase_purpose',
@@ -30,13 +31,14 @@ class ClientEnquiry extends Model
         'source_of_visit',
         'reference_name',
         'reference_contact',
+        'remarks', // added
         'closing_manager_id',
         'feedback',
         'created_by',
     ];
 
     protected $casts = [
-        'source_of_visit' => 'array',
+        //'source_of_visit' => 'array',
         'team_call_received' => 'boolean',
     ];
 
@@ -55,4 +57,9 @@ class ClientEnquiry extends Model
     {
         return $this->belongsTo(User::class, 'created_by');
     }
+    public function sourcingManager()
+    {
+        return $this->belongsTo(User::class, 'sourcing_manager_id');
+    }
+    
 }

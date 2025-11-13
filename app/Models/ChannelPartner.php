@@ -20,6 +20,7 @@ class ChannelPartner extends Model
     protected $casts = [
         'operational_locations' => 'array',
         'office_locations' => 'array',
+        'acquisition_channel' => 'array',
     ];
 
     protected static function boot() {
@@ -28,5 +29,10 @@ class ChannelPartner extends Model
         static::creating(function ($model) {
             $model->created_by = Auth::id() ?? 1;
         });
+    }
+
+    public function sourcingManager()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'sourcing_manager');
     }
 }

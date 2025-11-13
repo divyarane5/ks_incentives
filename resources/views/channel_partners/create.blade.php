@@ -52,17 +52,27 @@
                 <div class="row mb-3">
                     <div class="col-md-6">
                         <label class="form-label">Sourcing Manager</label>
-                        <input type="text" name="sourcing_manager" class="form-control">
+                        <!-- <input type="text" name="sourcing_manager" class="form-control"> -->
+                         <!-- Sourcing Manager Dropdown -->
+                        <select name="sourcing_manager" class="form-control">
+                            <option value="">Select Sourcing Manager</option>
+                            @foreach($users as $user)
+                                <option value="{{ $user->id }}" {{ old('sourcing_manager') == $user->id ? 'selected' : '' }}>
+                                    {{ $user->name }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Acquisition Channel *</label>
-                        <select name="acquisition_channel" class="form-select" required>
-                            <option value="">Select</option>
+                        <!-- Acquisition Channel Multi-select -->
+                        <select name="acquisition_channel[]" class="form-control" multiple>
                             <option value="telecalling">Telecalling</option>
                             <option value="digital">Digital</option>
                             <option value="reference">Reference</option>
                             <option value="BTL">BTL</option>
                         </select>
+
                     </div>
                 </div>
 
@@ -73,6 +83,7 @@
                             <option value="">Select</option>
                             <option value="commercial">Commercial</option>
                             <option value="residential">Residential</option>
+                            <option value="both">Both</option>
                         </select>
                     </div>
                 </div>

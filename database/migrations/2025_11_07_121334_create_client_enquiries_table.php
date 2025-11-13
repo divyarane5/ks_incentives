@@ -37,8 +37,8 @@ return new class extends Migration
             $table->boolean('team_call_received')->default(false);
 
             // ✅ Multiple Source of Visit options stored as JSON
-            $table->json('source_of_visit')->nullable(); 
-
+            $table->string('source_of_visit')->nullable(); 
+            
             // Reference info
             $table->string('reference_name')->nullable();
             $table->string('reference_contact')->nullable();
@@ -49,6 +49,10 @@ return new class extends Migration
 
             // Additional info
             $table->text('feedback')->nullable();
+
+            $table->unsignedBigInteger('sourcing_manager_id')->nullable();
+            $table->foreign('sourcing_manager_id')->references('id')->on('users')->nullOnDelete();
+            $table->text('remarks')->nullable();
 
             // Meta
             $table->unsignedBigInteger('created_by')->nullable();

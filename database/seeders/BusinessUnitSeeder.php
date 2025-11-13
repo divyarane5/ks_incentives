@@ -22,8 +22,8 @@ class BusinessUnitSeeder extends Seeder
             'name' => 'Designo Palette',
             'code' => 'DP',
             'domain' => 'dp.portal.com',
-            'theme_color' => '#0d9488',
-            'secondary_color' => '#ccfbf1',
+            'theme_color' => '#06431e',
+            'secondary_color' => '#dda05f',
             'status' => 1,
         ]);
 
@@ -31,8 +31,8 @@ class BusinessUnitSeeder extends Seeder
             'name' => 'Keystone Finserv',
             'code' => 'KF',
             'domain' => 'kf.portal.com',
-            'theme_color' => '#1e40af',
-            'secondary_color' => '#c7d2fe',
+            'theme_color' => '#06431e',
+            'secondary_color' => '#e8b71f',
             'status' => 1,
         ]);
         
@@ -40,8 +40,8 @@ class BusinessUnitSeeder extends Seeder
             'name' => 'Alterra India',
             'code' => 'AI',
             'domain' => 'ai.portal.com',
-            'theme_color' => '#1e40af',
-            'secondary_color' => '#c7d2fe',
+            'theme_color' => '#2e6aa6',
+            'secondary_color' => '#4eb3fb',
             'status' => 1,
         ]);
         
