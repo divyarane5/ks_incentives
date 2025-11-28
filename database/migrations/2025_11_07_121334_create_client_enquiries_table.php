@@ -14,7 +14,7 @@ return new class extends Migration
             // Client Details
             $table->string('customer_name');
             $table->string('address')->nullable();
-            $table->string('pin_code')->nullable();
+            $table->string('pin_code');
             $table->string('contact_no')->nullable();
             $table->string('alternate_no')->nullable();
             $table->string('email')->nullable();
@@ -46,6 +46,9 @@ return new class extends Migration
             // Closing Manager
             $table->unsignedBigInteger('closing_manager_id')->nullable();
             $table->foreign('closing_manager_id')->references('id')->on('users')->nullOnDelete();
+
+            $table->unsignedBigInteger('presales_id')->nullable();
+            $table->foreign('presales_id')->references('id')->on('users')->nullOnDelete();
 
             // Additional info
             $table->text('feedback')->nullable();

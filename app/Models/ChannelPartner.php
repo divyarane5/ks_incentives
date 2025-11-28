@@ -12,7 +12,7 @@ class ChannelPartner extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'firm_name', 'owner_name', 'contact', 'rera_number',
+        'firm_name', 'owner_name', 'cp_executive', 'contact', 'rera_number',
         'operational_locations', 'office_locations',
         'sourcing_manager', 'acquisition_channel', 'property_type', 'created_by'
     ];

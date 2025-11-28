@@ -80,7 +80,7 @@ class MandateProjectController extends Controller
             'project_name' => 'required|string|max:255',
             'brand_name' => 'nullable|string|max:255',
             'location' => 'nullable|string|max:255',
-            'property_type' => 'required|in:residential,commercial',
+            'property_type' => 'required|in:residential,commercial,both',
             'rera_number' => 'nullable|string|max:255',
             'configurations' => 'nullable|array',
             'configurations.*' => 'required|string|max:255',

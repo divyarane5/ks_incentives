@@ -17,7 +17,8 @@
                 $table->id();
                 $table->string('firm_name');
                 $table->string('owner_name');
-                $table->string('contact');
+                $table->string('cp_executive')->nullable();
+                $table->string('contact')->nullable();
                 $table->string('rera_number')->nullable();
                 $table->json('operational_locations')->nullable();
                 $table->json('office_locations')->nullable();

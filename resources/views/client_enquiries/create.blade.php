@@ -60,7 +60,7 @@
 
                     <div class="mb-3 col-md-3">
                         <label class="form-label">Pin Code</label>
-                        <input type="text" name="pin_code" class="form-control" value="{{ old('pin_code') }}">
+                        <input type="text" name="pin_code" class="form-control" value="{{ old('pin_code') }}" required>
                     </div>
 
                     <div class="mb-3 col-md-3">
@@ -124,6 +124,7 @@
                 <h6 class="fw-bold mb-3 text-primary">Source of Visit</h6>
                 <div class="row mb-3">
                     <div class="col-md-6">
+                        <label class="form-label">Source of Visit</label>
                         <select name="source_of_visit" id="source_of_visit" class="form-select" required>
                             <option value="">Select Source</option>
                             <option value="Reference">Reference</option>
@@ -140,6 +141,15 @@
                             <option value="Insert">Insert</option>
                             <option value="Existing Client">Existing Client</option>
                             <option value="Property Portal">Property Portal</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Presales Executive</label>
+                        <select name="presales_id" class="form-select">
+                            <option value="">Select</option>
+                            @foreach($managers as $manager)
+                                <option value="{{ $manager->id }}">{{ $manager->name }}</option>
+                            @endforeach
                         </select>
                     </div>
                 </div>

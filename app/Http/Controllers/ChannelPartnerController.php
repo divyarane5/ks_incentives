@@ -18,6 +18,7 @@ class ChannelPartnerController extends Controller
             return DataTables::of($data)
                 ->addColumn('firm_name', fn($row) => $row->firm_name)
                 ->addColumn('owner_name', fn($row) => $row->owner_name)
+                ->addColumn('cp_executive', fn($row) => $row->cp_executive)
                 ->addColumn('contact', fn($row) => $row->contact)
                 ->addColumn('rera_number', fn($row) => $row->rera_number)
                 ->addColumn('operational_locations', function($row) {
@@ -132,6 +133,7 @@ class ChannelPartnerController extends Controller
             'acquisition_channel' => 'required|array|min:1', // multi-select
             'acquisition_channel.*' => 'in:telecalling,digital,reference,BTL',
             'property_type' => 'required|in:commercial,residential,both',
+            'cp_executive' => 'nullable|string|max:255', // ✅ Add this line
             'operational_locations' => 'nullable|array',
             'office_locations' => 'nullable|array',
             'new_operational_locations' => 'nullable|array',
@@ -175,6 +177,7 @@ class ChannelPartnerController extends Controller
             'sourcing_manager' => $validated['sourcing_manager'] ?? null,
             'acquisition_channel' => json_encode($validated['acquisition_channel']), // <-- convert to JSON
             'property_type' => $validated['property_type'],
+            'cp_executive' => $validated['cp_executive'],
             'created_by' => Auth::id() ?? 1,
         ]);
 
@@ -218,56 +221,68 @@ class ChannelPartnerController extends Controller
 
     public function update(Request $request, ChannelPartner $channelPartner)
     {
-        $request->validate([
+        // ✅ Validate incoming data
+        $validated = $request->validate([
             'firm_name' => 'required|string|max:255',
             'owner_name' => 'required|string|max:255',
+            'cp_executive' => 'nullable|string|max:255',
             'contact' => 'required|string|max:20',
+            'rera_number' => 'nullable|string|max:255',
+            'sourcing_manager' => 'nullable|exists:users,id',
             'property_type' => 'required|in:commercial,residential,both',
-            'acquisition_channel' => 'required|array', // changed to array (multi-select)
+            'acquisition_channel' => 'required|array',
             'acquisition_channel.*' => 'in:telecalling,digital,reference,BTL',
             'operational_locations' => 'nullable|array',
             'office_locations' => 'nullable|array',
+            'new_operational_locations' => 'nullable|array',
+            'new_office_locations' => 'nullable|array',
         ]);
 
-        // Handle base data
-        $data = $request->only([
-            'firm_name',
-            'owner_name',
-            'contact',
-            'rera_number',
-            'sourcing_manager',
-            'property_type',
-        ]);
+        // Initialize location arrays
+        $operationalLocs = $validated['operational_locations'] ?? [];
+        $officeLocs = $validated['office_locations'] ?? [];
 
-        // Handle JSON-encoded fields
-        $data['acquisition_channel'] = json_encode($request->acquisition_channel);
-        $data['operational_locations'] = $request->operational_locations ? json_encode($request->operational_locations) : null;
-        $data['office_locations'] = $request->office_locations ? json_encode($request->office_locations) : null;
-
-        // Handle new custom tags (typed by user)
-        if ($request->has('new_operational_locations')) {
-            foreach ($request->new_operational_locations as $newLoc) {
-                $loc = Location::firstOrCreate(['name' => $newLoc]);
-                $operationalLocs[] = $loc->id;
+        // Handle new custom operational locations
+        if (!empty($validated['new_operational_locations'])) {
+            foreach ($validated['new_operational_locations'] as $locName) {
+                if (trim($locName) !== '') {
+                    $loc = Location::firstOrCreate(['name' => trim($locName)]);
+                    $operationalLocs[] = $loc->id;
+                }
             }
-            $existing = json_decode($data['operational_locations'], true) ?? [];
-            $data['operational_locations'] = json_encode(array_merge($existing, $operationalLocs ?? []));
         }
 
-        if ($request->has('new_office_locations')) {
-            foreach ($request->new_office_locations as $newLoc) {
-                $loc = Location::firstOrCreate(['name' => $newLoc]);
-                $officeLocs[] = $loc->id;
+        // Handle new custom office locations
+        if (!empty($validated['new_office_locations'])) {
+            foreach ($validated['new_office_locations'] as $locName) {
+                if (trim($locName) !== '') {
+                    $loc = Location::firstOrCreate(['name' => trim($locName)]);
+                    $officeLocs[] = $loc->id;
+                }
             }
-            $existing = json_decode($data['office_locations'], true) ?? [];
-            $data['office_locations'] = json_encode(array_merge($existing, $officeLocs ?? []));
         }
 
-        // Update
+        // ✅ Prepare data for update
+        $data = [
+            'firm_name' => $validated['firm_name'],
+            'owner_name' => $validated['owner_name'],
+            'cp_executive' => $validated['cp_executive'] ?? null,
+            'contact' => $validated['contact'],
+            'rera_number' => $validated['rera_number'] ?? null,
+            'sourcing_manager' => $validated['sourcing_manager'] ?? null,
+            'property_type' => $validated['property_type'],
+            'acquisition_channel' => json_encode($validated['acquisition_channel']),
+            'operational_locations' => !empty($operationalLocs) ? json_encode($operationalLocs) : null,
+            'office_locations' => !empty($officeLocs) ? json_encode($officeLocs) : null,
+        ];
+
+        // Update channel partner
         $channelPartner->update($data);
 
-        return redirect()->route('channel_partners.index')->with('success', 'Channel Partner updated successfully.');
+        return redirect()->route('channel_partners.index')
+            ->with('success', 'Channel Partner updated successfully.');
     }
+
 
 
     public function destroy(ChannelPartner $channelPartner)

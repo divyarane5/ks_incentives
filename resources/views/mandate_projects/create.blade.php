@@ -44,6 +44,7 @@
                         <option value="">Select</option>
                         <option value="residential">Residential</option>
                         <option value="commercial">Commercial</option>
+                        <option value="both">Both</option>
                     </select>
                 </div>
             </div>

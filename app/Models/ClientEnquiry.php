@@ -23,6 +23,7 @@ class ClientEnquiry extends Model
         'nri_country',
         'channel_partner_id',
         'sourcing_manager_id', // added
+        'presales_id', // added
         'property_type',
         'budget',
         'purchase_purpose',
@@ -60,6 +61,11 @@ class ClientEnquiry extends Model
     public function sourcingManager()
     {
         return $this->belongsTo(User::class, 'sourcing_manager_id');
+    }
+    public function presales()
+    {
+        return $this->belongsTo(User::class, 'presales_id'); 
+        // Replace 'presales_manager_id' with the actual column name in your table
     }
     
 }

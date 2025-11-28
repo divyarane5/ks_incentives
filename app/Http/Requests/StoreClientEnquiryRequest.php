@@ -26,6 +26,7 @@ class StoreClientEnquiryRequest extends FormRequest
             'nri_country'         => 'nullable|string|max:100',
             'channel_partner_id'  => 'nullable|exists:channel_partners,id',
             'sourcing_manager_id' => 'nullable|exists:users,id',
+            'presales_id'         => 'nullable|exists:users,id',
             'closing_manager_id'  => 'nullable|exists:users,id',
             'property_type'       => 'nullable|string|max:255',
             'budget'              => 'nullable|string|max:255',

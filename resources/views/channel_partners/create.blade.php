@@ -26,8 +26,8 @@
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label">Contact *</label>
-                        <input type="text" name="contact" class="form-control" required>
+                        <label class="form-label">Contact</label>
+                        <input type="text" name="contact" class="form-control">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">RERA Number</label>
@@ -77,6 +77,10 @@
                 </div>
 
                 <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">CP Executive</label>
+                        <input type="text" name="cp_executive" class="form-control">
+                    </div>
                     <div class="col-md-6">
                         <label class="form-label">Property Type *</label>
                         <select name="property_type" class="form-select" required>

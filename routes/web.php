@@ -73,7 +73,8 @@ Route::post('/locations/ajax-check-or-store', [App\Http\Controllers\LocationCont
 
     //client enquiry
     Route::resource('client-enquiries', App\Http\Controllers\ClientEnquiryController::class);
-
+    Route::get('client-enquiries/{id}/download',  [App\Http\Controllers\ClientEnquiryController::class, 'download'])->name('client-enquiries.download');
+    
     //Booking
     Route::resource('booking', App\Http\Controllers\BookingController::class);
     Route::post('booking/update_status', [App\Http\Controllers\BookingController::class, 'updateStatus'])->name('booking.update_status');

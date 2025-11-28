@@ -27,8 +27,8 @@
 
                 <div class="row mb-3">
                     <div class="col-md-6">
-                        <label class="form-label">Contact *</label>
-                        <input type="text" name="contact" class="form-control" value="{{ old('contact', $channelPartner->contact) }}" required>
+                        <label class="form-label">Contact</label>
+                        <input type="text" name="contact" class="form-control" value="{{ old('contact', $channelPartner->contact) }}">
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">RERA Number</label>
@@ -88,6 +88,11 @@
                 </div>
 
                 <div class="row mb-3">
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">CP Executive</label>
+                        <input type="text" name="cp_executive" class="form-control" value="{{ old('cp_executive', $channelPartner->cp_executive) }}">
+                    </div>
                     <div class="col-md-6">
                         <label class="form-label">Property Type *</label>
                         <select name="property_type" class="form-select" required>

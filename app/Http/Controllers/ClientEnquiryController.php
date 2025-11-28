@@ -38,14 +38,20 @@ class ClientEnquiryController extends Controller
                 ->addColumn('created_at', fn($row) => date("d-m-Y", strtotime($row->created_at)))
                 ->addColumn('action', function ($row) {
                     $actions = '';
+                    
+                    if (auth()->user()->can('client-enquiry-view')) {
+                        $actions .= '<a class="dropdown-item" href="'.route('client-enquiries.show', $row->id).'">
+                                        <i class="bx bx-show me-1"></i> View
+                                    </a>';
+                    }
 
-                    if (auth()->user()->can('client-enquiries-edit')) {
+                    if (auth()->user()->can('client-enquiry-edit')) {
                         $actions .= '<a class="dropdown-item" href="'.route('client-enquiries.edit', $row->id).'">
                                         <i class="bx bx-edit-alt me-1"></i> Edit
                                     </a>';
                     }
 
-                    if (auth()->user()->can('client-enquiries-delete')) {
+                    if (auth()->user()->can('client-enquiry-delete')) {
                         $actions .= '<button class="dropdown-item" onclick="deleteEnquiry('.$row->id.')">
                                         <i class="bx bx-trash me-1"></i> Delete
                                     </button>
@@ -118,8 +124,12 @@ class ClientEnquiryController extends Controller
     {
         $clientEnquiry = ClientEnquiry::findOrFail($id);
         $data = $request->validated();
+
+        // Boolean fields
         $data['team_call_received'] = $request->boolean('team_call_received');
-        $data['source_of_visit'] = $request->source_of_visit ? json_encode($request->source_of_visit) : null;
+
+        // ✅ Store source_of_visit as plain string
+        $data['source_of_visit'] = $request->source_of_visit ?? null;
 
         $clientEnquiry->update($data);
 
@@ -127,10 +137,40 @@ class ClientEnquiryController extends Controller
             ->with('success', 'Client Enquiry updated successfully.');
     }
 
+    public function show($id)
+    {
+        $clientEnquiry = ClientEnquiry::with([
+            'channelPartner',
+            'closingManager',
+            'sourcingManager',
+            'createdBy'
+        ])->findOrFail($id);
+
+        return view('client_enquiries.show', compact('clientEnquiry'));
+    }
     public function destroy($id)
     {
         ClientEnquiry::where('id', $id)->delete();
         return redirect()->route('client-enquiries.index')
             ->with('success', 'Client Enquiry deleted successfully.');
     }
+
+    public function download($id)
+    {
+        $clientEnquiry = ClientEnquiry::with([
+            'channelPartner',
+            'closingManager',
+            'sourcingManager',
+            'presales',
+            'createdBy'
+        ])->findOrFail($id);
+
+        $pdf = \PDF::loadView('client_enquiries.show_pdf', [
+            'clientEnquiry' => $clientEnquiry
+        ])->setPaper('a4', 'portrait');
+
+
+        return $pdf->download('client-enquiry-'.$clientEnquiry->id.'.pdf');
+    }
+    
 }

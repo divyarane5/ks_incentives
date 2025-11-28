@@ -121,33 +121,35 @@
 
                 {{-- ================= SOURCE OF VISIT ================= --}}
                 <h6 class="fw-bold mb-3 text-primary">Source of Visit</h6>
-
                 @php
-                    $sourceOptions = [
-                        'Reference', 'Channel Partner', 'Website', 'News', 'Paper Ad', 'Hoarding',
-                        'Mailers/SMS', 'Online Ad', 'Call Center', 'Walk in', 'Exhibition', 'Insert',
-                        'Existing Client', 'Property Portal'
-                    ];
-
-                    // Ensure the current source is safely retrieved (old value first, then model value)
-                    $currentSource = old('source_of_visit') ?? ($clientEnquiry->source_of_visit ?? '');
+                    $currentSource = old('source_of_visit', $clientEnquiry->source_of_visit);
                 @endphp
-
                 <div class="row mb-3">
                     <div class="col-md-6">
+                        <label class="form-label">Source Of Visit</label>
                         <select name="source_of_visit" id="source_of_visit" class="form-select" required>
                             <option value="">Select Source</option>
-                            @foreach($sourceOptions as $source)
+                            @foreach($sources as $source)
                                 <option value="{{ $source }}" {{ $source == $currentSource ? 'selected' : '' }}>
                                     {{ $source }}
                                 </option>
                             @endforeach
                         </select>
                     </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Presales Executive</label>
+                        <select name="presales_id" class="form-select">
+                            <option value="">Select</option>
+                            @foreach($managers as $manager)
+                                <option value="{{ $manager->id }}" {{ old('presales_id', $clientEnquiry->presales_id) == $manager->id ? 'selected' : '' }}>
+                                    {{ $manager->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
-
-                {{-- Channel Partner Section --}}
+                {{-- Channel Partner / Reference / Remarks Sections --}}
                 <div id="channel_partner_section" class="row mb-3" style="display:none;">
                     <div class="col-md-6">
                         <label class="form-label">Channel Partner</label>
@@ -160,7 +162,6 @@
                             @endforeach
                         </select>
                     </div>
-                    
                     <div class="col-md-6">
                         <label class="form-label">Sourcing Manager</label>
                         <select name="sourcing_manager_id" class="form-select">
@@ -174,7 +175,6 @@
                     </div>
                 </div>
 
-                {{-- Reference Section --}}
                 <div id="reference_section" class="row mb-3" style="display:none;">
                     <div class="col-md-6">
                         <label class="form-label">Reference Name</label>
@@ -188,7 +188,6 @@
                     </div>
                 </div>
 
-                {{-- Remarks Section --}}
                 <div id="remarks_section" class="row mb-3" style="display:none;">
                     <div class="col-md-12">
                         <label class="form-label">Remarks / Note</label>
@@ -257,30 +256,19 @@ document.addEventListener('DOMContentLoaded', function () {
     function toggleSections() {
         const value = sourceSelect.value.trim();
 
-        // Show channel partner section if source is 'Channel Partner'
         channelSection.style.display = (value === 'Channel Partner') ? 'flex' : 'none';
-
-        // Show reference section if source is 'Reference'
         referenceSection.style.display = (value === 'Reference') ? 'flex' : 'none';
 
-        // Show remarks for other sources
         const showRemarksFor = [
             'Website', 'News', 'Paper Ad', 'Hoarding', 'Mailers/SMS',
             'Online Ad', 'Call Center', 'Walk in', 'Exhibition',
             'Insert', 'Existing Client', 'Property Portal'
         ];
 
-        if (showRemarksFor.includes(value) || (value && value !== 'Channel Partner' && value !== 'Reference')) {
-            remarksSection.style.display = 'flex';
-        } else {
-            remarksSection.style.display = 'none';
-        }
+        remarksSection.style.display = (showRemarksFor.includes(value) || (value && value !== 'Channel Partner' && value !== 'Reference')) ? 'flex' : 'none';
     }
 
-    // Initial check on page load
     toggleSections();
-
-    // Update on change
     sourceSelect.addEventListener('change', toggleSections);
 });
 </script>
