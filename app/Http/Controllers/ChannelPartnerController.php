@@ -290,4 +290,49 @@ class ChannelPartnerController extends Controller
         $channelPartner->delete();
         return redirect()->route('channel_partners.index')->with('success', 'Channel Partner deleted successfully.');
     }
+
+    // Show public form
+    public function createPublic()
+    {
+        // Get all users who can be sourcing managers
+        $users = \App\Models\User::all(); // Or filter based on role if needed
+
+        return view('channel_partners.public_create', compact('users'));
+    }
+
+    // Handle public form submission
+    public function storePublic(Request $request)
+    {
+        $validated = $request->validate([
+            'firm_name' => 'required|string|max:255',
+            'owner_name' => 'required|string|max:255',
+           // 'contact' => 'string|max:20',
+            'rera_number' => 'nullable|string|max:255',
+
+            'operational_locations' => 'nullable|array',
+            'office_locations' => 'nullable|array',
+
+            'sourcing_manager' => 'nullable|integer|exists:users,id',
+            'acquisition_channel' => 'nullable|array',
+
+            'cp_executive' => 'nullable|string|max:255',
+            'property_type' => 'required|string',
+        ]);
+
+        // Merge NEW LOCATIONS typed by user (select2 tags)
+        $validated['operational_locations'] = array_merge(
+            $request->operational_locations ?? [],
+            $request->new_operational_locations ?? []
+        );
+
+        $validated['office_locations'] = array_merge(
+            $request->office_locations ?? [],
+            $request->new_office_locations ?? []
+        );
+
+        ChannelPartner::create($validated);
+
+        return back()->with('success', 'Thank you! Your request has been submitted.');
+    }
+
 }

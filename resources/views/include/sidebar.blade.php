@@ -24,7 +24,14 @@
                 <div data-i18n="Analytics">Dashboard</div>
             </a>
         </li>
-
+        @can('user-view')
+        <li class="menu-item {{ (Request::segment(1) == 'users') ? 'active': '' }}">
+            <a href="{{ route('users.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-user"></i>
+                <div data-i18n="Analytics">User</div>
+            </a>
+        </li>
+        @endcan
         <!-- Masters -->
         @canany(['role-view','location-view','department-view','designation-view','expense-view','vendor-view','business_unit-view','payment_method-view'])
         <li class="menu-item {{ in_array(Request::segment(1), ['role','location','department','designation','expense','vendor','business_unit','payment_method']) ? 'active open': '' }}">
@@ -85,15 +92,7 @@
         </li>
         @endcanany
 
-        @can('user-view')
-        <li class="menu-item {{ (Request::segment(1) == 'users') ? 'active': '' }}">
-            <a href="{{ route('users.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-user"></i>
-                <div data-i18n="Analytics">User</div>
-            </a>
-        </li>
-        @endcan
-
+        
         <!-- Mandate Section -->
         <!-- Mandate Section -->
         @canany(['location-view','mandate-project-view','channel-partner-view','client-enquiries-view'])

@@ -173,4 +173,91 @@ class ClientEnquiryController extends Controller
         return $pdf->download('client-enquiry-'.$clientEnquiry->id.'.pdf');
     }
     
+    // Show Step 1
+    public function createPublicStep1()
+    {
+        $managers = User::whereHas('roles', function($q){ /* optional filter */ })->get(['id','name']); // adjust as needed
+        $channelPartners = ChannelPartner::select('id','firm_name')->get();
+        // If user already started, prefill from session
+        $step1 = session('client_enquiry.step1', []);
+        return view('client_enquiries.public_step1', compact('managers','channelPartners','step1'));
+    }
+
+    // Save Step 1 into session and redirect to Step 2
+    public function storePublicStep1(Request $request)
+    {
+        $validated = $request->validate([
+            'customer_name' => 'required|string|max:255',
+            'contact_no'    => 'required|string|max:20',
+            'alternate_no'  => 'nullable|string|max:20',
+            'email'         => 'nullable|email|max:255',
+            'profession'    => 'nullable|string|max:255',
+            'company_name'  => 'nullable|string|max:255',
+            'address'       => 'nullable|string|max:1000',
+            'pin_code'      => 'nullable|string|max:20',
+            'residential_status' => 'nullable|in:India,NRI',
+            'nri_country'   => 'nullable|required_if:residential_status,NRI|string|max:255',
+            'property_type' => 'nullable|string|max:255',
+            'budget'        => 'nullable|string|max:255',
+            'purchase_purpose' => 'nullable|string|max:255',
+            'funding_source'   => 'nullable|string|max:255',
+            'presales_id'   => 'nullable|exists:users,id',
+            'team_call_received' => 'nullable|in:0,1',
+            'closing_manager_id' => 'nullable|exists:users,id',
+            'feedback'      => 'nullable|string|max:2000',
+        ]);
+
+        // Save to session
+        session(['client_enquiry.step1' => $validated]);
+
+        return redirect()->route('client-enquiry.public.source');
+    }
+
+    // Show Step 2 (Source of Visit)
+    public function createPublicSource()
+    {
+        $step1 = session('client_enquiry.step1');
+        if (!$step1) {
+            return redirect()->route('client-enquiry.public.create')
+                ->with('error', 'Please fill the first step before proceeding.');
+        }
+        $managers = User::all(['id','name']);
+        $channelPartners = ChannelPartner::select('id','firm_name')->get();
+
+        // allow prefill old values from session
+        $step2 = session('client_enquiry.step2', []);
+        return view('client_enquiries.public_source', compact('managers','channelPartners','step1','step2'));
+    }
+
+    // Final store: validate step2, merge with step1, create DB record
+    public function storePublicSource(Request $request)
+    {
+        $step1 = session('client_enquiry.step1');
+        if (!$step1) {
+            return redirect()->route('client-enquiry.public.create')
+                ->with('error', 'Session expired — please complete Step 1 again.');
+        }
+
+        $validated = $request->validate([
+            'source_of_visit' => 'required|string',
+            'reference_name'  => 'nullable|required_if:source_of_visit,Reference|string|max:255',
+            'reference_contact' => 'nullable|required_if:source_of_visit,Reference|string|max:20',
+            'channel_partner_id' => 'nullable|required_if:source_of_visit,Channel Partner|exists:channel_partners,id',
+            'sourcing_manager_id' => 'nullable|required_if:source_of_visit,Channel Partner|exists:users,id',
+            'remarks' => 'nullable|string|max:2000'
+        ]);
+
+        // merge data
+        $data = array_merge($step1, $validated);
+
+        // create record (adjust column names & model fillable accordingly)
+        ClientEnquiry::create($data);
+
+        // clear session
+        session()->forget('client_enquiry');
+
+        return redirect()->route('client-enquiry.public.create')
+            ->with('success', 'Thank you — your enquiry has been submitted.');
+    }
+
 }

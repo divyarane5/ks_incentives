@@ -19,6 +19,32 @@ Route::get('click/{id}', [App\Http\Controllers\ClientController::class, 'click']
 Route::post('rthankyou', [App\Http\Controllers\ClientController::class, 'rthankyou'])->name('client.rthankyou');
 Route::get('service/{id}/{sname}', [App\Http\Controllers\ClientController::class, 'service'])->name('client.service');
 Route::post('sthankyou', [App\Http\Controllers\ClientController::class, 'sthankyou'])->name('client.sthankyou');
+// Public Channel Partner form
+Route::get('/become-channel-partner', [\App\Http\Controllers\ChannelPartnerController::class, 'createPublic'])->name('channel-partner.create.public');
+Route::post('/become-channel-partner', [\App\Http\Controllers\ChannelPartnerController::class, 'storePublic'])->name('channel-partner.store.public');
+// Show Public Client Enquiry Form
+// Route::get('/become-client-enquiry', [App\Http\Controllers\ClientEnquiryController::class, 'createPublic'])->name('client-enquiry.public.create');
+// Route::post('/become-client-enquiry', [App\Http\Controllers\ClientEnquiryController::class, 'storePublic'])->name('client-enquiry.public.store');
+// Step 1 — Show form
+Route::get('/become-client-enquiry', 
+    [App\Http\Controllers\ClientEnquiryController::class, 'createPublicStep1']
+)->name('client-enquiry.public.create');
+
+// Step 1 — Store
+Route::post('/become-client-enquiry-step1', 
+    [App\Http\Controllers\ClientEnquiryController::class, 'storePublicStep1']
+)->name('client-enquiry.public.storeStep1');
+
+// Step 2 — Show Source of Visit
+Route::get('/become-client-enquiry/source', 
+    [App\Http\Controllers\ClientEnquiryController::class, 'createPublicSource']
+)->name('client-enquiry.public.source');
+
+// Step 2 — Store Source of Visit + Final submit
+Route::post('/become-client-enquiry/source', 
+    [App\Http\Controllers\ClientEnquiryController::class, 'storePublicSource']
+)->name('client-enquiry.public.storeSource');
+
 
 Route::group(['middleware' => 'auth'], function() {
     Route::get('/', [App\Http\Controllers\DashboardController::class, 'index']);
@@ -66,15 +92,15 @@ Route::group(['middleware' => 'auth'], function() {
     Route::resource('channel_partners', App\Http\Controllers\ChannelPartnerController::class);
    
     // For AJAX search of existing locations
-Route::get('/locations/ajax-search', [App\Http\Controllers\LocationController::class, 'ajaxSearch'])->name('locations.ajaxSearch');
+    Route::get('/locations/ajax-search', [App\Http\Controllers\LocationController::class, 'ajaxSearch'])->name('locations.ajaxSearch');
 
-// For checking/storing new location (optional if you still use store-on-submit)
-Route::post('/locations/ajax-check-or-store', [App\Http\Controllers\LocationController::class, 'ajaxCheckOrStore'])->name('locations.ajaxCheckOrStore');
+    // For checking/storing new location (optional if you still use store-on-submit)
+    Route::post('/locations/ajax-check-or-store', [App\Http\Controllers\LocationController::class, 'ajaxCheckOrStore'])->name('locations.ajaxCheckOrStore');
 
     //client enquiry
     Route::resource('client-enquiries', App\Http\Controllers\ClientEnquiryController::class);
     Route::get('client-enquiries/{id}/download',  [App\Http\Controllers\ClientEnquiryController::class, 'download'])->name('client-enquiries.download');
-    
+        
     //Booking
     Route::resource('booking', App\Http\Controllers\BookingController::class);
     Route::post('booking/update_status', [App\Http\Controllers\BookingController::class, 'updateStatus'])->name('booking.update_status');
