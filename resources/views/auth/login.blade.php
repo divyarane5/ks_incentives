@@ -9,7 +9,7 @@
             <img src="{{ asset("assets/img/logo/ks-logos.webp") }}" class="logo">
         </div>
         <!-- /Logo -->
-        <h4 class="mb-2">Welcome to Keystone Real Estate Advisory 👋</h4>
+        <h4 class="mb-2">Welcome to Realty Suite 👋</h4>
         <p class="mb-4">Please login to your account</p>
 
         <form id="formAuthentication" class="mb-3" action="{{ route('login') }}" method="POST">
