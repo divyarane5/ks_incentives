@@ -124,8 +124,7 @@ $(document).ready(function() {
             width: '100%',
             tags: true,
             ajax: {
-                // url: "{{ route('locations.ajaxSearch') }}",
-                url: "/locations/search",
+                url: "{{ route('locations.ajaxSearch') }}",
                 type: "GET",
                 delay: 250,
                 data: function(params) { return { name: params.term }; },

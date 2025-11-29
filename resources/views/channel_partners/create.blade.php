@@ -113,8 +113,7 @@ $(document).ready(function() {
             width: '100%',
             tags: true, // allow typing new locations
             ajax: {
-                // url: "{{ route('locations.ajaxSearch') }}", // search existing locations
-                url: "/locations/search",
+                url: "{{ route('locations.ajaxSearch') }}", // search existing locations
                 type: "GET",
                 delay: 250,
                 data: function(params) { return { name: params.term }; },

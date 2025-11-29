@@ -45,9 +45,6 @@ Route::post('/become-client-enquiry/source',
     [App\Http\Controllers\ClientEnquiryController::class, 'storePublicSource']
 )->name('client-enquiry.public.storeSource');
 
- // For AJAX search of existing locations
-    Route::get('/locations/ajax-search', [App\Http\Controllers\LocationController::class, 'ajaxSearch'])->name('locations.ajaxSearch');
-
 
 Route::group(['middleware' => 'auth'], function() {
     Route::get('/', [App\Http\Controllers\DashboardController::class, 'index']);
@@ -94,7 +91,9 @@ Route::group(['middleware' => 'auth'], function() {
     //channel Partners + dropdown location addition store
     Route::resource('channel_partners', App\Http\Controllers\ChannelPartnerController::class);
    
-   
+    // For AJAX search of existing locations
+    Route::get('/locations/ajax-search', [App\Http\Controllers\LocationController::class, 'ajaxSearch'])->name('locations.ajaxSearch');
+
     // For checking/storing new location (optional if you still use store-on-submit)
     Route::post('/locations/ajax-check-or-store', [App\Http\Controllers\LocationController::class, 'ajaxCheckOrStore'])->name('locations.ajaxCheckOrStore');
 
