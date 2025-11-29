@@ -2,7 +2,7 @@
 
 return [
     'GENDER_OPTIONS' => ['Male' => 'Male','Female' => 'Female'],
-    'COMPANY_OPTIONS' => ['Keystone Real Estate Advisory Pvt. Ltd.', 'Keystone Finserv Pvt. Ltd.'],
+    'COMPANY_OPTIONS' => ['Keystone Real Estate Advisory Pvt. Ltd.'],
     'BILL_MODES' => ['advance' => 'Advance', 'partial' => 'Partial Advance', 'against' => 'Against'],
     'INDENT_STATUS' => [
                         'pending' => 'Pending',

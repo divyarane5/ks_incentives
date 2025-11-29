@@ -10,7 +10,7 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $activeBusinessUnit->name ?? config('app.name', 'Keystone') }}</title>
+    <title>Realty Suite</title>
 
 
     <meta name="description" content="" />
