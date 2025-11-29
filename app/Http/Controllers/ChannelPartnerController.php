@@ -306,7 +306,7 @@ class ChannelPartnerController extends Controller
         $validated = $request->validate([
             'firm_name' => 'required|string|max:255',
             'owner_name' => 'required|string|max:255',
-           // 'contact' => 'string|max:20',
+            'contact' => 'string|max:20',
             'rera_number' => 'nullable|string|max:255',
 
             'operational_locations' => 'nullable|array',
