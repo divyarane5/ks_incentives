@@ -306,11 +306,13 @@ class ChannelPartnerController extends Controller
         $validated = $request->validate([
             'firm_name' => 'required|string|max:255',
             'owner_name' => 'required|string|max:255',
-            'contact' => 'string|max:20',
+            'contact' => 'nullable|string|max:20',
             'rera_number' => 'nullable|string|max:255',
 
             'operational_locations' => 'nullable|array',
             'office_locations' => 'nullable|array',
+            'new_operational_locations' => 'nullable|array',
+            'new_office_locations' => 'nullable|array',
 
             'sourcing_manager' => 'nullable|integer|exists:users,id',
             'acquisition_channel' => 'nullable|array',
@@ -319,20 +321,61 @@ class ChannelPartnerController extends Controller
             'property_type' => 'required|string',
         ]);
 
-        // Merge NEW LOCATIONS typed by user (select2 tags)
-        $validated['operational_locations'] = array_merge(
-            $request->operational_locations ?? [],
-            $request->new_operational_locations ?? []
-        );
+        // -------------------------
+        // PROCESS LOCATIONS (same as admin)
+        // -------------------------
+        $operationalLocations = $validated['operational_locations'] ?? [];
+        $officeLocations = $validated['office_locations'] ?? [];
 
-        $validated['office_locations'] = array_merge(
-            $request->office_locations ?? [],
-            $request->new_office_locations ?? []
-        );
+        foreach ([
+            'operational_locations' => &$operationalLocations,
+            'office_locations' => &$officeLocations
+        ] as $field => &$arr) {
 
-        ChannelPartner::create($validated);
+            $newField = 'new_' . $field;
+
+            if ($request->has($newField)) {
+                foreach ($request->input($newField) as $locName) {
+
+                    if (trim($locName) !== '') {
+
+                        $location = Location::firstOrCreate(
+                            ['name' => trim($locName)],
+                            ['created_by' => 1] // Public user
+                        );
+
+                        $arr[] = $location->id; // store ID not text
+                    }
+                }
+            }
+
+            // Make sure all are integers
+            $arr = array_map('intval', $arr);
+        }
+
+        // -------------------------
+        // SAVE CHANNEL PARTNER
+        // -------------------------
+        ChannelPartner::create([
+            'firm_name' => $validated['firm_name'],
+            'owner_name' => $validated['owner_name'],
+            'contact' => $validated['contact'] ?? null,
+            'rera_number' => $validated['rera_number'] ?? null,
+
+            'operational_locations' => $operationalLocations,
+            'office_locations' => $officeLocations,
+
+            'sourcing_manager' => $validated['sourcing_manager'] ?? null,
+            'acquisition_channel' => json_encode($validated['acquisition_channel'] ?? []),
+
+            'property_type' => $validated['property_type'],
+            'cp_executive' => $validated['cp_executive'] ?? null,
+
+            'created_by' => 1, // Public form
+        ]);
 
         return back()->with('success', 'Thank you! Your request has been submitted.');
     }
+
 
 }
