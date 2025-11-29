@@ -154,7 +154,8 @@ $(document).ready(function() {
             width: '100%',
             tags: true,
             ajax: {
-                url: "{{ route('locations.ajaxSearch') }}",
+                // url: "{{ route('locations.ajaxSearch') }}",
+                url: "/locations/search",
                 type: "GET",
                 delay: 250,
                 data: function(params) { return { name: params.term }; },
