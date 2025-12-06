@@ -23,7 +23,6 @@
                     <tr>
                         <th>Firm Name</th>
                         <th>Owner Name</th>
-                        <th>CP Executive</th>
                         <th>Contact</th>
                         <th>RERA</th>
                         <th>Operational Locations</th>
@@ -51,7 +50,6 @@ $(document).ready(function () {
         columns: [
             { data: 'firm_name', name: 'firm_name' },
             { data: 'owner_name', name: 'owner_name' },
-            { data: 'cp_executive', name: 'cp_executive' },
             { data: 'contact', name: 'contact' },
             { data: 'rera_number', name: 'rera_number' },
             { data: 'operational_locations', name: 'operational_locations', orderable: false, searchable: false },

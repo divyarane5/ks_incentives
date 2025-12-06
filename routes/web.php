@@ -48,6 +48,10 @@ Route::post('/become-client-enquiry/source',
 // For AJAX search of existing locations
     Route::get('/locations/ajax-search', [App\Http\Controllers\LocationController::class, 'ajaxSearch'])->name('locations.ajaxSearch');
 
+    Route::get('/card/{slug}', [App\Http\Controllers\UserController::class, 'card'])->name('users.card');
+    Route::get('/user/{id}/vcf', [UserController::class, 'downloadVcf'])->name('user.vcf');
+
+
 Route::group(['middleware' => 'auth'], function() {
     Route::get('/', [App\Http\Controllers\DashboardController::class, 'index']);
 

@@ -273,10 +273,13 @@ class UserController extends Controller
 
         // ✅ Handle photo upload separately
         if ($request->hasFile('photo')) {
-            if (!empty($user->photo) && file_exists(storage_path('app/'.$user->photo))) {
-                unlink(storage_path('app/'.$user->photo));
+            // Delete old photo if exists
+            if (!empty($user->photo) && file_exists(storage_path('app/public/'.$user->photo))) {
+                unlink(storage_path('app/public/'.$user->photo));
             }
-            $user->photo = uploadFile($request->file('photo'), config('uploadfilepath.USER_PROFILE_PHOTO'));
+
+            // Store new photo in public disk
+            $user->photo = $request->file('photo')->store('uploads/users', 'public');
             $user->save();
         }
 
@@ -332,7 +335,41 @@ class UserController extends Controller
         return view('users.view', compact('user'));
     }
 
+    public function card($slug)
+    {
+        // Convert - to spaces
+        $slug = str_replace('-', ' ', strtolower($slug));
 
+        // Split slug into words
+        $parts = explode(' ', $slug);
+
+        // Build query
+        $query = User::query();
+
+        foreach ($parts as $part) {
+            $query->whereRaw("LOWER(CONCAT_WS(' ', first_name, middle_name, last_name)) LIKE ?", ["%{$part}%"]);
+        }
+
+        $user = $query->firstOrFail();
+
+        return view('users.card', compact('user'));
+    }
+
+    public function downloadVcf($id)
+    {
+        $user = User::findOrFail($id);
+
+        $vcf = "BEGIN:VCARD\n";
+        $vcf .= "VERSION:3.0\n";
+        $vcf .= "FN:{$user->first_name} {$user->last_name}\n";
+        $vcf .= "TEL;TYPE=CELL:{$user->phone}\n";
+        $vcf .= "EMAIL:{$user->email}\n";
+        $vcf .= "END:VCARD";
+
+        return response($vcf)
+            ->header('Content-Type', 'text/vcard')
+            ->header('Content-Disposition', 'attachment; filename="'.$user->first_name.'.vcf"');
+    }
     // ✅ Show the import page (upload form)
     // public function showprocess()
     // {
