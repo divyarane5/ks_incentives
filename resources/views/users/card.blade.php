@@ -171,7 +171,7 @@
                 target="_blank" 
                 style="display:none;"></a>
 
-                <form id="wtsp_form" target="_blank" onsubmit="return false;">
+                <!-- <form id="wtsp_form" target="_blank" onsubmit="return false;">
                     <label class="lbl_91 css8_lbl">
                         +<input type="text" id="cntcode" value="91" style="width:32px; margin-top:-11px; padding:5px; box-shadow:none;">
                     </label>
@@ -182,7 +182,7 @@
                     <div class="wtsp_share_btn" onclick="shareViaWhatsApp();">
                         <i class="fa fa-whatsapp"></i> Share
                     </div>
-                </form>
+                </form> -->
             </div>
         </div>
 
@@ -266,24 +266,63 @@
 <div class="card2" id="about_us">
 		<h3>About Us</h3>
     	
-		<p>Your premier destination for reliable loan solutions tailored to your needs
+		<p>Keystone Finserv provides fast, tailored financial solutions through leading banking partners. We simplify the loan process and support clients at every step.
 
 <b>Mission</b>
-To deliver the best value, exceptional service, and satisfaction for our clients and associates.
+Trusted, transparent, client-focused financial guidance.
 
 <b>Vision</b>
-To be the World's Deeply Loved, Efficient, and Valuable People-Centric Real Estate Company.
+Innovative, reliable, and service-driven financial partnership.
 
-<b>Values</b>
+<!-- <b>Values</b>
 •	Innovative.
 •	Ethical.
 •	Reliability.
 •	Integrity.
-•   Committed
+•   Committed -->
 
    
 	</div>
-
+<div class="card2" id="product_services">
+   <h3>Our End to End Solutions </h3>
+   <div class="product_s">
+      <p>Home Loan</p>
+      <!-- <img src="{{ asset('ks/images/Untitled-1-03.jpg') }}" alt="Logo"><br><br> -->
+      <a href="https://api.whatsapp.com/send?phone={{ $contact }}	&amp;text=Enquiry for product: Home Loan" target="_blank">
+         <div class="btn_buy">Enquire Now</div>
+      </a>
+   </div>
+   <div class="product_s">
+      <p>Property Search </p>
+      
+      <!-- <a href="https://keystonerealestateadvisory.com/" target="_blank"><img src="{{ asset('ks/images/keystone-04.jpg') }}" alt="Logo"></a><br><br> -->
+      <a href="https://api.whatsapp.com/send?phone={{ $contact }}	&amp;text=Enquiry for product: Property Search" target="_blank">
+         <div class="btn_buy">Enquire Now</div>
+      </a>
+   </div>
+   <div class="product_s">
+      <p>Loan Against Property </p>
+      <!-- <a href="http://keystonefinserv.com/" target="_blank"><img src="{{ asset('ks/images/kf.jpg') }}" alt="Logo"></a><br><br> -->
+      <a href="https://api.whatsapp.com/send?phone={{ $contact }}	&amp;text=Enquiry for product: Loan Against Property" target="_blank">
+         <div class="btn_buy">Enquire Now</div>
+      </a>
+   </div>
+   <div class="product_s">
+      <p>Personal Loan</p>
+      <!-- <a href="http://designopalette.com/" target="_blank"><img src="{{ asset('ks/images/Untitled-1-02.jpg') }}" alt="Logo"></a><br><br> -->
+      <a href="https://api.whatsapp.com/send?phone={{ $contact }}	&amp;text=Enquiry for product: Personal Loan" target="_blank">
+         <div class="btn_buy">Enquire Now</div>
+      </a>
+   </div>
+   <div class="product_s">
+      <p>Personal Loan</p>
+      <!-- <a href="http://designopalette.com/" target="_blank"><img src="{{ asset('ks/images/Untitled-1-02.jpg') }}" alt="Logo"></a><br><br> -->
+      <a href="https://api.whatsapp.com/send?phone={{ $contact }}	&amp;text=Enquiry for product: Business Loan" target="_blank">
+         <div class="btn_buy">Enquire Now</div>
+      </a>
+   </div>
+   
+</div>
 	<br>
 	<br>
 	<br>
@@ -292,8 +331,8 @@ To be the World's Deeply Loved, Efficient, and Valuable People-Centric Real Esta
   <div class="menu_container">
       <div class="menu_item"><a href="tel:+{{ $contact }}"><i class="fa fa-phone"></i><div class="link_btn">Call Now</div></a></div>
       <div class="menu_item"><a href="https://wa.me/{{ $contact }}"><i class="fa fa-whatsapp"></i><div class="link_btn">Whatsapp</div></a></div>
-      <div class="menu_item" id="share_box_pop"><i class="fa fa-share-alt"></i>Share</div>
-      <div class="menu_item" id="qr_box_pop"><i class="fa fa-qrcode"></i>QR Code</div>
+      <!-- <div class="menu_item" id="share_box_pop"><i class="fa fa-share-alt"></i>Share</div>
+      <div class="menu_item" id="qr_box_pop"><i class="fa fa-qrcode"></i>QR Code</div> -->
   </div>
 </div>
 

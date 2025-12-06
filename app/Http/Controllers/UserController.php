@@ -359,17 +359,41 @@ class UserController extends Controller
     {
         $user = User::findOrFail($id);
 
-        $vcf = "BEGIN:VCARD\n";
-        $vcf .= "VERSION:3.0\n";
-        $vcf .= "FN:{$user->first_name} {$user->last_name}\n";
-        $vcf .= "TEL;TYPE=CELL:{$user->phone}\n";
-        $vcf .= "EMAIL:{$user->email}\n";
-        $vcf .= "END:VCARD";
+        // Build vCard
+        $vcf = "BEGIN:VCARD\r\n";
+        $vcf .= "VERSION:3.0\r\n";
+        $vcf .= "FN:{$user->first_name} {$user->last_name}\r\n";
+
+        // Optional: Add organization or title
+        if ($user->businessUnit) {
+            $vcf .= "ORG:{$user->businessUnit->name}\r\n";
+        }
+        if ($user->designation) {
+            $vcf .= "TITLE:{$user->designation->name}\r\n";
+        }
+
+        // Phone numbers
+        if ($user->phone) {
+            $vcf .= "TEL;TYPE=CELL:{$user->phone}\r\n";
+        }
+
+        // Email
+        if ($user->email) {
+            $vcf .= "EMAIL;TYPE=INTERNET:{$user->email}\r\n";
+        }
+
+        // Optional: website
+        if ($user->businessUnit && $user->businessUnit->domain) {
+            $vcf .= "URL:{$user->businessUnit->domain}\r\n";
+        }
+
+        $vcf .= "END:VCARD\r\n";
 
         return response($vcf)
             ->header('Content-Type', 'text/vcard')
-            ->header('Content-Disposition', 'attachment; filename="'.$user->first_name.'.vcf"');
+            ->header('Content-Disposition', 'attachment; filename="'.Str::slug($user->first_name.'-'.$user->last_name).'.vcf"');
     }
+
     // ✅ Show the import page (upload form)
     // public function showprocess()
     // {
