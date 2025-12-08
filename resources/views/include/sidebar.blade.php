@@ -95,7 +95,7 @@
         
         <!-- Mandate Section -->
         <!-- Mandate Section -->
-        @canany(['location-view','mandate-project-view','channel-partner-view','client-enquiries-view'])
+        @canany(['mandate_project-view','channel-partner-view','client-enquiries-view'])
         <li class="menu-item {{ in_array(Request::segment(1), ['mandate_projects','channel_partners','client-enquiries']) ? 'active open' : '' }}">
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-briefcase"></i>
@@ -104,7 +104,7 @@
             <ul class="menu-sub">
                
 
-                @can('mandate-project-view')
+                @can('mandate_project-view')
                 <li class="menu-item {{ (Request::segment(1) == 'mandate_projects') ? 'active' : '' }}">
                     <a href="{{ route('mandate_projects.index') }}" class="menu-link">
                         <div data-i18n="Without menu">Mandate Projects</div>
@@ -120,8 +120,8 @@
                 </li>
                 @endcan
 
-                @can('client-enquiries-view')
-                <li class="menu-item {{ (Request::segment(1) == 'client-enquiries') ? 'active' : '' }}">
+                @can('client-enquiry-view')
+                <li class="menu-item {{ (Request::segment(1) == 'client-enquiry') ? 'active' : '' }}">
                     <a href="{{ route('client-enquiries.index') }}" class="menu-link">
                         <div data-i18n="Without menu">Client Enquiries</div>
                     </a>

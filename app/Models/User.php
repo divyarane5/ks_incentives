@@ -84,5 +84,15 @@ class User extends Authenticatable
         return $this->belongsTo(BusinessUnit::class, 'business_unit_id');
     }
 
+    // Users reporting to this user (team members)
+    public function teamMembers()
+    {
+        return $this->hasMany(User::class, 'reporting_manager_id');
+    }
 
+    // User's own channel partners
+    public function ownChannelPartners()
+    {
+        return $this->hasMany(ChannelPartner::class, 'sourcing_manager');
+    }
 }

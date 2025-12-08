@@ -212,7 +212,7 @@ class UserController extends Controller
         $user->net_salary = $net_salary;
 
         // Statutory & Banking
-        $user->pf_status = $request->pf_status;
+        $user->pf_status = $request->pf_status == 'Active' ? 1 : 0; // map to int
         $user->uan_number = $request->uan_number;
         $user->bank_name = $request->bank_name;
         $user->ifsc_code = $request->ifsc_code;

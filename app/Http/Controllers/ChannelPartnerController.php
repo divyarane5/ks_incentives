@@ -13,7 +13,20 @@ class ChannelPartnerController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = ChannelPartner::query();
+            $user = auth()->user();
+
+            $data = ChannelPartner::with('sourcingManager');
+
+            // Get all user IDs under current user including self
+            $accessibleUserIds = $this->getAccessibleUserIds($user);
+
+            // Apply filtering
+            $data->whereIn('sourcing_manager', $accessibleUserIds);
+
+            // Optional: filter by a specific user (for TL/Admin)
+            if ($request->filled('user_id')) {
+                $data->where('sourcing_manager', $request->user_id);
+            }
 
             return DataTables::of($data)
                 ->addColumn('firm_name', fn($row) => $row->firm_name)
@@ -29,12 +42,7 @@ class ChannelPartnerController extends Controller
                     $locs = is_array($row->office_locations) ? $row->office_locations : json_decode($row->office_locations, true);
                     return $locs ? implode(', ', \App\Models\Location::whereIn('id', $locs)->pluck('name')->toArray()) : '-';
                 })
-                // ✅ FIX #1: Get sourcing manager name instead of ID
-                ->addColumn('sourcing_manager', function($row) {
-                    return $row->sourcingManager->name ?? '-';
-                })
-
-                // ✅ FIX #2: Decode acquisition_channel JSON properly
+                ->addColumn('sourcing_manager', fn($row) => $row->sourcingManager->name ?? '-')
                 ->addColumn('acquisition_channel', function($row) {
                     $channels = is_array($row->acquisition_channel)
                         ? $row->acquisition_channel
@@ -69,7 +77,47 @@ class ChannelPartnerController extends Controller
         return view('channel_partners.index');
     }
 
+    /**
+     * Get all accessible user IDs for the current user
+     */
+    private function getAccessibleUserIds($user)
+    {
+        // Super Admin sees all users
+        if ($user->role == 'superadmin') {
+            return \App\Models\User::pluck('id')->toArray();
+        }
 
+        // Start with current user ID
+        $ids = [$user->id];
+
+        // Get all users in hierarchy under current user
+        $teamIds = \App\Models\User::whereNotNull('reporting_manager_id')
+            ->get()
+            ->filter(function($u) use ($user) {
+                // Check if the user is under current user's hierarchy
+                return $this->isUnderHierarchy($u, $user->id);
+            })
+            ->pluck('id')
+            ->toArray();
+
+        return array_merge($ids, $teamIds);
+    }
+
+    /**
+     * Check if a user is under the hierarchy of a given manager
+     */
+    private function isUnderHierarchy($user, $managerId)
+    {
+        $current = $user;
+        while ($current->reporting_manager_id) {
+            if ($current->reporting_manager_id == $managerId) {
+                return true;
+            }
+            $current = \App\Models\User::find($current->reporting_manager_id);
+            if (!$current) break;
+        }
+        return false;
+    }
 
 
     public function create()

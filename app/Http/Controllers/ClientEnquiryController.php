@@ -23,59 +23,103 @@ class ClientEnquiryController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = ClientEnquiry::with(['channelPartner', 'closingManager']);
+            $user = auth()->user();
+
+            // Get all accessible user IDs (self + team)
+            $accessibleUserIds = $this->getAccessibleUserIds($user);
+
+            $data = ClientEnquiry::with(['sourcingManager', 'closingManager'])
+                ->where(function($query) use ($accessibleUserIds) {
+                    $query->whereIn('sourcing_manager_id', $accessibleUserIds)
+                        ->orWhereIn('closing_manager_id', $accessibleUserIds);
+                });
+
+            // Optional: filter by a specific user (for TL/Admin)
+            if ($request->filled('user_id')) {
+                $data->where(function($query) use ($request) {
+                    $query->where('sourcing_manager_id', $request->user_id)
+                        ->orWhere('closing_manager_id', $request->user_id);
+                });
+            }
 
             return DataTables::of($data)
                 ->addColumn('id', fn($row) => $row->id)
-                ->addColumn('customer_name', fn($row) => $row->customer_name)
+                ->addColumn('customer_name', fn($row) => $row->customer_name) // match your JS column
                 ->addColumn('contact_no', fn($row) => $row->contact_no)
-                ->addColumn('property_type', fn($row) => $row->property_type)
-                ->addColumn('purchase_purpose', fn($row) => $row->purchase_purpose)
-                ->addColumn('funding_source', fn($row) => $row->funding_source)
-                ->addColumn('source_of_visit', fn($row) => is_array($row->source_of_visit) ? implode(', ', $row->source_of_visit) : $row->source_of_visit)
-                ->addColumn('channel_partner', fn($row) => $row->channelPartner?->firm_name ?? '-')
-                ->addColumn('closing_manager', fn($row) => $row->closingManager?->name ?? '-')
-                ->addColumn('created_at', fn($row) => date("d-m-Y", strtotime($row->created_at)))
+                ->addColumn('property_type', fn($row) => ucfirst($row->property_type))
+                ->addColumn('purchase_purpose', fn($row) => $row->purchase_purpose ?? '-')
+                ->addColumn('funding_source', fn($row) => $row->funding_source ?? '-')
+                ->addColumn('source_of_visit', fn($row) => $row->source_of_visit ?? '-')
+                ->addColumn('channel_partner', fn($row) => $row->channelPartner->firm_name ?? '-') // ✅ Add relationship
+                ->addColumn('sourcing_manager', fn($row) => $row->sourcingManager->name ?? '-')
+                ->addColumn('closing_manager', fn($row) => $row->closingManager->name ?? '-')
+                ->addColumn('created_at', fn($row) => $row->created_at->format('d-m-Y H:i'))
                 ->addColumn('action', function ($row) {
                     $actions = '';
-                    
-                    if (auth()->user()->can('client-enquiry-view')) {
-                        $actions .= '<a class="dropdown-item" href="'.route('client-enquiries.show', $row->id).'">
-                                        <i class="bx bx-show me-1"></i> View
-                                    </a>';
-                    }
-
                     if (auth()->user()->can('client-enquiry-edit')) {
                         $actions .= '<a class="dropdown-item" href="'.route('client-enquiries.edit', $row->id).'">
-                                        <i class="bx bx-edit-alt me-1"></i> Edit
-                                    </a>';
+                                        <i class="bx bx-edit-alt me-1"></i> Edit</a>';
                     }
-
                     if (auth()->user()->can('client-enquiry-delete')) {
-                        $actions .= '<button class="dropdown-item" onclick="deleteEnquiry('.$row->id.')">
-                                        <i class="bx bx-trash me-1"></i> Delete
-                                    </button>
-                                    <form id="delete-form-'.$row->id.'" action="'.route('client-enquiries.destroy', $row->id).'" method="POST" class="d-none">
-                                        '.csrf_field().method_field('DELETE').'
+                        $actions .= '<button class="dropdown-item" onclick="deleteClientEnquiry('.$row->id.')">
+                                        <i class="bx bx-trash me-1"></i> Delete</button>
+                                    <form id="'.$row->id.'" action="'.route('client-enquiries.destroy', $row->id).'" method="POST" class="d-none">
+                                        '.csrf_field().method_field('delete').'
                                     </form>';
                     }
-
-                    if($actions) {
-                        return '<div class="dropdown">
-                                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                        <i class="bx bx-dots-vertical-rounded"></i>
-                                    </button>
-                                    <div class="dropdown-menu">'.$actions.'</div>
-                                </div>';
-                    }
-
-                    return '';
+                    return $actions ? '<div class="dropdown">
+                                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                            <i class="bx bx-dots-vertical-rounded"></i>
+                                        </button>
+                                        <div class="dropdown-menu">'.$actions.'</div>
+                                    </div>' : '';
                 })
                 ->rawColumns(['action'])
                 ->make(true);
+
         }
 
         return view('client_enquiries.index');
+    }
+
+    /**
+     * Get all accessible user IDs for the current user (hierarchy-aware)
+     */
+    private function getAccessibleUserIds($user)
+    {
+        // Super Admin sees all users
+        if ($user->role == 'superadmin') {
+            return \App\Models\User::pluck('id')->toArray();
+        }
+
+        $ids = [$user->id];
+
+        // Get all users in hierarchy under current user
+        $teamIds = \App\Models\User::whereNotNull('reporting_manager_id')
+            ->get()
+            ->filter(function($u) use ($user) {
+                return $this->isUnderHierarchy($u, $user->id);
+            })
+            ->pluck('id')
+            ->toArray();
+
+        return array_merge($ids, $teamIds);
+    }
+
+    /**
+     * Check if a user is under the hierarchy of a given manager
+     */
+    private function isUnderHierarchy($user, $managerId)
+    {
+        $current = $user;
+        while ($current->reporting_manager_id) {
+            if ($current->reporting_manager_id == $managerId) {
+                return true;
+            }
+            $current = \App\Models\User::find($current->reporting_manager_id);
+            if (!$current) break;
+        }
+        return false;
     }
 
 

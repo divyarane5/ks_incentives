@@ -35,4 +35,5 @@ class ChannelPartner extends Model
     {
         return $this->belongsTo(\App\Models\User::class, 'sourcing_manager');
     }
+    
 }

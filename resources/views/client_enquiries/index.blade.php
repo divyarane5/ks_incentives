@@ -25,6 +25,7 @@
                         <th>Funding Source</th>
                         <th>Source of Visit</th>
                         <th>Channel Partner</th>
+                        <th>Sourcing Manager</th>
                         <th>Closing Manager</th>
                         <th>Created At</th>
                         <th>Actions</th>
@@ -53,6 +54,7 @@
                 {data: 'funding_source', name: 'client_enquiries.funding_source'},
                 {data: 'source_of_visit', name: 'client_enquiries.source_of_visit'},
                 {data: 'channel_partner', name: 'channel_partner.firm_name'},
+                 {data: 'sourcing_manager', name: 'sourcing_manager.name'},
                 {data: 'closing_manager', name: 'closing_manager.name'},
                 {data: 'created_at', name: 'client_enquiries.created_at'},
                 {data: 'action', orderable: false, searchable: false},
