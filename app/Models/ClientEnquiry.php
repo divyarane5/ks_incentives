@@ -67,5 +67,9 @@ class ClientEnquiry extends Model
         return $this->belongsTo(User::class, 'presales_id'); 
         // Replace 'presales_manager_id' with the actual column name in your table
     }
+    public function updates()
+    {
+        return $this->hasMany(ClientEnquiryUpdate::class, 'client_enquiry_id');
+    }
     
 }

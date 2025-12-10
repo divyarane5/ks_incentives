@@ -60,6 +60,11 @@ class ClientEnquiryController extends Controller
                         $actions .= '<a class="dropdown-item" href="'.route('client-enquiries.edit', $row->id).'">
                                         <i class="bx bx-edit-alt me-1"></i> Edit</a>';
                     }
+                   if (auth()->user()->can('client-enquiry-update')) {
+                        $actions .= '<a class="dropdown-item" href="'.route('client-enquiries.updates', $row->id).'">
+                                        <i class="bx bx-refresh me-1"></i> Update
+                                    </a>';
+                    }
                     if (auth()->user()->can('client-enquiry-delete')) {
                         $actions .= '<button class="dropdown-item" onclick="deleteClientEnquiry('.$row->id.')">
                                         <i class="bx bx-trash me-1"></i> Delete</button>

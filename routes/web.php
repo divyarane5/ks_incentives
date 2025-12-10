@@ -104,7 +104,12 @@ Route::group(['middleware' => 'auth'], function() {
     //client enquiry
     Route::resource('client-enquiries', App\Http\Controllers\ClientEnquiryController::class);
     Route::get('client-enquiries/{id}/download',  [App\Http\Controllers\ClientEnquiryController::class, 'download'])->name('client-enquiries.download');
-        
+    
+    Route::get('client-enquiries/{id}/updates', [App\Http\Controllers\ClientEnquiryUpdateController::class, 'create'])
+    ->name('client-enquiries.updates');
+    Route::post('client-enquiries/{id}/updates', [App\Http\Controllers\ClientEnquiryUpdateController::class, 'store'])
+    ->name('client-enquiries.updates.store');
+    
     //Booking
     Route::resource('booking', App\Http\Controllers\BookingController::class);
     Route::post('booking/update_status', [App\Http\Controllers\BookingController::class, 'updateStatus'])->name('booking.update_status');

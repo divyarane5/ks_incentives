@@ -11,8 +11,8 @@
         <div class="navbar-nav align-items-center">
             <div class="nav-item d-flex align-items-center">
                 <h5 class="mb-0">
-                    Welcome To 
-                    {{ auth()->user()->businessUnit ? auth()->user()->businessUnit->name : 'Keystone Real Estate' }}
+                   Hi {{ auth()->user()->name }}, Welcome To 
+                    {{ auth()->user()->businessUnit ? auth()->user()->businessUnit->name : 'Keystone Real Estate' }}!
                 </h5>
             </div>
         </div>

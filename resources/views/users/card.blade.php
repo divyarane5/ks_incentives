@@ -102,7 +102,7 @@
     <div class="card_content2">
 
         {{-- USER NAME --}}
-        <h2>{{ $user->name }}</h2>
+        <h2>{{ $user->first_name }} {{ $user->last_name }}</h2>
 
         {{-- DESIGNATION --}}
         <p>
@@ -287,7 +287,7 @@ Innovative, reliable, and service-driven financial partnership.
    <h3>Our End to End Solutions </h3>
    <div class="product_s">
       <p>Home Loan</p>
-      <!-- <img src="{{ asset('ks/images/Untitled-1-03.jpg') }}" alt="Logo"><br><br> -->
+      <img src="{{ asset('assets/img/icons/house.png') }}" alt="Logo"><br><br>
       <a href="https://api.whatsapp.com/send?phone={{ $contact }}	&amp;text=Enquiry for product: Home Loan" target="_blank">
          <div class="btn_buy">Enquire Now</div>
       </a>
@@ -295,28 +295,28 @@ Innovative, reliable, and service-driven financial partnership.
    <div class="product_s">
       <p>Property Search </p>
       
-      <!-- <a href="https://keystonerealestateadvisory.com/" target="_blank"><img src="{{ asset('ks/images/keystone-04.jpg') }}" alt="Logo"></a><br><br> -->
+      <img src="{{ asset('assets/img/icons/real-estate.png') }}" alt="Logo"><br><br>
       <a href="https://api.whatsapp.com/send?phone={{ $contact }}	&amp;text=Enquiry for product: Property Search" target="_blank">
          <div class="btn_buy">Enquire Now</div>
       </a>
    </div>
    <div class="product_s">
       <p>Loan Against Property </p>
-      <!-- <a href="http://keystonefinserv.com/" target="_blank"><img src="{{ asset('ks/images/kf.jpg') }}" alt="Logo"></a><br><br> -->
+      <img src="{{ asset('assets/img/icons/mortgage-loan.png') }}" alt="Logo"><br><br>
       <a href="https://api.whatsapp.com/send?phone={{ $contact }}	&amp;text=Enquiry for product: Loan Against Property" target="_blank">
          <div class="btn_buy">Enquire Now</div>
       </a>
    </div>
    <div class="product_s">
       <p>Personal Loan</p>
-      <!-- <a href="http://designopalette.com/" target="_blank"><img src="{{ asset('ks/images/Untitled-1-02.jpg') }}" alt="Logo"></a><br><br> -->
+      <img src="{{ asset('assets/img/icons/personal.png') }}" alt="Logo"><br><br>
       <a href="https://api.whatsapp.com/send?phone={{ $contact }}	&amp;text=Enquiry for product: Personal Loan" target="_blank">
          <div class="btn_buy">Enquire Now</div>
       </a>
    </div>
    <div class="product_s">
-      <p>Personal Loan</p>
-      <!-- <a href="http://designopalette.com/" target="_blank"><img src="{{ asset('ks/images/Untitled-1-02.jpg') }}" alt="Logo"></a><br><br> -->
+      <p>Business Loan</p>
+      <img src="{{ asset('assets/img/icons/personal.png') }}" alt="Logo"><br><br>
       <a href="https://api.whatsapp.com/send?phone={{ $contact }}	&amp;text=Enquiry for product: Business Loan" target="_blank">
          <div class="btn_buy">Enquire Now</div>
       </a>
