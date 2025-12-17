@@ -38,4 +38,8 @@ class MandateProject extends Model
             $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
         });
     }
+    public function clientEnquiries()
+    {
+        return $this->hasMany(ClientEnquiry::class);
+    }
 }

@@ -15,6 +15,7 @@ class StoreClientEnquiryRequest extends FormRequest
     {
         return [
             'customer_name'       => 'required|string|max:255',
+            'mandate_project_id' => 'nullable|exists:mandate_projects,id',
             'contact_no'          => 'required|string|max:15',
             'alternate_no'        => 'nullable|string|max:15',
             'email'               => 'nullable|email|max:255',

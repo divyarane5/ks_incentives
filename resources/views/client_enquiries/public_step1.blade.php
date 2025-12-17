@@ -36,6 +36,28 @@
                             @endif
 
                             <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="mandate_project_id" class="form-label">
+                                        Project Name <span class="text-danger">*</span>
+                                    </label>
+
+                                    <select id="mandate_project_id"
+                                            name="mandate_project_id"
+                                            class="form-select @error('mandate_project_id') is-invalid @enderror"
+                                            required>
+                                        <option value="">Select Project</option>
+                                        @foreach($projects as $project)
+                                            <option value="{{ $project->id }}"
+                                                {{ old('mandate_project_id', $step1['mandate_project_id'] ?? '') == $project->id ? 'selected' : '' }}>
+                                                {{ $project->project_name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+
+                                    @error('mandate_project_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
                                 <div class="col-md-4 mb-3">
                                     <label for="customer_name" class="form-label">Customer Name *</label>
                                     <input id="customer_name" name="customer_name" value="{{ old('customer_name', $step1['customer_name'] ?? '') }}" class="form-control @error('customer_name') is-invalid @enderror" required>
@@ -76,7 +98,10 @@
 
                                 <div class="col-md-4 mb-3">
                                     <label for="pin_code" class="form-label">Pin Code</label>
-                                    <input id="pin_code" type="number" name="pin_code" value="{{ old('pin_code', $step1['pin_code'] ?? '') }}" class="form-control">
+                                    <input id="pin_code" type="number" name="pin_code" value="{{ old('pin_code', $step1['pin_code'] ?? '') }}" class="form-control" required>
+                                    @error('pin_code')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
 
                                 <div class="col-md-4 mb-3">
@@ -86,6 +111,9 @@
                                         <option value="India" {{ old('residential_status', $step1['residential_status'] ?? '')=='India' ? 'selected' : '' }}>Indian Resident</option>
                                         <option value="NRI" {{ old('residential_status', $step1['residential_status'] ?? '')=='NRI' ? 'selected' : '' }}>NRI</option>
                                     </select>
+                                    @error('residential_status')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                                 </div>
 
                                 <div class="col-md-4 mb-3" id="nri_country_wrap" style="display: none;">
@@ -106,6 +134,9 @@
                                             <option value="{{ $type }}" {{ old('property_type', $step1['property_type'] ?? '')==$type ? 'selected' : '' }}>{{ $type }}</option>
                                         @endforeach
                                     </select>
+                                    @error('property_type')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
 
                                 <div class="col-md-4 mb-3">
@@ -141,6 +172,9 @@
                                             <option value="{{ $manager->id }}" {{ old('presales_id', $step1['presales_id'] ?? '')==$manager->id ? 'selected' : '' }}>{{ $manager->name }}</option>
                                         @endforeach
                                     </select>
+                                    @error('presales_id')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
 
                                 <div class="col-md-6 mb-3">

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ClientEnquiry;
 use App\Models\ChannelPartner;
+use App\Models\MandateProject;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
@@ -22,87 +23,203 @@ class ClientEnquiryController extends Controller
 
     public function index(Request $request)
     {
+        // ================= AJAX (DataTable) =================
         if ($request->ajax()) {
+
             $user = auth()->user();
 
-            // Get all accessible user IDs (self + team)
-            $accessibleUserIds = $this->getAccessibleUserIds($user);
+            // Base query
+            $query = ClientEnquiry::with([
+                'mandateProject', // ✅ ADD THIS
+                'latestUpdate',
+                'updates',
+                'channelPartner',
+                'sourcingManager',
+                'closingManager'
+            ]);
 
-            $data = ClientEnquiry::with(['sourcingManager', 'closingManager'])
-                ->where(function($query) use ($accessibleUserIds) {
-                    $query->whereIn('sourcing_manager_id', $accessibleUserIds)
-                        ->orWhereIn('closing_manager_id', $accessibleUserIds);
-                });
+            // 🔒 Role-based visibility (only if NOT Superadmin)
+            if (!$user->hasRole('Superadmin')) {
 
-            // Optional: filter by a specific user (for TL/Admin)
-            if ($request->filled('user_id')) {
-                $data->where(function($query) use ($request) {
-                    $query->where('sourcing_manager_id', $request->user_id)
-                        ->orWhere('closing_manager_id', $request->user_id);
+                $accessibleUserIds = $this->getAccessibleUserIds($user);
+
+                $query->where(function ($q) use ($accessibleUserIds) {
+                    $q->whereIn('sourcing_manager_id', $accessibleUserIds)
+                    ->orWhereIn('closing_manager_id', $accessibleUserIds);
                 });
             }
 
-            return DataTables::of($data)
-                ->addColumn('id', fn($row) => $row->id)
-                ->addColumn('customer_name', fn($row) => $row->customer_name) // match your JS column
-                ->addColumn('contact_no', fn($row) => $row->contact_no)
-                ->addColumn('property_type', fn($row) => ucfirst($row->property_type))
-                ->addColumn('purchase_purpose', fn($row) => $row->purchase_purpose ?? '-')
-                ->addColumn('funding_source', fn($row) => $row->funding_source ?? '-')
-                ->addColumn('source_of_visit', fn($row) => $row->source_of_visit ?? '-')
-                ->addColumn('channel_partner', fn($row) => $row->channelPartner->firm_name ?? '-') // ✅ Add relationship
-                ->addColumn('sourcing_manager', fn($row) => $row->sourcingManager->name ?? '-')
-                ->addColumn('closing_manager', fn($row) => $row->closingManager->name ?? '-')
-                ->addColumn('created_at', fn($row) => $row->created_at->format('d-m-Y H:i'))
-                ->addColumn('action', function ($row) {
-                    $actions = '';
-                    if (auth()->user()->can('client-enquiry-edit')) {
-                        $actions .= '<a class="dropdown-item" href="'.route('client-enquiries.edit', $row->id).'">
-                                        <i class="bx bx-edit-alt me-1"></i> Edit</a>';
-                    }
-                   if (auth()->user()->can('client-enquiry-update')) {
-                        $actions .= '<a class="dropdown-item" href="'.route('client-enquiries.updates', $row->id).'">
-                                        <i class="bx bx-refresh me-1"></i> Update
-                                    </a>';
-                    }
-                    if (auth()->user()->can('client-enquiry-delete')) {
-                        $actions .= '<button class="dropdown-item" onclick="deleteClientEnquiry('.$row->id.')">
-                                        <i class="bx bx-trash me-1"></i> Delete</button>
-                                    <form id="'.$row->id.'" action="'.route('client-enquiries.destroy', $row->id).'" method="POST" class="d-none">
-                                        '.csrf_field().method_field('delete').'
-                                    </form>';
-                    }
-                    return $actions ? '<div class="dropdown">
-                                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                            <i class="bx bx-dots-vertical-rounded"></i>
-                                        </button>
-                                        <div class="dropdown-menu">'.$actions.'</div>
-                                    </div>' : '';
-                })
-                ->rawColumns(['action'])
-                ->make(true);
+            // ================= Filters =================
+            if ($request->filled('source_of_visit')) {
+                $query->where('source_of_visit', $request->source_of_visit);
+            }
 
+            if ($request->filled('channel_partner_id')) {
+                $query->where('channel_partner_id', $request->channel_partner_id);
+            }
+
+            if ($request->filled('sourcing_manager_id')) {
+                $query->where('sourcing_manager_id', $request->sourcing_manager_id);
+            }
+
+            if ($request->filled('closing_manager_id')) {
+                $query->where('closing_manager_id', $request->closing_manager_id);
+            }
+            if ($request->filled('mandate_project_id')) {
+                $query->where('mandate_project_id', $request->mandate_project_id);
+            }
+            // ================= DataTable Response =================
+            return DataTables::of($query)
+
+                ->addColumn('id', fn ($row) => $row->id)
+                ->addColumn('project_name', function ($row) {
+                    return optional($row->mandateProject)->project_name ?? '-';
+                })
+                ->addColumn('customer_name', fn ($row) => $row->customer_name)
+                ->addColumn('contact_no', fn ($row) => $row->contact_no)
+                ->addColumn('property_type', fn ($row) => ucfirst($row->property_type))
+                ->addColumn('purchase_purpose', fn ($row) => $row->purchase_purpose ?? '-')
+                ->addColumn('funding_source', fn ($row) => $row->funding_source ?? '-')
+                ->addColumn('source_of_visit', fn ($row) => $row->source_of_visit ?? '-')
+                ->addColumn('channel_partner', fn ($row) => $row->channelPartner->firm_name ?? '-')
+                ->addColumn('sourcing_manager', fn ($row) => $row->sourcingManager->name ?? '-')
+                ->addColumn('closing_manager', fn ($row) => $row->closingManager->name ?? '-')
+                ->addColumn('created_at', fn ($row) => $row->created_at->format('d-m-Y H:i'))
+
+                ->addColumn('feedback', fn ($row) => $row->feedback ?? '-')
+
+                ->addColumn('latest_update', function ($row) {
+                    $latest = $row->latestUpdate;
+
+                    if (!$latest) {
+                        return '<span class="badge bg-secondary">No Updates</span>';
+                    }
+
+                    return '
+                        <strong>Status:</strong> ' . ucfirst(str_replace('_', ' ', $latest->status)) . '<br>
+                        <strong>Feedback:</strong> ' . $latest->feedback . '<br>
+                        <strong>Total:</strong> ' . $row->updates->count() . ' updates<br>
+                        <small class="text-muted">
+                            Updated: ' . $latest->created_at->format('d M Y, h:i A') . '
+                        </small>
+                    ';
+                })
+
+                ->addColumn('history', function ($row) {
+
+                    if ($row->updates->isEmpty()) {
+                        return '<span class="badge bg-secondary">No History</span>';
+                    }
+
+                    $html = '
+                    <div class="accordion" id="accordion-' . $row->id . '">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed" type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#collapse-' . $row->id . '">
+                                    View Full History (' . $row->updates->count() . ')
+                                </button>
+                            </h2>
+                            <div id="collapse-' . $row->id . '" class="accordion-collapse collapse">
+                                <div class="accordion-body">';
+
+                    foreach ($row->updates as $u) {
+                        $html .= '
+                            <div class="border rounded p-2 mb-2 bg-light">
+                                <strong>Status:</strong> ' . ucfirst(str_replace('_', ' ', $u->status)) . '<br>
+                                <strong>Feedback:</strong> ' . $u->feedback . '<br>
+                                <small class="text-muted">
+                                    Updated: ' . $u->created_at->format('d M Y, h:i A') . '
+                                </small>
+                            </div>';
+                    }
+
+                    $html .= '
+                                </div>
+                            </div>
+                        </div>
+                    </div>';
+
+                    return $html;
+                })
+
+                ->addColumn('action', function ($row) {
+
+                    $actions = '';
+
+                    if (auth()->user()->can('client-enquiry-edit')) {
+                        $actions .= '<a class="dropdown-item" href="' . route('client-enquiries.edit', $row->id) . '">
+                            <i class="bx bx-edit-alt me-1"></i> Edit
+                        </a>';
+                    }
+
+                    if (auth()->user()->can('client-enquiry-update')) {
+                        $actions .= '<a class="dropdown-item" href="' . route('client-enquiries.updates', $row->id) . '">
+                            <i class="bx bx-refresh me-1"></i> Update
+                        </a>';
+                    }
+
+                    if (auth()->user()->can('client-enquiry-delete')) {
+                        $actions .= '
+                            <button class="dropdown-item" onclick="deleteClientEnquiry(' . $row->id . ')">
+                                <i class="bx bx-trash me-1"></i> Delete
+                            </button>
+                            <form id="delete-form-' . $row->id . '" 
+                                action="' . route('client-enquiries.destroy', $row->id) . '" 
+                                method="POST" class="d-none">
+                                ' . csrf_field() . method_field('DELETE') . '
+                            </form>';
+                    }
+
+                    return '
+                        <div class="dropdown">
+                            <button class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                <i class="bx bx-dots-vertical-rounded"></i>
+                            </button>
+                            <div class="dropdown-menu">' . $actions . '</div>
+                        </div>';
+                })
+
+                ->rawColumns(['latest_update', 'history', 'action'])
+                ->make(true);
         }
 
-        return view('client_enquiries.index');
+        // ================= NORMAL VIEW LOAD =================
+        $channelPartners = ChannelPartner::select('id', 'firm_name')->get();
+        $users = User::select('id', 'name')->get();
+        $projects = MandateProject::where('status', 1)->get(['id', 'project_name']);
+        $sources = [
+            'Reference','Channel Partner','Website','News','Paper Ad','Hoarding',
+            'Mailers/SMS','Online Ad','Call Center','Walk in','Exhibition',
+            'Insert','Existing Client','Property Portal'
+        ];
+
+        return view('client_enquiries.index', compact(
+            'channelPartners',
+            'users',
+            'sources','projects'
+        ));
     }
+
+
 
     /**
      * Get all accessible user IDs for the current user (hierarchy-aware)
      */
     private function getAccessibleUserIds($user)
     {
-        // Super Admin sees all users
-        if ($user->role == 'superadmin') {
+        // ✅ Superadmin sees all users
+        if ($user->hasRole('Superadmin')) {
             return \App\Models\User::pluck('id')->toArray();
         }
 
         $ids = [$user->id];
 
-        // Get all users in hierarchy under current user
+        // Get all users under hierarchy
         $teamIds = \App\Models\User::whereNotNull('reporting_manager_id')
             ->get()
-            ->filter(function($u) use ($user) {
+            ->filter(function ($u) use ($user) {
                 return $this->isUnderHierarchy($u, $user->id);
             })
             ->pluck('id')
@@ -110,6 +227,7 @@ class ClientEnquiryController extends Controller
 
         return array_merge($ids, $teamIds);
     }
+
 
     /**
      * Check if a user is under the hierarchy of a given manager
@@ -133,17 +251,18 @@ class ClientEnquiryController extends Controller
     {
         $channelPartners = ChannelPartner::all(['id', 'firm_name']);
         $managers = User::all(['id', 'name']);
+        $projects = MandateProject::where('status', 1)->get(['id', 'project_name']);
         $sources = [
             'Reference','Channel Partner','Website','News','Paper Ad','Hoarding','Mailers/SMS',
             'Online Ad','Call Center','Walk in','Exhibition','Insert','Existing Client','Property Portal'
         ];
 
-        return view('client_enquiries.create', compact('channelPartners', 'managers', 'sources'));
+        return view('client_enquiries.create', compact('channelPartners', 'managers', 'sources','projects'));
     }
 
     public function store(StoreClientEnquiryRequest $request)
     {
-      //  dd($request->all());
+       // dd($request->all());
         $data = $request->validated();
         $data['created_by'] = Auth::id();
         $data['team_call_received'] = $request->team_call_received ?? 0;
@@ -165,8 +284,9 @@ class ClientEnquiryController extends Controller
             'Reference','Channel Partner','Website','News','Paper Ad','Hoarding','Mailers/SMS',
             'Online Ad','Call Center','Walk in','Exhibition','Insert','Existing Client','Property Portal'
         ];
+        $projects = MandateProject::where('status', 1)->get(['id', 'project_name']);
 
-        return view('client_enquiries.edit', compact('clientEnquiry', 'channelPartners', 'managers', 'sources'));
+        return view('client_enquiries.edit', compact('clientEnquiry', 'channelPartners', 'managers', 'sources','projects'));
     }
 
     public function update(StoreClientEnquiryRequest $request, $id)
@@ -229,7 +349,8 @@ class ClientEnquiryController extends Controller
         $channelPartners = ChannelPartner::select('id','firm_name')->get();
         // If user already started, prefill from session
         $step1 = session('client_enquiry.step1', []);
-        return view('client_enquiries.public_step1', compact('managers','channelPartners','step1'));
+        $projects = MandateProject::where('status', 1)->get(['id', 'project_name']);
+        return view('client_enquiries.public_step1', compact('managers','channelPartners','step1','projects'));
     }
 
     // Save Step 1 into session and redirect to Step 2

@@ -23,6 +23,18 @@
                 {{-- ================= CLIENT DETAILS ================= --}}
                 <h6 class="fw-bold mb-3 text-primary">Client Details</h6>
                 <div class="row">
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label">Mandate Project</label>
+                        <select name="mandate_project_id" class="form-select">
+                            <option value="">Select Project</option>
+                            @foreach ($projects as $project)
+                                <option value="{{ $project->id }}"
+                                    {{ old('mandate_project_id') == $project->id ? 'selected' : '' }}>
+                                    {{ $project->project_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                     <div class="mb-3 col-md-4">
                         <label class="form-label">Customer Name <span class="text-danger">*</span></label>
                         <input type="text" name="customer_name" class="form-control" value="{{ old('customer_name') }}" required>
@@ -232,7 +244,7 @@
                         </select>
                     </div>
                     <div class="col-md-6">
-                        <label class="form-label">Feedback</label>
+                        <label class="form-label">Initial Feedback</label>
                         <textarea name="feedback" class="form-control" rows="2"></textarea>
                     </div>
                 </div>

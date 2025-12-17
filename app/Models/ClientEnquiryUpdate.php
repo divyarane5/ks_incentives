@@ -28,10 +28,10 @@ class ClientEnquiryUpdate extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function updates()
-    {
-        return $this->hasMany(ClientEnquiryUpdate::class);
-    }
+    // public function updates()
+    // {
+    //     return $this->hasMany(ClientEnquiryUpdate::class);
+    // }
     
     
 }

@@ -87,13 +87,13 @@
                 <!-- Feedback -->
                 <div class="mb-3">
                     <label class="form-label">Feedback / Notes</label>
-                    <textarea name="feedback" class="form-control" rows="2" placeholder="Enter feedback or notes"></textarea>
+                    <textarea name="feedback" class="form-control" rows="2" placeholder="Enter feedback or notes" required></textarea>
                 </div>
 
                 <!-- Status -->
                 <div class="mb-3">
                     <label class="form-label">Status</label>
-                    <select name="status" class="form-select">
+                    <select name="status" class="form-select" required>
                         <option value="">Select Status</option>
                         <option value="new">New</option>
                         <option value="followup">Follow Up</option>

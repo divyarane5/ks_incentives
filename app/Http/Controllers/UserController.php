@@ -37,86 +37,90 @@ class UserController extends Controller
     }
 
     public function index(Request $request)
-{
-    if ($request->ajax()) {
-        $filters = array_filter($request->only([
-            'entity',
-            'work_location_id',
-            'department_id',
-            'designation_id',
-            'role_id'
-        ]));
+    {
+        if ($request->ajax()) {
+            $filters = array_filter($request->only([
+                'entity',
+                'work_location_id',
+                'department_id',
+                'designation_id',
+                'role_id'
+            ]));
 
-        $users = $this->userRepository->getUsers($filters);
+            $users = $this->userRepository->getUsers($filters);
 
-        return DataTables::of($users)
-            ->addColumn('role', function ($row) {
-                    // If Spatie roles exist, display them
-                    if ($row->roles && $row->roles->count()) {
-                        return $row->roles->pluck('name')->join(', ');
-                    }
+            return DataTables::of($users)
+                ->addColumn('role', function ($row) {
+                        // If Spatie roles exist, display them
+                        if ($row->roles && $row->roles->count()) {
+                            return $row->roles->pluck('name')->join(', ');
+                        }
 
-                    // Else fallback to role_id column (for legacy data)
-                    if ($row->role_id) {
-                        return \Spatie\Permission\Models\Role::find($row->role_id)->name ?? '';
-                    }
+                        // Else fallback to role_id column (for legacy data)
+                        if ($row->role_id) {
+                            return \Spatie\Permission\Models\Role::find($row->role_id)->name ?? '';
+                        }
 
-                    return '';
+                        return '';
+                    })
+                ->addColumn('designation', function($row) {
+                    return $row->designation->name ?? '';
                 })
-            ->addColumn('designation', function($row) {
-                return $row->designation->name ?? '';
-            })
-            ->addColumn('department', function($row) {
-                return $row->department->name ?? '';
-            })
-            ->addColumn('location', function($row) {
-                return $row->location->name ?? '';
-            })
-            ->addColumn('action', function ($row) {
-                $actions = '<a class="dropdown-item" href="'.route('users.show', $row->id).'">
-                                <i class="bx bx-show me-1"></i> View
-                            </a>';
-
-                if (auth()->user()->can('user-edit')) {
-                    $actions .= '<a class="dropdown-item" href="'.route('users.edit', $row->id).'">
-                                    <i class="bx bx-edit-alt me-1"></i> Edit
+                ->addColumn('department', function($row) {
+                    return $row->department->name ?? '';
+                })
+                ->addColumn('location', function($row) {
+                    return $row->location->name ?? '';
+                })
+                ->addColumn('action', function ($row) {
+                    $fullName = preg_replace('/\s+/', ' ', trim($row->first_name .' '. $row->middle_name .' '. $row->last_name));
+                    $slug = strtolower(str_replace(' ', '-', $fullName));
+                    $actions = '<a class="dropdown-item" href="'.route('users.show', $row->id).'">
+                                    <i class="bx bx-show me-1"></i> View
                                 </a>';
-                }
+                    $actions .= '<a class="dropdown-item" target="_blank" href="'.route('users.card', $slug).'">
+                                    <i class="bx bx-show me-1"></i> Card
+                                </a>';
+                    if (auth()->user()->can('user-edit')) {
+                        $actions .= '<a class="dropdown-item" href="'.route('users.edit', $row->id).'">
+                                        <i class="bx bx-edit-alt me-1"></i> Edit
+                                    </a>';
+                    }
 
-                if (auth()->user()->can('user-delete')) {
-                    $actions .= '<button class="dropdown-item" type="button" onclick="deleteUser('.$row->id.')">
-                                    <i class="bx bx-trash me-1"></i> Delete
+                    if (auth()->user()->can('user-delete')) {
+                        $actions .= '<button class="dropdown-item" type="button" onclick="deleteUser('.$row->id.')">
+                                        <i class="bx bx-trash me-1"></i> Delete
+                                    </button>
+                                    <form id="delete-form-'.$row->id.'" action="'.route('users.destroy', $row->id).'" method="POST" class="d-none">'
+                                    .csrf_field()
+                                    .method_field('DELETE').'
+                                    </form>';
+                    }
+
+                    if (auth()->user()->can('configuration-view')) {
+                        $actions .= '<a class="dropdown-item" href="'.route('indent_configuration.index').'?user_id='.$row->id.'">
+                                        <i class="bx bx-list-ul me-1"></i> Indent Configuration
+                                    </a>';
+                    }
+
+                    return '<div class="dropdown">
+                                <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                    <i class="bx bx-dots-vertical-rounded"></i>
                                 </button>
-                                <form id="delete-form-'.$row->id.'" action="'.route('users.destroy', $row->id).'" method="POST" class="d-none">'
-                                .csrf_field()
-                                .method_field('DELETE').'
-                                </form>';
-                }
+                                <div class="dropdown-menu">'.$actions.'</div>
+                            </div>';
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
 
-                if (auth()->user()->can('configuration-view')) {
-                    $actions .= '<a class="dropdown-item" href="'.route('indent_configuration.index').'?user_id='.$row->id.'">
-                                    <i class="bx bx-list-ul me-1"></i> Indent Configuration
-                                </a>';
-                }
-
-                return '<div class="dropdown">
-                            <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                <i class="bx bx-dots-vertical-rounded"></i>
-                            </button>
-                            <div class="dropdown-menu">'.$actions.'</div>
-                        </div>';
-            })
-            ->rawColumns(['action'])
-            ->make(true);
+        $locations = Location::select(['id', 'name'])->orderBy('name')->get();
+        $departments = Department::select(['id', 'name'])->orderBy('name')->get();
+        $designations = Designation::select(['id', 'name'])->orderBy('name')->get();
+        $roles = Role::select(['id', 'name'])->orderBy('name')->get();
+        $businessUnits = BusinessUnit::where('status', 1)->pluck('name', 'id');
+        return view('users.index', compact('locations', 'departments', 'designations', 'roles','businessUnits'));
     }
-
-    $locations = Location::select(['id', 'name'])->orderBy('name')->get();
-    $departments = Department::select(['id', 'name'])->orderBy('name')->get();
-    $designations = Designation::select(['id', 'name'])->orderBy('name')->get();
-    $roles = Role::select(['id', 'name'])->orderBy('name')->get();
-    $businessUnits = BusinessUnit::where('status', 1)->pluck('name', 'id');
-    return view('users.index', compact('locations', 'departments', 'designations', 'roles','businessUnits'));
-}
 
 
 
@@ -213,6 +217,7 @@ class UserController extends Controller
 
         // Statutory & Banking
         $user->pf_status = $request->pf_status == 'Active' ? 1 : 0; // map to int
+
         $user->uan_number = $request->uan_number;
         $user->bank_name = $request->bank_name;
         $user->ifsc_code = $request->ifsc_code;

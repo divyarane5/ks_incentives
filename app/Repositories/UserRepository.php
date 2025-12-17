@@ -16,6 +16,8 @@ class UserRepository implements UserRepositoryInterface
                 'users.id',
                 'users.employee_code',
                 'users.name',
+                'users.first_name',
+                'users.last_name',
                 'users.email',
                 'users.entity as company',
                 'users.work_location_id',

@@ -12,6 +12,7 @@ class ClientEnquiry extends Model
 
     protected $fillable = [
         'customer_name',
+        'mandate_project_id',
         'address',
         'pin_code',
         'contact_no',
@@ -67,9 +68,18 @@ class ClientEnquiry extends Model
         return $this->belongsTo(User::class, 'presales_id'); 
         // Replace 'presales_manager_id' with the actual column name in your table
     }
+    public function latestUpdate()
+    {
+        return $this->hasOne(ClientEnquiryUpdate::class, 'client_enquiry_id')->latest();
+    }
+
     public function updates()
     {
-        return $this->hasMany(ClientEnquiryUpdate::class, 'client_enquiry_id');
+        return $this->hasMany(ClientEnquiryUpdate::class, 'client_enquiry_id')->orderBy('id', 'DESC');
     }
     
+    public function mandateProject()
+    {
+        return $this->belongsTo(MandateProject::class);
+    }
 }
