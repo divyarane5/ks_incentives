@@ -106,9 +106,36 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="historyModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Enquiry History</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="historyContent">
+                Loading...
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('script')
+<script>
+function openHistory(id) {
+    $('#historyModal').modal('show');
+    $('#historyContent').html('Loading...');
+
+    fetch("{{ url('client-enquiries') }}/" + id + "/history")
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('historyContent').innerHTML = html;
+        });
+}
+</script>
+
 <script type="text/javascript">
     $(document).ready(function () {
         var table = $('#client-enquiry-datatable').DataTable({
@@ -168,4 +195,5 @@
     });
 }
 </script>
+
 @endsection

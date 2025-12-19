@@ -299,7 +299,7 @@ color:white}
     text-align: center;
     /* background: #fbf7d9; */
     padding: 10px;
-    max-width: 40%;
+    max-width: 100%;
     margin: 5px;
     border-radius: 5px;
     display: inline-block;
@@ -309,7 +309,7 @@ color:white}
 .product_s p{font-weight: 600;
     text-transform: capitalize;}	
 .product_s img{
-    width: 40%;
+    width: 100%;
     max-width: 100%;
     height: auto;
     background: white;

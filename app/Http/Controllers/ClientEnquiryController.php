@@ -106,48 +106,25 @@ class ClientEnquiryController extends Controller
                 })
 
                 ->addColumn('history', function ($row) {
-
-                    if ($row->updates->isEmpty()) {
-                        return '<span class="badge bg-secondary">No History</span>';
-                    }
-
-                    $html = '
-                    <div class="accordion" id="accordion-' . $row->id . '">
-                        <div class="accordion-item">
-                            <h2 class="accordion-header">
-                                <button class="accordion-button collapsed" type="button"
-                                        data-bs-toggle="collapse"
-                                        data-bs-target="#collapse-' . $row->id . '">
-                                    View Full History (' . $row->updates->count() . ')
-                                </button>
-                            </h2>
-                            <div id="collapse-' . $row->id . '" class="accordion-collapse collapse">
-                                <div class="accordion-body">';
-
-                    foreach ($row->updates as $u) {
-                        $html .= '
-                            <div class="border rounded p-2 mb-2 bg-light">
-                                <strong>Status:</strong> ' . ucfirst(str_replace('_', ' ', $u->status)) . '<br>
-                                <strong>Feedback:</strong> ' . $u->feedback . '<br>
-                                <small class="text-muted">
-                                    Updated: ' . $u->created_at->format('d M Y, h:i A') . '
-                                </small>
-                            </div>';
-                    }
-
-                    $html .= '
-                                </div>
-                            </div>
-                        </div>
-                    </div>';
-
-                    return $html;
+                    return '
+                        <button 
+                            class="btn btn-sm btn-outline-primary"
+                            onclick="openHistory('.$row->id.')"
+                        >
+                            View ('.$row->updates->count().')
+                        </button>
+                    ';
                 })
 
                 ->addColumn('action', function ($row) {
 
                     $actions = '';
-
+                    
+                    if (auth()->user()->can('client-enquiry-edit')) {
+                        $actions = '<a class="dropdown-item" href="'.route('client-enquiries.show', $row->id).'">
+                            <i class="bx bx-show me-1"></i> View
+                        </a>';
+                    }
                     if (auth()->user()->can('client-enquiry-edit')) {
                         $actions .= '<a class="dropdown-item" href="' . route('client-enquiries.edit', $row->id) . '">
                             <i class="bx bx-edit-alt me-1"></i> Edit
@@ -156,7 +133,7 @@ class ClientEnquiryController extends Controller
 
                     if (auth()->user()->can('client-enquiry-update')) {
                         $actions .= '<a class="dropdown-item" href="' . route('client-enquiries.updates', $row->id) . '">
-                            <i class="bx bx-refresh me-1"></i> Update
+                            <i class="bx bx-refresh me-1"></i> Update History
                         </a>';
                     }
 
@@ -202,7 +179,12 @@ class ClientEnquiryController extends Controller
         ));
     }
 
+    public function history($id)
+    {
+        $enquiry = ClientEnquiry::with('updates')->findOrFail($id);
 
+        return view('client_enquiries.partials.history', compact('enquiry'));
+    }
 
     /**
      * Get all accessible user IDs for the current user (hierarchy-aware)

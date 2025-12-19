@@ -15,6 +15,53 @@
             <strong>Update Client Enquiry (ID: {{ $enquiry->id }})</strong>
         </div>
     </div>
+    <!-- =========================
+        ENQUIRY SUMMARY
+    ========================== -->
+    <div class="card mb-4">
+        <div class="card-header bg-light">
+            <strong>Client Enquiry Summary</strong>
+        </div>
+
+        <div class="card-body">
+            <div class="row">
+
+                <!-- Client -->
+                <div class="col-md-4">
+                    <p><strong>Customer:</strong> {{ $enquiry->customer_name }}</p>
+                    <p><strong>Contact:</strong> {{ $enquiry->contact_no }}</p>
+                    @if($enquiry->email)
+                        <p><strong>Email:</strong> {{ $enquiry->email }}</p>
+                    @endif
+                </div>
+
+                <!-- Project -->
+                <div class="col-md-4">
+                    <p><strong>Project:</strong>
+                        {{ optional($enquiry->mandateProject)->project_name ?? '-' }}
+                    </p>
+                    <p><strong>Property Type:</strong>
+                        {{ ucfirst($enquiry->property_type ?? '-') }}
+                    </p>
+                    <p><strong>Budget:</strong>
+                        {{ $enquiry->budget ?? '-' }}
+                    </p>
+                </div>
+
+                <!-- Assignment -->
+                <div class="col-md-4">
+                    <p><strong>Source:</strong> {{ $enquiry->source_of_visit ?? '-' }}</p>
+                    <p><strong>Channel Partner:</strong>
+                        {{ $enquiry->channelPartner->firm_name ?? '-' }}
+                    </p>
+                    <p><strong>Sourcing Manager:</strong>
+                        {{ $enquiry->sourcingManager->name ?? '-' }}
+                    </p>
+                </div>
+
+            </div>
+        </div>
+    </div>
 
     <!-- =========================
         SHOW UPDATE HISTORY

@@ -263,23 +263,103 @@
     	</div>
     </div>
 </div> -->
+
+@if(
+    Str::contains($user->businessUnit->name, ['Real', 'Estate'])
+)
+<div class="card2" id="other_links">
+    <h3>Our Associates for Construction</h3>
+    <div class="oth_parent_div">
+    	<!--<div class="oth_man_div">-->
+    	<!--    <img src="https://digicarda.com/images/link-icon.png" style="object-fit: cover; width: 12%; padding-right: 15px;">-->
+    	<!--    <a href="https://drive.google.com/file/d/1ou791Tv3JmPj1_lj3VWSIdoKwDNd0nTy/view?usp=sharing">Our Profile</a>-->
+    	<!--</div>-->
+    	<div class="oth_man_div">
+    	    <img src="{{ asset('assets/img/icons/link-icon.png') }}" style="object-fit: cover; width: 12%; padding-right: 15px;">
+    	    <a href="https://keystonerealestateadvisory.com/aum-sai-company-profile.pdf" target="_blank">Aum Sai Constructions</a>
+    	</div>
+    	<div class="oth_man_div">
+    	    <img src="{{ asset('assets/img/icons/link-icon.png') }}" style="object-fit: cover; width: 12%; padding-right: 15px;">
+    	    <a href="https://keystonerealestateadvisory.com/AJ-Constructions-profile.pdf" target="_blank">AJ Constructions</a>
+    	</div>
+    </div>
+</div>
+<div class="card2" id="about_us">
+		<h3>About Us</h3>
+    	<div class="oth_man_div">
+    	    <img src="{{ asset('assets/img/icons/link-icon.png') }}" style="object-fit: cover; width: 12%; padding-right: 15px;">
+    	    <a href="https://keystonerealestateadvisory.com/KeystoneDeck.pdf" target="_blank">Our Profile</a>
+    	</div>
+		<p> Keystone Real Estate Advisory brings you a wide range of properties across Mumbai and Pune. With over 10 years of expertise, we help you find the perfect flat that fits your needs and lifestyle.
+
+        <b>Mission</b>
+        To deliver the best value, exceptional service, and satisfaction for our clients and associates.
+
+        <b>Vision</b>
+        To be the World's Deeply Loved, Efficient, and Valuable People-Centric Real Estate Company.
+
+        <b>Values</b>
+        •	Innovative.
+        •	Ethical.
+        •	Reliability.
+        •	Integrity.
+        •   Committed
+
+   
+</div>
+<div class="card2" id="product_services">
+   <h3>Our End to End Real Estate Solutions </h3>
+   <div class="product_s">
+      <p>Alterra India </p>
+      <img src="{{ asset('assets/img/icons/Untitled-1-03.jpg') }}" alt="Logo"><br><br>
+      <a href="https://api.whatsapp.com/send?phone=919819777057	&amp;text=Enquiry for product: Alterra India" target="_blank">
+         <div class="btn_buy">Enquire Now</div>
+      </a>
+   </div>
+   <div class="product_s">
+      <p>Keystone Real Estate Advisory </p>
+      
+      <a href="https://keystonerealestateadvisory.com/" target="_blank"><img src="{{ asset('assets/img/icons/keystone-04.jpg') }}" alt="Logo"></a><br><br>
+      <a href="https://api.whatsapp.com/send?phone=919819777057	&amp;text=Enquiry for product: Keystone Real Estate Advisory" target="_blank">
+         <div class="btn_buy">Enquire Now</div>
+      </a>
+   </div>
+   <div class="product_s">
+      <p>Keystone Finserv </p>
+      <a href="http://keystonefinserv.com/" target="_blank"><img src="{{ asset('assets/img/icons/kf.jpg') }}" alt="Logo"></a><br><br>
+      <a href="https://api.whatsapp.com/send?phone=919819777057	&amp;text=Enquiry for product: Keystone Finserv " target="_blank">
+         <div class="btn_buy">Enquire Now</div>
+      </a>
+   </div>
+   <div class="product_s">
+      <p>Designo Palette</p>
+      <a href="http://designopalette.com/" target="_blank"><img src="{{ asset('assets/img/icons/Untitled-1-02.jpg') }}" alt="Logo"></a><br><br>
+      <a href="https://api.whatsapp.com/send?phone=919819777057	&amp;text=Enquiry for product: Designo Palette" target="_blank">
+         <div class="btn_buy">Enquire Now</div>
+      </a>
+   </div>
+   
+</div>
+@elseif(
+    Str::contains($user->businessUnit->name, ['Finserve', 'Keystone'])
+)
 <div class="card2" id="about_us">
 		<h3>About Us</h3>
     	
 		<p>Keystone Finserv provides fast, tailored financial solutions through leading banking partners. We simplify the loan process and support clients at every step.
 
-<b>Mission</b>
-Trusted, transparent, client-focused financial guidance.
+        <b>Mission</b>
+        Trusted, transparent, client-focused financial guidance.
 
-<b>Vision</b>
-Innovative, reliable, and service-driven financial partnership.
+        <b>Vision</b>
+        Innovative, reliable, and service-driven financial partnership.
 
-<!-- <b>Values</b>
-•	Innovative.
-•	Ethical.
-•	Reliability.
-•	Integrity.
-•   Committed -->
+        <!-- <b>Values</b>
+        •	Innovative.
+        •	Ethical.
+        •	Reliability.
+        •	Integrity.
+        •   Committed -->
 
    
 	</div>
@@ -323,6 +403,9 @@ Innovative, reliable, and service-driven financial partnership.
    </div>
    
 </div>
+@endif
+
+
 	<br>
 	<br>
 	<br>

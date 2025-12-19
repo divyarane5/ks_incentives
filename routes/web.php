@@ -110,6 +110,8 @@ Route::group(['middleware' => 'auth'], function() {
     Route::post('client-enquiries/{id}/updates', [App\Http\Controllers\ClientEnquiryUpdateController::class, 'store'])
     ->name('client-enquiries.updates.store');
     
+    Route::get('client-enquiries/{id}/history',[App\Http\Controllers\ClientEnquiryController::class, 'history'])->name('client-enquiries.history');
+
     //Booking
     Route::resource('booking', App\Http\Controllers\BookingController::class);
     Route::post('booking/update_status', [App\Http\Controllers\BookingController::class, 'updateStatus'])->name('booking.update_status');
