@@ -49,8 +49,8 @@
     box-sizing: border-box;
     cursor: pointer;
     padding: 6px 10px;
-    margin: 15px 0px 4px 15px;
-    width: 100%;
+    margin: 15px 15px 4px 15px;
+    /* width: 100%; */
     -webkit-box-align: center;
     align-items: center;
     opacity: 1;
