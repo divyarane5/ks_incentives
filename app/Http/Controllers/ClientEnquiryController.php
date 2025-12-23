@@ -10,9 +10,12 @@ use Illuminate\Http\Request;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StoreClientEnquiryRequest;
+use App\Traits\UserHierarchyTrait;
 
 class ClientEnquiryController extends Controller
 {
+    use UserHierarchyTrait;
+    
     public function __construct()
     {
         $this->middleware('permission:client-enquiry-view', ['only' => ['index']]);
@@ -189,26 +192,26 @@ class ClientEnquiryController extends Controller
     /**
      * Get all accessible user IDs for the current user (hierarchy-aware)
      */
-    private function getAccessibleUserIds($user)
-    {
-        // ✅ Superadmin sees all users
-        if ($user->hasRole('Superadmin')) {
-            return \App\Models\User::pluck('id')->toArray();
-        }
+    // private function getAccessibleUserIds($user)
+    // {
+    //     // ✅ Superadmin sees all users
+    //     if ($user->hasRole('Superadmin')) {
+    //         return \App\Models\User::pluck('id')->toArray();
+    //     }
 
-        $ids = [$user->id];
+    //     $ids = [$user->id];
 
-        // Get all users under hierarchy
-        $teamIds = \App\Models\User::whereNotNull('reporting_manager_id')
-            ->get()
-            ->filter(function ($u) use ($user) {
-                return $this->isUnderHierarchy($u, $user->id);
-            })
-            ->pluck('id')
-            ->toArray();
+    //     // Get all users under hierarchy
+    //     $teamIds = \App\Models\User::whereNotNull('reporting_manager_id')
+    //         ->get()
+    //         ->filter(function ($u) use ($user) {
+    //             return $this->isUnderHierarchy($u, $user->id);
+    //         })
+    //         ->pluck('id')
+    //         ->toArray();
 
-        return array_merge($ids, $teamIds);
-    }
+    //     return array_merge($ids, $teamIds);
+    // }
 
 
     /**
@@ -294,7 +297,10 @@ class ClientEnquiryController extends Controller
             'channelPartner',
             'closingManager',
             'sourcingManager',
-            'createdBy'
+            'createdBy',
+            'updates' => function ($q) {
+                $q->latest(); // 👈 important
+            },
         ])->findOrFail($id);
 
         return view('client_enquiries.show', compact('clientEnquiry'));
@@ -313,7 +319,8 @@ class ClientEnquiryController extends Controller
             'closingManager',
             'sourcingManager',
             'presales',
-            'createdBy'
+            'createdBy',
+             'updates.user' // ✅ LOAD UPDATES
         ])->findOrFail($id);
 
         $pdf = \PDF::loadView('client_enquiries.show_pdf', [

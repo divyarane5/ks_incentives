@@ -15,7 +15,15 @@ class MandateProjectController extends Controller
     {
         if ($request->ajax()) {
             $data = MandateProject::with('configurations');
+             // 🔍 Project Name filter
+            if ($request->filled('project_name')) {
+                $data->where('project_name', 'like', '%' . $request->project_name . '%');
+            }
 
+            // 🔍 Brand Name filter
+            if ($request->filled('brand_name')) {
+                $data->where('brand_name', 'like', '%' . $request->brand_name . '%');
+            }
             return DataTables::of($data)
                 ->addColumn('project_name', fn($row) => $row->project_name)
                 ->addColumn('brand_name', fn($row) => $row->brand_name)
@@ -64,7 +72,18 @@ class MandateProjectController extends Controller
                 ->make(true);
         }
 
-        return view('mandate_projects.index');
+         // 🔽 Dropdown values
+        $projects = MandateProject::select('project_name')
+            ->distinct()
+            ->orderBy('project_name')
+            ->pluck('project_name');
+
+        $brands = MandateProject::select('brand_name')
+            ->distinct()
+            ->orderBy('brand_name')
+            ->pluck('brand_name');
+
+        return view('mandate_projects.index', compact('projects', 'brands'));
     }
 
 

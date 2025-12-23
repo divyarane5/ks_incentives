@@ -116,8 +116,77 @@
                 <div class="mb-4">
                     <h6 class="fw-bold">Feedback</h6>
                     <table class="table table-borderless">
-                        <tr><th width="20%">Feedback:</th><td>{{ $clientEnquiry->feedback ?? '-' }}</td></tr>
+                        <tr><th width="20%">Inital Feedback:</th><td>{{ $clientEnquiry->feedback ?? '-' }}</td></tr>
                     </table>
+                </div>
+
+                <!-- =========================
+                UPDATE HISTORY
+                ========================== -->
+                <div class="card mt-4">
+                    <!-- <div class="card-header bg-secondary text-white">
+                        <strong>Enquiry Update History</strong>
+                    </div> -->
+
+                    <div class="card-body">
+
+                        @if($clientEnquiry->updates->count() > 0)
+
+                            @foreach($clientEnquiry->updates as $update)
+                                <div class="border rounded p-3 mb-3 bg-light">
+
+                                    <div class="row mb-2">
+                                        <div class="col-md-4">
+                                            <strong>Status:</strong>
+                                            <span class="badge bg-info">
+                                                {{ ucfirst(str_replace('_',' ', $update->status)) }}
+                                            </span>
+                                        </div>
+
+                                        <div class="col-md-8 text-end">
+                                            <small class="text-muted">
+                                                Updated on:
+                                                {{ $update->created_at->format('d M Y, h:i A') }}
+                                            </small>
+                                        </div>
+                                    </div>
+
+                                    <p>
+                                        <strong>Feedback:</strong><br>
+                                        {{ $update->feedback ?? '-' }}
+                                    </p>
+
+                                    <div class="row">
+                                        @if($update->followup_date)
+                                            <div class="col-md-4">
+                                                <strong>Followup Date:</strong>
+                                                {{ \Carbon\Carbon::parse($update->followup_date)->format('d-m-Y') }}
+                                            </div>
+                                        @endif
+
+                                        @if($update->revisit_scheduled)
+                                            <div class="col-md-4">
+                                                <strong>Revisit Scheduled:</strong>
+                                                {{ \Carbon\Carbon::parse($update->revisit_scheduled)->format('d-m-Y') }}
+                                            </div>
+                                        @endif
+
+                                        @if($update->revisit_done)
+                                            <div class="col-md-4">
+                                                <strong>Revisit Done:</strong>
+                                                {{ \Carbon\Carbon::parse($update->revisit_done)->format('d-m-Y') }}
+                                            </div>
+                                        @endif
+                                    </div>
+
+                                </div>
+                            @endforeach
+
+                        @else
+                            <p class="text-muted mb-0">No updates added yet.</p>
+                        @endif
+
+                    </div>
                 </div>
 
             </div> <!-- /card -->

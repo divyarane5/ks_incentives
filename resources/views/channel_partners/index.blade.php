@@ -14,6 +14,28 @@
             @endcan
         </div>
     </div>
+    <div class="card my-4" id="ChannelPartnerFilter">
+        <div class="card-body row">
+
+            <div class="mb-3 col-md-4">
+                <label class="form-label">Sourcing Manager</label>
+                <select id="sourcing_manager_id" class="form-select">
+                    <option value="">All</option>
+                    @foreach($sourcingManagers as $manager)
+                        <option value="{{ $manager->id }}">{{ $manager->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="mb-3 col-md-4">
+                <label class="form-label">&nbsp;</label><br>
+                <button id="filter" class="btn btn-primary">Filter</button>
+                <button id="clear" class="btn btn-secondary">Clear</button>
+            </div>
+
+        </div>
+    </div>
+
 
     <div class="card">
         <h5 class="card-header">Channel Partners</h5>
@@ -43,22 +65,37 @@
 @section('script')
 <script>
 $(document).ready(function () {
-    $('#channel-partners-datatable').DataTable({
+
+    var table = $('#channel-partners-datatable').DataTable({
         processing: true,
         serverSide: true,
-        ajax: "{{ route('channel_partners.index') }}",
+        ajax: {
+            url: "{{ route('channel_partners.index') }}",
+            data: function (d) {
+                d.sourcing_manager_id = $('#sourcing_manager_id').val();
+            }
+        },
         columns: [
-            { data: 'firm_name', name: 'firm_name' },
-            { data: 'owner_name', name: 'owner_name' },
-            { data: 'contact', name: 'contact' },
-            { data: 'rera_number', name: 'rera_number' },
-            { data: 'operational_locations', name: 'operational_locations', orderable: false, searchable: false },
-            { data: 'office_locations', name: 'office_locations', orderable: false, searchable: false },
-            { data: 'sourcing_manager', name: 'sourcing_manager' },
-            { data: 'acquisition_channel', name: 'acquisition_channel' },
-            { data: 'property_type', name: 'property_type' },
+            { data: 'firm_name' },
+            { data: 'owner_name' },
+            { data: 'contact' },
+            { data: 'rera_number' },
+            { data: 'operational_locations', orderable: false, searchable: false },
+            { data: 'office_locations', orderable: false, searchable: false },
+            { data: 'sourcing_manager' },
+            { data: 'acquisition_channel' },
+            { data: 'property_type' },
             { data: 'action', orderable: false, searchable: false }
         ]
+    });
+
+    $('#filter').click(function () {
+        table.ajax.reload();
+    });
+
+    $('#clear').click(function () {
+        $('#sourcing_manager_id').val('');
+        table.ajax.reload();
     });
 
 });

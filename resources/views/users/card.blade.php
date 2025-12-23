@@ -341,7 +341,7 @@
    
 </div>
 @elseif(
-    Str::contains($user->businessUnit->name, ['Finserve', 'Keystone'])
+    Str::contains($user->businessUnit->name, ['Finserv', 'Keystone'])
 )
 <div class="card2" id="about_us">
 		<h3>About Us</h3>
@@ -367,7 +367,7 @@
    <h3>Our End to End Solutions </h3>
    <div class="product_s">
       <p>Home Loan</p>
-      <img src="{{ asset('assets/img/icons/house.png') }}" alt="Logo"><br><br>
+      <img src="{{ asset('assets/img/icons/house.png') }}" alt="Logo" style="width: 30%;"><br><br>
       <a href="https://api.whatsapp.com/send?phone={{ $contact }}	&amp;text=Enquiry for product: Home Loan" target="_blank">
          <div class="btn_buy">Enquire Now</div>
       </a>
@@ -375,28 +375,28 @@
    <div class="product_s">
       <p>Property Search </p>
       
-      <img src="{{ asset('assets/img/icons/real-estate.png') }}" alt="Logo"><br><br>
+      <img src="{{ asset('assets/img/icons/real-estate.png') }}" alt="Logo" style="width: 30%;"><br><br>
       <a href="https://api.whatsapp.com/send?phone={{ $contact }}	&amp;text=Enquiry for product: Property Search" target="_blank">
          <div class="btn_buy">Enquire Now</div>
       </a>
    </div>
    <div class="product_s">
       <p>Loan Against Property </p>
-      <img src="{{ asset('assets/img/icons/mortgage-loan.png') }}" alt="Logo"><br><br>
+      <img src="{{ asset('assets/img/icons/mortgage-loan.png') }}" alt="Logo" style="width: 30%;"><br><br>
       <a href="https://api.whatsapp.com/send?phone={{ $contact }}	&amp;text=Enquiry for product: Loan Against Property" target="_blank">
          <div class="btn_buy">Enquire Now</div>
       </a>
    </div>
    <div class="product_s">
       <p>Personal Loan</p>
-      <img src="{{ asset('assets/img/icons/personal.png') }}" alt="Logo"><br><br>
+      <img src="{{ asset('assets/img/icons/personal.png') }}" alt="Logo" style="width: 30%;"><br><br>
       <a href="https://api.whatsapp.com/send?phone={{ $contact }}	&amp;text=Enquiry for product: Personal Loan" target="_blank">
          <div class="btn_buy">Enquire Now</div>
       </a>
    </div>
    <div class="product_s">
       <p>Business Loan</p>
-      <img src="{{ asset('assets/img/icons/personal.png') }}" alt="Logo"><br><br>
+      <img src="{{ asset('assets/img/icons/personal.png') }}" alt="Logo" style="width: 30%;"><br><br>
       <a href="https://api.whatsapp.com/send?phone={{ $contact }}	&amp;text=Enquiry for product: Business Loan" target="_blank">
          <div class="btn_buy">Enquire Now</div>
       </a>

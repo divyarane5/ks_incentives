@@ -87,6 +87,68 @@
         </table>
     </div>
 
+    <hr>
+
+    {{-- Enquiry Update History --}}
+    <div class="section">
+        <h6 class="fw-bold">Enquiry Update History</h6>
+
+        @if($clientEnquiry->updates->count() > 0)
+
+            @foreach($clientEnquiry->updates as $index => $update)
+
+                <table style="margin-bottom: 12px;">
+                    <tr>
+                        <th>Status:</th>
+                        <td>{{ ucfirst(str_replace('_',' ', $update->status)) }}</td>
+                    </tr>
+
+                    <tr>
+                        <th>Feedback:</th>
+                        <td>{{ $update->feedback ?? '-' }}</td>
+                    </tr>
+
+                    @if($update->followup_date)
+                    <tr>
+                        <th>Followup Date:</th>
+                        <td>{{ \Carbon\Carbon::parse($update->followup_date)->format('d-m-Y') }}</td>
+                    </tr>
+                    @endif
+
+                    @if($update->revisit_scheduled)
+                    <tr>
+                        <th>Revisit Scheduled:</th>
+                        <td>{{ \Carbon\Carbon::parse($update->revisit_scheduled)->format('d-m-Y') }}</td>
+                    </tr>
+                    @endif
+
+                    @if($update->revisit_done)
+                    <tr>
+                        <th>Revisit Done:</th>
+                        <td>{{ \Carbon\Carbon::parse($update->revisit_done)->format('d-m-Y') }}</td>
+                    </tr>
+                    @endif
+
+                    <tr>
+                        <th>Updated On:</th>
+                        <td>{{ $update->created_at->format('d M Y, h:i A') }}</td>
+                    </tr>
+
+                    @if(!$loop->last)
+                    <tr>
+                        <td colspan="2"><hr></td>
+                    </tr>
+                    @endif
+                </table>
+
+            @endforeach
+
+        @else
+            <p>No updates available.</p>
+        @endif
+    </div>
+
+
 </div>
 
 </body>

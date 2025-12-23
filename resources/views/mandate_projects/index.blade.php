@@ -17,6 +17,39 @@
         </div>
     </div>
 
+    <div class="card my-4" id="MandateProjectFilter">
+        <div class="card-body row">
+
+            <div class="mb-3 col-md-4">
+                <label class="form-label">Project Name</label>
+                <select id="project_name" class="form-select">
+                    <option value="">All</option>
+                    @foreach($projects as $project)
+                        <option value="{{ $project }}">{{ $project }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="mb-3 col-md-4">
+                <label class="form-label">Brand Name</label>
+                <select id="brand_name" class="form-select">
+                    <option value="">All</option>
+                    @foreach($brands as $brand)
+                        <option value="{{ $brand }}">{{ $brand }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="mb-3 col-md-4">
+                <label class="form-label">&nbsp;</label><br>
+                <button id="filter" class="btn btn-primary me-2">Filter</button>
+                <button id="clear" class="btn btn-secondary">Clear</button>
+            </div>
+
+        </div>
+    </div>
+
+
     <!-- Striped Rows -->
     <div class="card">
         <h5 class="card-header">Mandate Projects</h5>
@@ -47,7 +80,13 @@ $(document).ready(function () {
     var table = $('#mandate-projects-datatable').DataTable({
         processing: true,
         serverSide: true,
-        ajax: "{{ route('mandate_projects.index') }}",
+        ajax: {
+            url: "{{ route('mandate_projects.index') }}",
+            data: function (d) {
+                d.project_name = $('#project_name').val();
+                d.brand_name   = $('#brand_name').val();
+            }
+        },
         columns: [
             { data: 'project_name', name: 'mandate_projects.project_name' },
             { data: 'brand_name', name: 'mandate_projects.brand_name' },
@@ -58,6 +97,23 @@ $(document).ready(function () {
             { data: 'action', orderable: false, searchable: false },
         ],
         responsive: true
+    });
+     // 🔍 APPLY FILTER
+    $('#filter').on('click', function (e) {
+        e.preventDefault();
+        table.ajax.reload(null, false);
+    });
+
+    // 🧹 CLEAR FILTER (FIXED)
+    $('#clear').on('click', function (e) {
+        e.preventDefault();
+
+        // reset dropdowns
+        $('#project_name').val('');
+        $('#brand_name').val('');
+
+        // force reload from first page
+        table.ajax.reload(null, true);
     });
 });
 

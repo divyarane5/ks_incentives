@@ -7,11 +7,17 @@ use App\Models\Location; // ✅ Import added
 use Illuminate\Http\Request;
 use DataTables;
 use Auth; 
+use App\Traits\UserHierarchyTrait;
 
 class ChannelPartnerController extends Controller
-{
+{   
+    use UserHierarchyTrait;
+
     public function index(Request $request)
-    {
+    {   
+         // ✅ DEFINE USER ONCE (IMPORTANT)
+        $user = auth()->user();
+
         if ($request->ajax()) {
             $user = auth()->user();
 
@@ -23,10 +29,15 @@ class ChannelPartnerController extends Controller
             // Apply filtering
             $data->whereIn('sourcing_manager', $accessibleUserIds);
 
-            // Optional: filter by a specific user (for TL/Admin)
-            if ($request->filled('user_id')) {
-                $data->where('sourcing_manager', $request->user_id);
+            // ✅ Sourcing manager filter (from dropdown)
+            if ($request->filled('sourcing_manager_id')) {
+                $data->where('sourcing_manager', $request->sourcing_manager_id);
             }
+            
+            // // Optional: filter by a specific user (for TL/Admin)
+            // if ($request->filled('user_id')) {
+            //     $data->where('sourcing_manager', $request->user_id);
+            // }
 
             return DataTables::of($data)
                 ->addColumn('firm_name', fn($row) => $row->firm_name)
@@ -73,35 +84,41 @@ class ChannelPartnerController extends Controller
                 ->rawColumns(['action'])
                 ->make(true);
         }
+        // Dropdown data
+         // ✅ DROPDOWN DATA (FIXED)
+        $sourcingManagers = \App\Models\User::whereIn(
+            'id',
+            $this->getAccessibleUserIds($user)
+        )->get();
 
-        return view('channel_partners.index');
+        return view('channel_partners.index', compact('sourcingManagers'));
     }
 
-    /**
-     * Get all accessible user IDs for the current user
-     */
-    private function getAccessibleUserIds($user)
-    {
-        // Super Admin sees all users
-        if ($user->role == 'superadmin') {
-            return \App\Models\User::pluck('id')->toArray();
-        }
+    // /**
+    //  * Get all accessible user IDs for the current user
+    //  */
+    // private function getAccessibleUserIds($user)
+    // {
+    //     // Super Admin sees all users
+    //     if ($user->role == 'superadmin') {
+    //         return \App\Models\User::pluck('id')->toArray();
+    //     }
 
-        // Start with current user ID
-        $ids = [$user->id];
+    //     // Start with current user ID
+    //     $ids = [$user->id];
 
-        // Get all users in hierarchy under current user
-        $teamIds = \App\Models\User::whereNotNull('reporting_manager_id')
-            ->get()
-            ->filter(function($u) use ($user) {
-                // Check if the user is under current user's hierarchy
-                return $this->isUnderHierarchy($u, $user->id);
-            })
-            ->pluck('id')
-            ->toArray();
+    //     // Get all users in hierarchy under current user
+    //     $teamIds = \App\Models\User::whereNotNull('reporting_manager_id')
+    //         ->get()
+    //         ->filter(function($u) use ($user) {
+    //             // Check if the user is under current user's hierarchy
+    //             return $this->isUnderHierarchy($u, $user->id);
+    //         })
+    //         ->pluck('id')
+    //         ->toArray();
 
-        return array_merge($ids, $teamIds);
-    }
+    //     return array_merge($ids, $teamIds);
+    // }
 
     /**
      * Check if a user is under the hierarchy of a given manager
