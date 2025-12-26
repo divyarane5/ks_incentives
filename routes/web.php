@@ -102,15 +102,22 @@ Route::group(['middleware' => 'auth'], function() {
     Route::post('/locations/ajax-check-or-store', [App\Http\Controllers\LocationController::class, 'ajaxCheckOrStore'])->name('locations.ajaxCheckOrStore');
 
     //client enquiry
-    Route::resource('client-enquiries', App\Http\Controllers\ClientEnquiryController::class);
-    Route::get('client-enquiries/{id}/download',  [App\Http\Controllers\ClientEnquiryController::class, 'download'])->name('client-enquiries.download');
-    
-    Route::get('client-enquiries/{id}/updates', [App\Http\Controllers\ClientEnquiryUpdateController::class, 'create'])
-    ->name('client-enquiries.updates');
-    Route::post('client-enquiries/{id}/updates', [App\Http\Controllers\ClientEnquiryUpdateController::class, 'store'])
-    ->name('client-enquiries.updates.store');
-    
-    Route::get('client-enquiries/{id}/history',[App\Http\Controllers\ClientEnquiryController::class, 'history'])->name('client-enquiries.history');
+   Route::middleware([
+        'permission:client-enquiry-view',
+        'check.bu:AI'
+    ])->group(function () {
+
+        Route::resource('client-enquiries', App\Http\Controllers\ClientEnquiryController::class);
+
+        Route::get('client-enquiries/{id}/download', [App\Http\Controllers\ClientEnquiryController::class, 'download'])->name('client-enquiries.download');
+
+        Route::get('client-enquiries/{id}/updates', [App\Http\Controllers\ClientEnquiryUpdateController::class, 'create'])->name('client-enquiries.updates');
+
+        Route::post('client-enquiries/{id}/updates', [App\Http\Controllers\ClientEnquiryUpdateController::class, 'store'])->name('client-enquiries.updates.store');
+
+        Route::get('client-enquiries/{id}/history', [App\Http\Controllers\ClientEnquiryController::class, 'history'])->name('client-enquiries.history');
+    });
+
 
     //Booking
     Route::resource('booking', App\Http\Controllers\BookingController::class);

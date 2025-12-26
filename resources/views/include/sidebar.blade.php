@@ -24,6 +24,7 @@
                 <div data-i18n="Analytics">Dashboard</div>
             </a>
         </li>
+
         @can('user-view')
         <li class="menu-item {{ (Request::segment(1) == 'users') ? 'active': '' }}">
             <a href="{{ route('users.index') }}" class="menu-link">
@@ -32,6 +33,7 @@
             </a>
         </li>
         @endcan
+
         <!-- Masters -->
         @canany(['role-view','location-view','department-view','designation-view','expense-view','vendor-view','business_unit-view','payment_method-view'])
         <li class="menu-item {{ in_array(Request::segment(1), ['role','location','department','designation','expense','vendor','business_unit','payment_method']) ? 'active open': '' }}">
@@ -92,44 +94,50 @@
         </li>
         @endcanany
 
-        
-        <!-- Mandate Section -->
-        <!-- Mandate Section -->
-        @canany(['mandate_project-view','channel-partner-view','client-enquiries-view'])
-        <li class="menu-item {{ in_array(Request::segment(1), ['mandate_projects','channel_partners','client-enquiries']) ? 'active open' : '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle">
-                <i class="menu-icon tf-icons bx bx-briefcase"></i>
-                <div data-i18n="Layouts">Mandate</div>
-            </a>
-            <ul class="menu-sub">
-               
+        @php
+        $isSAorAdmin = isSuperAdmin() || isAdmin();
+        @endphp
 
-                @can('mandate_project-view')
-                <li class="menu-item {{ (Request::segment(1) == 'mandate_projects') ? 'active' : '' }}">
-                    <a href="{{ route('mandate_projects.index') }}" class="menu-link">
-                        <div data-i18n="Without menu">Mandate Projects</div>
-                    </a>
-                </li>
-                @endcan
+        @if($isSAorAdmin || auth()->user()->businessUnit?->code === 'AI')
+            <li class="menu-item {{ in_array(Request::segment(1), ['mandate_projects','channel_partners','client-enquiries']) ? 'active open' : '' }}">
+                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                    <i class="menu-icon tf-icons bx bx-briefcase"></i>
+                    <div>Mandate</div>
+                </a>
 
-                @can('channel-partner-view')
-                <li class="menu-item {{ (Request::segment(1) == 'channel_partners') ? 'active' : '' }}">
-                    <a href="{{ route('channel_partners.index') }}" class="menu-link">
-                        <div data-i18n="Without menu">Channel Partner</div>
-                    </a>
-                </li>
-                @endcan
+                <ul class="menu-sub">
 
-                @can('client-enquiry-view')
-                <li class="menu-item {{ (Request::segment(1) == 'client-enquiry') ? 'active' : '' }}">
-                    <a href="{{ route('client-enquiries.index') }}" class="menu-link">
-                        <div data-i18n="Without menu">Client Enquiries</div>
-                    </a>
-                </li>
-                @endcan
-            </ul>
-        </li>
-        @endcanany
+                    {{-- Mandate Projects --}}
+                    @if($isSAorAdmin || canAccessModule('mandate_project-view', ['AI']))
+                        <li class="menu-item {{ Request::segment(1) == 'mandate_projects' ? 'active' : '' }}">
+                            <a href="{{ route('mandate_projects.index') }}" class="menu-link">
+                                <div>Mandate Projects</div>
+                            </a>
+                        </li>
+                    @endif
+
+                    {{-- Channel Partner --}}
+                    @if($isSAorAdmin || canAccessModule('channel-partner-view', ['AI']))
+                        <li class="menu-item {{ Request::segment(1) == 'channel_partners' ? 'active' : '' }}">
+                            <a href="{{ route('channel_partners.index') }}" class="menu-link">
+                                <div>Channel Partner</div>
+                            </a>
+                        </li>
+                    @endif
+
+                    {{-- Client Enquiries --}}
+                    @if($isSAorAdmin || canAccessModule('client-enquiry-view', ['AI']))
+                        <li class="menu-item {{ Request::segment(1) == 'client-enquiries' ? 'active' : '' }}">
+                            <a href="{{ route('client-enquiries.index') }}" class="menu-link">
+                                <div>Client Enquiries</div>
+                            </a>
+                        </li>
+                    @endif
+
+                </ul>
+            </li>
+        @endif
+
 
     </ul>
 </aside>
