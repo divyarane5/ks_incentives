@@ -96,8 +96,10 @@ Route::group(['middleware' => 'auth'], function() {
 
     //channel Partners + dropdown location addition store
     Route::resource('channel_partners', App\Http\Controllers\ChannelPartnerController::class);
-   
-    
+    Route::post('channel-partners/quick-store',[App\Http\Controllers\ChannelPartnerController::class, 'quickStore'])->name('channel-partners.quick-store');
+
+    Route::resource('mandate_bookings',App\Http\Controllers\MandateBookingController::class);
+
     // For checking/storing new location (optional if you still use store-on-submit)
     Route::post('/locations/ajax-check-or-store', [App\Http\Controllers\LocationController::class, 'ajaxCheckOrStore'])->name('locations.ajaxCheckOrStore');
 
@@ -116,6 +118,7 @@ Route::group(['middleware' => 'auth'], function() {
         Route::post('client-enquiries/{id}/updates', [App\Http\Controllers\ClientEnquiryUpdateController::class, 'store'])->name('client-enquiries.updates.store');
 
         Route::get('client-enquiries/{id}/history', [App\Http\Controllers\ClientEnquiryController::class, 'history'])->name('client-enquiries.history');
+        
     });
 
 

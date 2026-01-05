@@ -143,7 +143,7 @@ class ChannelPartnerController extends Controller
 
         // Fetch only users from business unit "Alterra India"
         $users = \App\Models\User::whereHas('businessUnit', function ($query) {
-            $query->where('name', 'Alterra India');
+            $query->where('code', 'AI');
         })->get(['id', 'name']);
 
         // Pass both locations and users to the view
@@ -442,5 +442,23 @@ class ChannelPartnerController extends Controller
         return back()->with('success', 'Thank you! Your request has been submitted.');
     }
 
+    public function quickStore(Request $request)
+    {
+        $request->validate([
+            'firm_name' => 'required|string|max:255',
+        ]);
 
-}
+        $cp = ChannelPartner::create([
+            'firm_name' => $request->firm_name,
+            'owner_name' => "NA",
+            'status'    => 0 // optional: mark as incomplete
+        ]);
+
+        return response()->json([
+            'success'   => true,
+            'id'        => $cp->id,
+            'firm_name' => $cp->firm_name
+        ]);
+    }
+
+}   

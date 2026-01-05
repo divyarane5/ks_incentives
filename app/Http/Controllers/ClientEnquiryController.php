@@ -15,7 +15,7 @@ use App\Traits\UserHierarchyTrait;
 class ClientEnquiryController extends Controller
 {
     use UserHierarchyTrait;
-    
+
     public function __construct()
     {
         $this->middleware('permission:client-enquiry-view', ['only' => ['index']]);
@@ -30,6 +30,12 @@ class ClientEnquiryController extends Controller
         if ($request->ajax()) {
 
             $user = auth()->user();
+            $accessibleUserIds = $this->getAccessibleUserIds($user);
+
+            $users = User::whereIn('id', $accessibleUserIds)
+                ->select('id', 'name')
+                ->get();
+
 
             // Base query
             $query = ClientEnquiry::with([
@@ -235,7 +241,9 @@ class ClientEnquiryController extends Controller
     public function create()
     {
         $channelPartners = ChannelPartner::all(['id', 'firm_name']);
-        $managers = User::all(['id', 'name']);
+         $managers =  \App\Models\User::whereHas('businessUnit', function ($query) {
+            $query->where('code', 'AI');
+        })->get(['id', 'name']);
         $projects = MandateProject::where('status', 1)->get(['id', 'project_name']);
         $sources = [
             'Reference','Channel Partner','Website','News','Paper Ad','Hoarding','Mailers/SMS',
@@ -264,7 +272,9 @@ class ClientEnquiryController extends Controller
         $clientEnquiry = ClientEnquiry::findOrFail($id);
 
         $channelPartners = ChannelPartner::all(['id', 'firm_name']);
-        $managers = User::all(['id', 'name']);
+         $managers =  \App\Models\User::whereHas('businessUnit', function ($query) {
+            $query->where('code', 'AI');
+        })->get(['id', 'name']);
         $sources = [
             'Reference','Channel Partner','Website','News','Paper Ad','Hoarding','Mailers/SMS',
             'Online Ad','Call Center','Walk in','Exhibition','Insert','Existing Client','Property Portal'
@@ -334,7 +344,10 @@ class ClientEnquiryController extends Controller
     // Show Step 1
     public function createPublicStep1()
     {
-        $managers = User::whereHas('roles', function($q){ /* optional filter */ })->get(['id','name']); // adjust as needed
+       // $managers = User::whereHas('roles', function($q){ /* optional filter */ })->get(['id','name']); // adjust as needed
+        $managers =  \App\Models\User::whereHas('businessUnit', function ($query) {
+            $query->where('code', 'AI');
+        })->get(['id', 'name']);
         $channelPartners = ChannelPartner::select('id','firm_name')->get();
         // If user already started, prefill from session
         $step1 = session('client_enquiry.step1', []);
@@ -347,13 +360,14 @@ class ClientEnquiryController extends Controller
     {
         $validated = $request->validate([
             'customer_name' => 'required|string|max:255',
+            'mandate_project_id' => 'required|string|max:255',
             'contact_no'    => 'required|string|max:20',
             'alternate_no'  => 'nullable|string|max:20',
             'email'         => 'nullable|email|max:255',
             'profession'    => 'nullable|string|max:255',
             'company_name'  => 'nullable|string|max:255',
             'address'       => 'nullable|string|max:1000',
-            'pin_code'      => 'nullable|string|max:20',
+            'pin_code'      => 'required|string|max:20',
             'residential_status' => 'nullable|in:India,NRI',
             'nri_country'   => 'nullable|required_if:residential_status,NRI|string|max:255',
             'property_type' => 'nullable|string|max:255',
@@ -380,7 +394,9 @@ class ClientEnquiryController extends Controller
             return redirect()->route('client-enquiry.public.create')
                 ->with('error', 'Please fill the first step before proceeding.');
         }
-        $managers = User::all(['id','name']);
+         $managers =  \App\Models\User::whereHas('businessUnit', function ($query) {
+            $query->where('code', 'AI');
+        })->get(['id', 'name']);
         $channelPartners = ChannelPartner::select('id','firm_name')->get();
 
         // allow prefill old values from session

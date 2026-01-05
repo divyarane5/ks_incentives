@@ -55,14 +55,20 @@
                                 {{-- Channel Partner --}}
                                 <div id="channel_section" style="display:none" class="col-md-6">
                                     <label class="form-label">Channel Partner</label>
-                                    <select name="channel_partner_id" class="form-select">
+                                    <select name="channel_partner_id" class="form-select" id="channel_partner_id">
                                         <option value="">Select</option>
+
                                         @foreach($channelPartners as $partner)
-                                            <option value="{{ $partner->id }}" {{ old('channel_partner_id', $step2['channel_partner_id'] ?? '') == $partner->id ? 'selected':'' }}>
+                                            <option value="{{ $partner->id }}"
+                                                {{ old('channel_partner_id', $step2['channel_partner_id'] ?? '') == $partner->id ? 'selected':'' }}>
                                                 {{ $partner->firm_name }}
                                             </option>
                                         @endforeach
+
+                                        {{-- ADD NEW --}}
+                                        <option value="add_new">+ Add New Channel Partner</option>
                                     </select>
+
                                 </div>
 
                                 <div id="sourcing_manager_section" style="display:none" class="col-md-6">
@@ -93,8 +99,84 @@
         </div>
     </div>
 </div>
+<!-- Add Channel Partner Modal -->
+<div class="modal fade" id="addChannelPartnerModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="quickAddCPForm">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Channel Partner</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Firm Name *</label>
+                        <input type="text" name="firm_name" class="form-control" required>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 @push('scripts')
+<script>
+    const cpSelect = document.getElementById('channel_partner_id');
+
+    cpSelect.addEventListener('change', function () {
+        if (this.value === 'add_new') {
+            this.value = '';
+            new bootstrap.Modal(document.getElementById('addChannelPartnerModal')).show();
+        }
+    });
+
+    document.getElementById('quickAddCPForm').addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const form = this;
+        const formData = new FormData(form);
+
+        fetch("{{ route('channel-partners.quick-store') }}", {
+            method: "POST",
+            headers: {
+                "X-CSRF-TOKEN": "{{ csrf_token() }}",
+                "Accept": "application/json"
+            },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Append new option
+                const opt = document.createElement('option');
+                opt.value = data.id;
+                opt.textContent = data.firm_name;
+                opt.selected = true;
+
+                cpSelect.insertBefore(opt, cpSelect.lastElementChild);
+                bootstrap.Modal.getInstance(
+                    document.getElementById('addChannelPartnerModal')
+                ).hide();
+
+                form.reset();
+            }
+        })
+        .catch(err => {
+            alert('Failed to add Channel Partner');
+        });
+    });
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function(){
     const source = document.getElementById('source_of_visit');

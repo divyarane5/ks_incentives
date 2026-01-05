@@ -133,6 +133,13 @@
                             </a>
                         </li>
                     @endif
+                    @if(canAccessModule('mandate-booking-view', ['AI']))
+                    <li class="menu-item {{ Request::segment(1) == 'mandate_bookings' ? 'active' : '' }}">
+                        <a href="{{ route('mandate_bookings.index') }}" class="menu-link">
+                            <div>Mandate Bookings</div>
+                        </a>
+                    </li>
+                    @endif
 
                 </ul>
             </li>

@@ -97,10 +97,19 @@
                                 </div>
 
                                 <div class="col-md-4 mb-3">
-                                    <label for="pin_code" class="form-label">Pin Code</label>
-                                    <input id="pin_code" type="number" name="pin_code" value="{{ old('pin_code', $step1['pin_code'] ?? '') }}" class="form-control" required>
+                                    <label for="pin_code" class="form-label">
+                                        Pin Code <span class="text-danger">*</span>
+                                    </label>
+
+                                    <input id="pin_code"
+                                        type="text"
+                                        name="pin_code"
+                                        value="{{ old('pin_code', $step1['pin_code'] ?? '') }}"
+                                        class="form-control @error('pin_code') is-invalid @enderror"
+                                        required>
+
                                     @error('pin_code')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                        <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
 

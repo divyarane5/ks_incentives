@@ -15,14 +15,14 @@ class StoreClientEnquiryRequest extends FormRequest
     {
         return [
             'customer_name'       => 'required|string|max:255',
-            'mandate_project_id' => 'nullable|exists:mandate_projects,id',
+            'mandate_project_id' => 'required|exists:mandate_projects,id',
             'contact_no'          => 'required|string|max:15',
             'alternate_no'        => 'nullable|string|max:15',
             'email'               => 'nullable|email|max:255',
             'profession'          => 'nullable|string|max:255',
             'company_name'        => 'nullable|string|max:255',
             'address'             => 'nullable|string|max:500',
-            'pin_code'            => 'nullable|string|max:10',
+            'pin_code'            => 'required|string|max:10',
             'residential_status'  => 'nullable|string|max:100',
             'nri_country'         => 'nullable|string|max:100',
             'channel_partner_id'  => 'nullable|exists:channel_partners,id',

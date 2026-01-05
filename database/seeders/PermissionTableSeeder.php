@@ -114,7 +114,12 @@ class PermissionTableSeeder extends Seeder
             'client-enquiry-view',
             'client-enquiry-create',
             'client-enquiry-edit',
-            'client-enquiry-delete'
+            'client-enquiry-delete',
+            'mandate-booking-view',
+            'mandate-booking-create',
+            'mandate-booking-edit',
+            'mandate-booking-approve'
+
          ];
 
          foreach ($permissions as $permission) {
