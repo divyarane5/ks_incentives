@@ -178,7 +178,7 @@ class ClientEnquiryController extends Controller
 
         // ================= NORMAL VIEW LOAD =================
         $channelPartners = ChannelPartner::select('id', 'firm_name')->get();
-        $users = User::select('id', 'name')->get();
+        //$users = User::select('id', 'name')->get();
         $projects = MandateProject::where('status', 1)->get(['id', 'project_name']);
         $sources = [
             'Reference','Channel Partner','Website','News','Paper Ad','Hoarding',
