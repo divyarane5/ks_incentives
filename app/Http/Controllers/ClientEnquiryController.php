@@ -30,11 +30,16 @@ class ClientEnquiryController extends Controller
         if ($request->ajax()) {
 
             $user = auth()->user();
-            $accessibleUserIds = $this->getAccessibleUserIds($user);
 
-            $users = User::whereIn('id', $accessibleUserIds)
-                ->select('id', 'name')
-                ->get();
+            if ($user->hasRole('Superadmin')) {
+                $users = User::select('id', 'name')->get();
+            } else {
+                $accessibleUserIds = $this->getAccessibleUserIds($user);
+
+                $users = User::whereIn('id', $accessibleUserIds)
+                    ->select('id', 'name')
+                    ->get();
+            }
 
 
             // Base query
