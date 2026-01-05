@@ -179,6 +179,17 @@ class ClientEnquiryController extends Controller
         // ================= NORMAL VIEW LOAD =================
         $channelPartners = ChannelPartner::select('id', 'firm_name')->get();
         //$users = User::select('id', 'name')->get();
+        $user = auth()->user();
+
+            if ($user->hasRole('Superadmin')) {
+                $users = User::select('id', 'name')->get();
+            } else {
+                $accessibleUserIds = $this->getAccessibleUserIds($user);
+
+                $users = User::whereIn('id', $accessibleUserIds)
+                    ->select('id', 'name')
+                    ->get();
+            }
         $projects = MandateProject::where('status', 1)->get(['id', 'project_name']);
         $sources = [
             'Reference','Channel Partner','Website','News','Paper Ad','Hoarding',
