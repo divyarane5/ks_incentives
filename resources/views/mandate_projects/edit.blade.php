@@ -47,6 +47,45 @@
                     </select>
                 </div>
             </div>
+            <div class="row mb-3">
+                <!-- Threshold Percentage -->
+                <div class="col-md-6">
+                    <label class="form-label">Threshold (%)</label>
+                    <input
+                        type="number"
+                        name="threshold_percentage"
+                        class="form-control"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        placeholder="e.g. 2.50"
+                        value="{{ old('threshold_percentage', $mandateProject->threshold_percentage) }}"
+                    >
+                </div>
+
+                <!-- Brokerage Criteria -->
+                <div class="col-md-6">
+                    <label class="form-label">Brokerage Criteria</label>
+                    <select name="brokerage_criteria" class="form-select">
+                        <option value="">Select</option>
+
+                        <option value="AV"
+                            {{ old('brokerage_criteria', $mandateProject->brokerage_criteria) == 'AV' ? 'selected' : '' }}>
+                            Agreement Value (UCV + OCC + CPC)
+                        </option>
+
+                        <option value="UCV_OCC"
+                            {{ old('brokerage_criteria', $mandateProject->brokerage_criteria) == 'UCV_OCC' ? 'selected' : '' }}>
+                            Unit Consideration + Other Charges
+                        </option>
+
+                        <option value="UCV_CPC"
+                            {{ old('brokerage_criteria', $mandateProject->brokerage_criteria) == 'UCV_CPC' ? 'selected' : '' }}>
+                            Unit Consideration + Car Park Charges
+                        </option>
+                    </select>
+                </div>
+            </div>
 
             <hr>
             <h5>Configurations</h5>

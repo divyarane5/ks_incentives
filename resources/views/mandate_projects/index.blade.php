@@ -62,6 +62,8 @@
                         <th>Location</th>
                         <th>RERA Number</th>
                         <th>Property Type</th>
+                        <th>Threshold %</th>
+                        <th>Brokerage Criteria</th>
                         <th>Configurations</th>
                         <th>Actions</th>
                     </tr>
@@ -93,6 +95,8 @@ $(document).ready(function () {
             { data: 'location', name: 'mandate_projects.location' },
             { data: 'rera_number', name: 'mandate_projects.rera_number' },
             { data: 'property_type', name: 'mandate_projects.property_type' },
+            { data: 'threshold_percentage', name: 'mandate_projects.threshold_percentage' },
+            { data: 'brokerage_criteria', name: 'mandate_projects.brokerage_criteria' },
             { data: 'configurations', name: 'configurations', orderable: false, searchable: false },
             { data: 'action', orderable: false, searchable: false },
         ],

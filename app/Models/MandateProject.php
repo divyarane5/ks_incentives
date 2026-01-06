@@ -18,6 +18,8 @@ class MandateProject extends Model
         'rera_number',
         'property_type',
         'business_unit_id',
+        'threshold_percentage',
+        'brokerage_criteria',
         'created_by',
     ];
 

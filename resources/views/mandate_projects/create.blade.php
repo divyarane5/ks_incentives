@@ -48,6 +48,43 @@
                     </select>
                 </div>
             </div>
+            <div class="row mb-3">
+                <div class="col-md-6">
+                    <label class="form-label">Threshold (%)</label>
+                    <input
+                        type="number"
+                        name="threshold_percentage"
+                        class="form-control"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        placeholder="Enter threshold percentage"
+                        value="{{ old('threshold_percentage') }}"
+                    >
+                </div>
+
+                <div class="col-md-6">
+                    <label class="form-label">Brokerage Criteria On *</label>
+                    <select name="brokerage_criteria" class="form-select" required>
+                        <option value="">Select Criteria</option>
+
+                        <option value="AV"
+                            {{ old('brokerage_criteria') == 'AV' ? 'selected' : '' }}>
+                            Agreement Value (UCV + OCC + CPC)
+                        </option>
+
+                        <option value="UCV_OCC"
+                            {{ old('brokerage_criteria') == 'UCV_OCC' ? 'selected' : '' }}>
+                            Unit Consideration Value + Other Charges
+                        </option>
+
+                        <option value="UCV_CPC"
+                            {{ old('brokerage_criteria') == 'UCV_CPC' ? 'selected' : '' }}>
+                            Unit Consideration Value + Car Park Charges
+                        </option>
+                    </select>
+                </div>
+            </div>
 
             <hr>
             <h5>Configurations</h5>

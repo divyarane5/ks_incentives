@@ -30,6 +30,8 @@ class MandateProjectController extends Controller
                 ->addColumn('location', fn($row) => $row->location)
                 ->addColumn('rera_number', fn($row) => $row->rera_number)
                 ->addColumn('property_type', fn($row) => ucfirst($row->property_type))
+                ->addColumn('threshold_percentage', fn($row) => $row->threshold_percentage)
+                ->addColumn('brokerage_criteria', fn($row) => $row->brokerage_criteria)
                 ->addColumn('configurations', function ($row) {
                     $html = '';
                     if ($row->configurations->count()) {
@@ -105,6 +107,8 @@ class MandateProjectController extends Controller
             'configurations.*' => 'required|string|max:255',
             'carpet_areas' => 'nullable|array',
             'carpet_areas.*' => 'nullable|numeric|min:0',
+            'threshold_percentage' => 'nullable|numeric|min:0|max:100',
+            'brokerage_criteria' => 'required|in:AV,UCV_OCC,UCV_CPC',
         ]);
 
         $alterra = BusinessUnit::where('name', 'Alterra India')->first();
@@ -119,6 +123,8 @@ class MandateProjectController extends Controller
                 'location' => $request->location,
                 'property_type' => $request->property_type,
                 'rera_number' => $request->rera_number,
+                'threshold_percentage' => $request->threshold_percentage,
+                'brokerage_criteria' => $request->brokerage_criteria,
                 'business_unit_id' => $alterra->id,
             ]);
 
@@ -161,6 +167,8 @@ class MandateProjectController extends Controller
             'configurations.*' => 'required|string|max:255',
             'carpet_areas' => 'nullable|array',
             'carpet_areas.*' => 'nullable|numeric|min:0',
+            'threshold_percentage' => 'nullable|numeric|min:0|max:100',
+            'brokerage_criteria' => 'required|in:AV,UCV_OCC,UCV_CPC',
         ]);
 
         DB::transaction(function () use ($request, $mandateProject) {
@@ -170,6 +178,8 @@ class MandateProjectController extends Controller
                 'location',
                 'property_type',
                 'rera_number',
+                'threshold_percentage',
+                'brokerage_criteria'
             ]));
 
             // Refresh configurations
