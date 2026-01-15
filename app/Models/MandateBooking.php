@@ -37,8 +37,40 @@ class MandateBooking extends Model
         'created_by',
     ];
 
+    public function project()
+    {
+        return $this->belongsTo(MandateProject::class, 'project_id');
+    }
+
+    public function finance()
+    {
+        return $this->hasOne(MandateBookingFinance::class, 'booking_id');
+    }
+
     public function applicants()
     {
-        return $this->hasMany(MandateBookingApplicant::class);
+        return $this->hasMany(MandateBookingApplicant::class, 'booking_id');
     }
+
+    public function payments()
+    {
+        return $this->hasMany(MandateBookingPayment::class, 'booking_id');
+    }
+
+    public function brokerage()
+    {
+        return $this->hasOne(MandateBookingBrokerage::class, 'booking_id');
+    }
+    public function channel_partner()
+    {
+        return $this->belongsTo(\App\Models\ChannelPartner::class, 'channel_partner_id');
+    }
+    public function signature()
+    {
+        return $this->hasOne(
+            \App\Models\MandateBookingSignature::class,
+            'booking_id'
+        );
+    }
+
 }

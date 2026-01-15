@@ -99,6 +99,7 @@ Route::group(['middleware' => 'auth'], function() {
     Route::post('channel-partners/quick-store',[App\Http\Controllers\ChannelPartnerController::class, 'quickStore'])->name('channel-partners.quick-store');
 
     Route::resource('mandate_bookings',App\Http\Controllers\MandateBookingController::class);
+    Route::post('mandate-bookings/update-status', [App\Http\Controllers\MandateBookingController::class, 'updateStatus'])->name('mandate_bookings.updateStatus');
 
     // For checking/storing new location (optional if you still use store-on-submit)
     Route::post('/locations/ajax-check-or-store', [App\Http\Controllers\LocationController::class, 'ajaxCheckOrStore'])->name('locations.ajaxCheckOrStore');

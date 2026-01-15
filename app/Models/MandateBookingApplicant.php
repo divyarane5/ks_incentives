@@ -13,4 +13,13 @@ class MandateBookingApplicant extends Model
     {
         return $this->belongsTo(MandateBooking::class);
     }
+
+    public function addresses()
+    {
+        return $this->hasMany(
+            MandateBookingAddress::class,
+            'applicant_id' // 👈 correct column name
+        );
+    }
+
 }
