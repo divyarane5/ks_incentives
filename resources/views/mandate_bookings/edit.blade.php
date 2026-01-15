@@ -492,6 +492,13 @@
                                     <div class="col-md-4 cash-proof-field {{ $payment->mode === 'Cash' ? '' : 'd-none' }}">
                                         <label class="form-label">CC Proof</label>
                                         <input type="file" name="payments[{{ $i }}][proof]" class="form-control">
+                                        @if(!empty($payment->proof))
+                                            <div class="mb-1">
+                                                <a href="{{ asset('storage/' . $payment->proof) }}" target="_blank">
+                                                    View Existing Proof
+                                                </a>
+                                            </div>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
@@ -557,7 +564,8 @@
                                     <input type="file"
                                         name="payments[__INDEX__][proof]"
                                         class="form-control">
-                                </div>
+                                        
+                                    </div>
                             </div>
                         </div>
                     </template>
