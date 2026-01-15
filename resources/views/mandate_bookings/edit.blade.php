@@ -439,13 +439,24 @@
                                         <select name="payments[{{ $i }}][mode]"
                                                 class="form-select payment-mode" required>
                                             <option value="">Select</option>
-                                            @foreach(['UPI','Card','NetBanking','Cheque','Cash'] as $mode)
-                                                <option value="{{ $mode }}" {{ $payment->mode === $mode ? 'selected' : '' }}>
-                                                    {{ $mode }}
-                                                </option>
-                                            @endforeach
+                                            @php
+                                            $modes = [
+                                                'UPI' => 'UPI',
+                                                'Card' => 'Card Swipe',
+                                                'NetBanking' => 'Net Banking',
+                                                'Cheque' => 'Cheque',
+                                                'Cash' => 'CC'
+                                            ];
+                                        @endphp
+
+                                        @foreach($modes as $value => $label)
+                                            <option value="{{ $value }}" {{ $payment->mode === $value ? 'selected' : '' }}>
+                                                {{ $label }}
+                                            </option>
+                                        @endforeach
                                         </select>
                                     </div>
+
 
                                     <div class="col-md-3">
                                         <label class="form-label">Payment Date</label>
@@ -464,25 +475,23 @@
                                 </div>
 
                                 <div class="row">
-                                    <div class="col-md-4 transaction-field {{ in_array($payment->mode, ['UPI','CARD','NET_BANKING']) ? '' : 'd-none' }}">
+                                    <div class="col-md-4 transaction-field {{ in_array($payment->mode, ['UPI','Card','NetBanking']) ? '' : 'd-none' }}">
                                         <label class="form-label">Transaction ID</label>
                                         <input name="payments[{{ $i }}][transaction_id]"
                                             value="{{ $payment->transaction_id }}"
                                             class="form-control">
                                     </div>
 
-                                    <div class="col-md-4 cheque-field {{ $payment->mode === 'CHEQUE' ? '' : 'd-none' }}">
+                                    <div class="col-md-4 cheque-field {{ $payment->mode === 'Cheque' ? '' : 'd-none' }}">
                                         <label class="form-label">Cheque Number</label>
                                         <input name="payments[{{ $i }}][cheque_number]"
                                             value="{{ $payment->cheque_number }}"
                                             class="form-control">
                                     </div>
 
-                                    <div class="col-md-4 cash-proof-field {{ $payment->mode === 'CC' ? '' : 'd-none' }}">
-                                        <label class="form-label">Cash / CC Proof</label>
-                                        <input name="payments[{{ $i }}][cash_proof]"
-                                            value="{{ $payment->cash_proof ?? '' }}"
-                                            class="form-control">
+                                    <div class="col-md-4 cash-proof-field {{ $payment->mode === 'Cash' ? '' : 'd-none' }}">
+                                        <label class="form-label">CC Proof</label>
+                                        <input type="file" name="payments[{{ $i }}][proof]" class="form-control">
                                     </div>
                                 </div>
                             </div>
@@ -509,10 +518,10 @@
                                             class="form-select payment-mode" required>
                                         <option value="">Select</option>
                                         <option value="UPI">UPI</option>
-                                        <option value="CARD">CARD</option>
-                                        <option value="NET_BANKING">NET BANKING</option>
-                                        <option value="CHEQUE">CHEQUE</option>
-                                        <option value="CC">CC</option>
+                                        <option value="Card">Card Swipe</option>
+                                        <option value="NetBanking">Net Banking</option>
+                                        <option value="Cheque">Cheque</option>
+                                        <option value="Cash">CC</option>
                                     </select>
                                 </div>
 
@@ -545,7 +554,8 @@
 
                                 <div class="col-md-4 cash-proof-field d-none">
                                     <label class="form-label">CC Proof</label>
-                                    <input name="payments[__INDEX__][cash_proof]"
+                                    <input type="file"
+                                        name="payments[__INDEX__][proof]"
                                         class="form-control">
                                 </div>
                             </div>

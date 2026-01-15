@@ -230,10 +230,10 @@
                                     <select name="payments[0][mode]" class="form-select payment-mode">
                                         <option value="">Select</option>
                                         <option value="UPI">UPI</option>
-                                        <option value="CARD">Card Swipe</option>
-                                        <option value="NET_BANKING">Net Banking</option>
-                                        <option value="CHEQUE">Cheque</option>
-                                        <option value="CC">CC</option>
+                                        <option value="Card">Card Swipe</option>
+                                        <option value="NetBanking">Net Banking</option>
+                                        <option value="Cheque">Cheque</option>
+                                        <option value="Cash">CC</option>
                                     </select>
                                 </div>
                                 <div class="col-md-3">
@@ -440,15 +440,15 @@ document.addEventListener('DOMContentLoaded', function () {
         row.querySelector('.cheque-field')?.classList.add('d-none');
         row.querySelector('.cash-proof-field')?.classList.add('d-none');
 
-        if (['UPI', 'CARD', 'NET_BANKING'].includes(mode)) {
+        if (['UPI', 'Card', 'NetBanking'].includes(mode)) {
             row.querySelector('.transaction-field')?.classList.remove('d-none');
         }
 
-        if (mode === 'CHEQUE') {
+        if (mode === 'Cheque') {
             row.querySelector('.cheque-field')?.classList.remove('d-none');
         }
 
-        if (mode === 'CC') {
+        if (mode === 'Cash') {
             row.querySelector('.cash-proof-field')?.classList.remove('d-none');
         }
     }

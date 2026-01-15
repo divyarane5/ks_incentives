@@ -239,6 +239,8 @@ class MandateBookingController extends Controller
                 'payments' => 'required|array|min:1',
                 'payments.*.amount' => 'required|numeric|min:1',
                 'payments.*.mode'   => 'required|string',
+                'payments.*.proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
+
             ]);
 
             /**
@@ -512,6 +514,7 @@ class MandateBookingController extends Controller
                 'payments' => 'required|array|min:1',
                 'payments.*.amount' => 'required|numeric|min:1',
                 'payments.*.mode'   => 'required|in:UPI,Card,NetBanking,Cheque,Cash',
+                'payments.*.proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             ]);
 
             if ($request->booking_source === 'Channel Partner') {
@@ -526,10 +529,10 @@ class MandateBookingController extends Controller
             }
 
             foreach ($request->payments as $i => $payment) {
-                if (in_array($payment['mode'], ['UPI','CARD','NET_BANKING'])) {
+                if (in_array($payment['mode'], ['UPI', 'Card', 'NetBanking'])) {
                     $request->validate(["payments.$i.transaction_id" => 'required|string']);
                 }
-                if ($payment['mode'] === 'CHEQUE') {
+                if ($payment['mode'] === 'Cheque') {
                     $request->validate(["payments.$i.cheque_number" => 'required|string']);
                 }
             }
@@ -642,22 +645,37 @@ class MandateBookingController extends Controller
 
             $requestPaymentIds = [];
 
-            foreach ($request->payments as $payment) {
+            foreach ($request->payments as $i => $payment) {
+
+                $proofPath = null;
+
+                // ✅ HANDLE FILE UPLOAD
+                if ($request->hasFile("payments.$i.proof")) {
+                    $proofPath = $request->file("payments.$i.proof")
+                        ->store('payment_proofs', 'public');
+                }
 
                 // UPDATE existing payment
                 if (!empty($payment['id'])) {
 
+                    $updateData = [
+                        'amount' => $payment['amount'],
+                        'mode' => $payment['mode'],
+                        'date' => $payment['date'] ?? null,
+                        'bank_name' => $payment['bank_name'] ?? null,
+                        'transaction_id' => $payment['transaction_id'] ?? null,
+                        'cheque_number' => $payment['cheque_number'] ?? null,
+                        'updated_at' => now(),
+                    ];
+
+                    // ✅ update proof ONLY if new file uploaded
+                    if ($proofPath) {
+                        $updateData['proof'] = $proofPath;
+                    }
+
                     DB::table('mandate_booking_payments')
                         ->where('id', $payment['id'])
-                        ->update([
-                            'amount' => $payment['amount'],
-                            'mode' => $payment['mode'],
-                            'date' => $payment['date'] ?? null,
-                            'bank_name' => $payment['bank_name'] ?? null,
-                            'transaction_id' => $payment['transaction_id'] ?? null,
-                            'cheque_number' => $payment['cheque_number'] ?? null,
-                            'updated_at' => now(),
-                        ]);
+                        ->update($updateData);
 
                     $requestPaymentIds[] = $payment['id'];
 
@@ -671,6 +689,7 @@ class MandateBookingController extends Controller
                         'bank_name' => $payment['bank_name'] ?? null,
                         'transaction_id' => $payment['transaction_id'] ?? null,
                         'cheque_number' => $payment['cheque_number'] ?? null,
+                        'proof' => $proofPath, // ✅ saved here
                         'created_at' => now(),
                         'updated_at' => now(),
                     ]);
