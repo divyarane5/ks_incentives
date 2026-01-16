@@ -7,11 +7,6 @@ use Spatie\Permission\Models\Permission;
 
 class PermissionTableSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     *
-     * @return void
-     */
     public function run()
     {
         $permissions = [
@@ -59,6 +54,7 @@ class PermissionTableSeeder extends Seeder
             'booking-edit',
             'booking-create',
             'booking-delete',
+
             // 'expense-view',
             // 'expense-create',
             // 'expense-edit',
@@ -75,11 +71,13 @@ class PermissionTableSeeder extends Seeder
             // 'configuration-create',
             // 'configuration-edit',
             // 'configuration-delete',
-             'indent-view-all',
+
+            'indent-view-all',
             'indent-view-own',
             'indent-create',
             'indent-edit',
             'indent-delete',
+
             // 'indent-payment-conclude',
             // 'reimbursement-view-all',
             // 'reimbursement-view-own',
@@ -103,27 +101,32 @@ class PermissionTableSeeder extends Seeder
             // 'project-offer-edit',
             // 'project-offer-send-image-email',
             // 'project-offer-send-pdf-email',
+
             'mandate_project-view',
             'mandate_project-create',
             'mandate_project-edit',
             'mandate_project-delete',
+
             'channel-partner-view',
             'channel-partner-create',
             'channel-partner-edit',
             'channel-partner-delete',
+
             'client-enquiry-view',
             'client-enquiry-create',
             'client-enquiry-edit',
             'client-enquiry-delete',
+
             'mandate-booking-view',
             'mandate-booking-create',
             'mandate-booking-edit',
             'mandate-booking-approve'
+        ];
 
-         ];
-
-         foreach ($permissions as $permission) {
-              Permission::create(['name' => $permission]);
-         }
+        foreach ($permissions as $permission) {
+            Permission::firstOrCreate(
+                ['name' => $permission, 'guard_name' => 'web']
+            );
+        }
     }
 }
