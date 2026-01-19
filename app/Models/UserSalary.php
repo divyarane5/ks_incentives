@@ -11,21 +11,29 @@ class UserSalary extends Model
 
     protected $fillable = [
         'user_id',
-        'current_ctc',
-        'monthly_basic',
-        'monthly_hra',
-        'special_allowance',
-        'conveyance_allowance',
-        'medical_reimbursement',
-        'professional_tax',
-        'pf_employer',
-        'pf_employee',
-        'net_deductions',
-        'net_salary',
+        'financial_year',
+        'month',
+        'credited_amount',
+        'credited_on',
+        'remarks',
+        'created_by'
     ];
+
+    protected $casts = [
+        'credited_on' => 'date',
+    ];
+
+    /* =========================
+     | Relationships
+     ========================= */
 
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 }

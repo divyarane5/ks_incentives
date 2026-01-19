@@ -231,6 +231,7 @@
                                             <option value="Pending">Pending</option>
                                             <option value="In Progress">In Progress</option>
                                             <option value="Completed">Completed</option>
+                                            <option value="Closed">Closed</option>
                                         </select>
                                     </div>
                                 </div>

@@ -102,7 +102,12 @@ class UserController extends Controller
                                         <i class="bx bx-list-ul me-1"></i> Indent Configuration
                                     </a>';
                     }
-
+                    // ✅ NEW: Add Salary / View Salary
+                    if(auth()->user()->can('salary-view')) {
+                        $actions .= '<a class="dropdown-item" href="'.route('users.salary.index', $row->id).'">
+                            <i class="bx bx-wallet me-1"></i> Salary
+                        </a>';
+                    }
                     return '<div class="dropdown">
                                 <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                                     <i class="bx bx-dots-vertical-rounded"></i>

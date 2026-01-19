@@ -95,4 +95,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(ChannelPartner::class, 'sourcing_manager');
     }
+
+    public function salaries()
+    {
+        return $this->hasMany(UserSalary::class);
+    }
+
 }
