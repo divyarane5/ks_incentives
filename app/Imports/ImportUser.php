@@ -24,72 +24,51 @@ class ImportUser implements ToCollection, WithHeadingRow
 
     public function collection(Collection $rows)
     {
-        foreach ($rows as $row) {
+        foreach ($rows as $index => $row) {
+            try {
 
-            /**
-             * 🔹 FORCE ALL EXPECTED KEYS TO EXIST
-             * This fixes missing trailing Excel columns
-             */
-            $row = collect([
-                'exit_status' => null,
-                'reason_for_leaving' => null,
-                'fnf_status' => null,
-                'current_ctc' => null,
-                'monthly_basic' => null,
-                'monthly_hra' => null,
-                'special_allowance' => null,
-                'conveyance_allowance' => null,
-                'medical_reimbursement' => null,
-                'professional_tax' => null,
-                'pf_employer' => null,
-                'pf_employee' => null,
-                'net_deductions' => null,
-                'net_salary' => null,
-                'additional_comments' => null,
-            ])->merge($row);
+                // Force expected keys (you already did this correctly)
+                $row = collect([
+                    'exit_status' => null,
+                    'reason_for_leaving' => null,
+                    'fnf_status' => null,
+                ])->merge($row);
 
-            /**
-             * 🔎 DEBUG — CHECK WHAT EXCEL IS ACTUALLY SENDING
-             */
-            // dd($row->toArray()); // <-- CHECK exit_status, reason_for_leaving, fnf_status
-            // exit;
+                if (empty($row['employee_code'])) {
+                    continue;
+                }
 
-            // Skip empty employee_code
-            if (empty($row['employee_code'])) {
-                continue;
+                User::updateOrCreate(
+                    ['employee_code' => $row['employee_code']],
+                    [
+                        'entity' => $row['entity'],
+                        'title' => $row['title'],
+                        'first_name' => $row['first_name'],
+                        'middle_name' => $row['middle_name'] ?? null,
+                        'last_name' => $row['last_name'] ?? null,
+
+                        'exit_status' => $row['exit_status'],
+                        'reason_for_leaving' => $row['reason_for_leaving'],
+                        'fnf_status' => $row['fnf_status'],
+                    ]
+                );
+
+                // ✅ COUNT SUCCESS
+                $this->successCount++;
+
+            } catch (\Throwable $e) {
+
+                // ✅ COLLECT ERRORS (DON'T STOP IMPORT)
+                $this->errors[] = "Row " . ($index + 2) . ": " . $e->getMessage();
+
+                \Log::error('Import row failed', [
+                    'row' => $row,
+                    'error' => $e->getMessage()
+                ]);
             }
-
-            // -----------------------------------------
-            // BELOW CODE WILL RUN AFTER YOU REMOVE dd()
-            // -----------------------------------------
-
-            $department = Department::firstOrCreate(['name' => $row['department'] ?? '']);
-            $designation = Designation::firstOrCreate(['name' => $row['designation'] ?? '']);
-            $location = Location::firstOrCreate(
-                ['city' => $row['work_location'] ?? ''],
-                ['created_by' => auth()->id() ?? 1]
-            );
-            $businessUnit = BusinessUnit::firstOrCreate([
-                'name' => $row['business_unit'] ?? ''
-            ]);
-            $role = Role::firstOrCreate(['name' => $row['role'] ?? 'Employee']);
-
-            User::updateOrCreate(
-                ['employee_code' => $row['employee_code']],
-                [
-                    'entity' => $row['entity'],
-                    'title' => $row['title'],
-                    'first_name' => $row['first_name'],
-                    'middle_name' => $row['middle_name'] ?? null,
-                    'last_name' => $row['last_name'] ?? null,
-
-                    'exit_status' => $row['exit_status'],
-                    'reason_for_leaving' => $row['reason_for_leaving'],
-                    'fnf_status' => $row['fnf_status'],
-                ]
-            );
         }
     }
+
 
 
     /**

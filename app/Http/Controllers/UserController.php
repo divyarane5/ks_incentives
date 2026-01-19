@@ -333,12 +333,53 @@ class UserController extends Controller
         return redirect()->route('account')->with('success', 'Profile Updated Successfully');
     }
 
+    // public function importUser()
+    // {
+    //   //  echo "dd"; exit;
+    //     Excel::import(new ImportUser, storage_path('app/employees.xlsx'));
+    //     Excel::import(new UpdateUserReporting, storage_path('app/employees.xlsx'));
+    // }
     public function importUser()
     {
-      //  echo "dd"; exit;
-        Excel::import(new ImportUser, storage_path('app/employees.xlsx'));
-        Excel::import(new UpdateUserReporting, storage_path('app/employees.xlsx'));
+        try {
+
+            $import = new ImportUser();
+
+            Excel::import($import, storage_path('app/employees.xlsx'));
+
+            // Reporting manager import
+            Excel::import(new UpdateUserReporting, storage_path('app/employees.xlsx'));
+
+            // Partial success
+            if (!empty($import->errors)) {
+                return redirect()->back()->with([
+                    'warning' => 'Import completed with errors',
+                    'import_errors' => $import->errors,
+                    'success_count' => $import->successCount
+                ]);
+            }
+
+            // Full success
+            // return redirect()->back()->with(
+            //     'success',
+            //     "Import successful. {$import->successCount} users imported."
+            // );
+            return response('Users imported successfully.');
+
+
+        } catch (\Throwable $e) {
+
+            \Log::error('User Import Failed', [
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()->back()->with(
+                'error',
+                'Import failed: ' . $e->getMessage()
+            );
+        }
     }
+
     public function show($id)
     {
         $user = User::find($id);
