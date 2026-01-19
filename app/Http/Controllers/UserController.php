@@ -341,6 +341,9 @@ class UserController extends Controller
     // }
     public function importUser()
     {
+        dd('method reached');
+        dd("Users imported successfully. {$import->successCount}");   
+        exit;
         try {
 
             $import = new ImportUser();
