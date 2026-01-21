@@ -278,7 +278,10 @@ class UserController extends Controller
 
     public function update(UserRequest $request, $id)
     {
+        
+       // print_r($request->all); exit;
         $user = User::findOrFail($id);
+       
         $this->userRepository->updateUser($user, $request);
 
         // ✅ Handle photo upload separately

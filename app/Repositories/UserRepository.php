@@ -95,20 +95,33 @@ class UserRepository implements UserRepositoryInterface
         $user->fnf_status = $request->fnf_status;
         $user->business_unit_id = $request->business_unit_id;
         
-        // ✅ Salary Calculation
+        // ✅ Salary Calculation (MONTHLY CTC – matches frontend JS)
+
         $ctc = floatval($request->current_ctc ?? $user->current_ctc ?? 0);
-        $monthly = $ctc / 12;
         $user->current_ctc = $ctc;
-        $user->monthly_basic = $monthly * 0.5;
-        $user->monthly_hra = $user->monthly_basic * 0.5;
-        $user->special_allowance = $monthly * 0.1;
-        $user->conveyance_allowance = $monthly * 0.1;
-        $user->medical_reimbursement = $monthly * 0.05;
-        $user->pf_employer = 1800;
-        $user->pf_employee = 1800;
+
+        // Earnings
+        $user->monthly_basic = $ctc * 0.50;
+        $user->monthly_hra = $user->monthly_basic * 0.50;
+        $user->special_allowance = $ctc * 0.10;
+        $user->conveyance_allowance = $ctc * 0.10;
+        $user->medical_reimbursement = $ctc * 0.05;
+
+        // PF logic
+        $pfActive = ($request->pf_status ?? $user->pf_status) == 1;
+
+        $user->pf_employee = $pfActive ? 1800 : 0;
+        $user->pf_employer = $pfActive ? 1800 : 0;
+
+        // Professional Tax
         $user->professional_tax = 200;
-        $user->net_deductions = $user->pf_employer + $user->pf_employee + $user->professional_tax;
-        $user->net_salary = $monthly - $user->net_deductions;
+
+        // Deductions (employee-side only, same as JS)
+        $user->net_deductions = $user->pf_employee + $user->professional_tax;
+
+        // Net Salary
+        $user->net_salary = $ctc - $user->net_deductions;
+
 
         // ✅ Statutory & Banking
         // ✅ Convert pf_status (Active/Yes/1 → 1, others → 0)

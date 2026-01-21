@@ -3,6 +3,7 @@
 @section('content')
 <div class="container-xxl container-p-y">
 
+    {{-- HEADER --}}
     <h4 class="fw-bold mb-3">
         Salary – {{ $user->name }} (FY {{ $fy }})
     </h4>
@@ -36,13 +37,25 @@
         @csrf
         <input type="hidden" name="financial_year" value="{{ $fy }}">
 
+        @php
+            $pt = $user->professional_tax ?? 0;
+            $pfEmployee = $user->pf_employee ?? 0;
+            $pfEmployer = $user->pf_employer ?? 0;
+            $deductions = $pt + $pfEmployee + $pfEmployer;
+            $netSalary = $user->net_salary ?? 0;
+            $ctcGross = ($user->current_ctc ?? 0) + $pfEmployer;
+        @endphp
+
         <div class="card">
             <div class="table-responsive">
                 <table class="table table-striped align-middle mb-0">
                     <thead>
                         <tr>
                             <th>Month</th>
-                            <th width="180">Salary</th>
+                            <th width="160">Salary Credited</th>
+                            <th width="150">Net Salary</th>
+                            <th width="170">Deductions</th>
+                            <th width="150">CTC / Gross</th>
                             <th>Remarks</th>
                             <th width="120">Status</th>
                         </tr>
@@ -53,22 +66,44 @@
                         <tr>
                             <td>{{ $m['label'] }}</td>
 
+                            {{-- Salary Credited --}}
                             <td>
                                 <input type="number"
-                                       class="form-control salary-input"
-                                       name="salary[{{ $m['year'] }}][{{ $m['month'] }}][amount]"
-                                       value="{{ $m['amount'] }}"
-                                       {{ !$m['enabled'] ? 'disabled' : '' }}>
+                                    class="form-control salary-input"
+                                    name="salary[{{ $m['year'] }}][{{ $m['month'] }}][amount]"
+                                    value="{{ $m['amount'] }}"
+                                    {{ !$m['enabled'] ? 'disabled' : '' }}>
                             </td>
 
+                            {{-- Net Salary --}}
+                            <td>
+                                ₹ {{ number_format($netSalary, 2) }}
+                            </td>
+
+                            {{-- Deductions --}}
+                            <td>
+                                ₹ {{ number_format($deductions, 2) }}
+                                <br>
+                                <small class="text-muted">
+                                    PT {{ $pt }} + PF {{ $pfEmployee + $pfEmployer }}
+                                </small>
+                            </td>
+
+                            {{-- CTC / Gross --}}
+                            <td>
+                                ₹ {{ number_format($ctcGross, 2) }}
+                            </td>
+
+                            {{-- Remarks --}}
                             <td>
                                 <input type="text"
-                                       class="form-control"
-                                       name="salary[{{ $m['year'] }}][{{ $m['month'] }}][remarks]"
-                                       value="{{ $m['remarks'] }}"
-                                       {{ !$m['enabled'] ? 'disabled' : '' }}>
+                                class="form-control"
+                                name="salary[{{ $m['year'] }}][{{ $m['month'] }}][remarks]"
+                                value="{{ $m['remarks'] }}"
+                                {{ !$m['enabled'] ? 'disabled' : '' }}>
                             </td>
 
+                            {{-- Status --}}
                             <td>
                                 @if(!$m['enabled'])
                                     <span class="badge bg-secondary">Not Joined</span>
@@ -85,7 +120,7 @@
                     <tfoot>
                         <tr class="fw-bold">
                             <th>Total</th>
-                            <th colspan="3">
+                            <th colspan="6">
                                 ₹ <span id="salary-total">{{ number_format($total, 2) }}</span>
                             </th>
                         </tr>

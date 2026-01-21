@@ -385,16 +385,16 @@
         if (ctc <= 0) return;
 
         const monthly = ctc / 12;
-        const basic = monthly * 0.5;
+        const basic = ctc * 0.5;
         const hra = basic * 0.5;
-        const special = monthly * 0.1;
-        const convey = monthly * 0.1;
-        const medical = monthly * 0.05;
+        const special = ctc * 0.1;
+        const convey = ctc * 0.1;
+        const medical = ctc * 0.05;
         const pfEmployer = 1800;
         const pfEmployee = 1800;
         const profTax = 200;
         const deductions = pfEmployee + pfEmployer + profTax;
-        const net = monthly - deductions;
+        const net = ctc - deductions;
 
         document.getElementById('monthly_basic').value = basic.toFixed(2);
         document.getElementById('monthly_hra').value = hra.toFixed(2);

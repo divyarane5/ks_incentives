@@ -14,33 +14,37 @@ class UserSalaryController extends Controller
     public function index(User $user, Request $request)
     {
         $fy = $request->get('fy', $this->currentFY());
-
         [$startYear, $endYear] = explode('-', $fy);
 
         $fyStart = Carbon::create($startYear, 4, 1);
-        $fyEnd   = Carbon::create(2000 + $endYear, 3, 31);
+        $fyEnd   = Carbon::create($startYear + 1, 3, 31);
 
         $joining = Carbon::parse($user->joining_date)->startOfMonth();
-
-        // salary starts from later of joining date or FY start
         $salaryStart = $joining->greaterThan($fyStart) ? $joining : $fyStart;
 
-        // fetch existing salaries
+        // ✅ Fetch FY data
         $existing = UserSalary::where('user_id', $user->id)
-            ->where('financial_year', $fy)
+            ->whereIn('financial_year', [$startYear, $startYear + 1])
             ->get()
-            ->keyBy(fn ($s) => $s->year.'-'.$s->month);
-
+            ->keyBy(fn ($s) => $s->financial_year.'-'.$s->month);
+        // echo "<pre>";
+        // echo count($existing); exit;
         $months = [];
         $cursor = $fyStart->copy();
 
         while ($cursor <= $fyEnd) {
-            $key = $cursor->year.'-'.$cursor->month;
+
+            // 🔑 Jan–Mar belong to next calendar year
+            $salaryYear = $cursor->month <= 3
+                ? $startYear + 1
+                : $startYear;
+
+            $key = $salaryYear . '-' . $cursor->month;
 
             $months[] = [
                 'label'   => $cursor->format('M Y'),
                 'month'   => $cursor->month,
-                'year'    => $cursor->year,
+                'year'    => $salaryYear, // IMPORTANT
                 'enabled' => $cursor >= $salaryStart,
                 'amount'  => $existing[$key]->credited_amount ?? null,
                 'remarks' => $existing[$key]->remarks ?? null,
@@ -57,6 +61,8 @@ class UserSalaryController extends Controller
         ));
     }
 
+
+
     private function currentFY()
     {
         $today = now();
@@ -69,32 +75,35 @@ class UserSalaryController extends Controller
     }
 
     public function store(User $user, Request $request)
-    {
-        foreach ($request->salary ?? [] as $months) {
-            foreach ($months as $month => $data) {
+{
+    foreach ($request->salary ?? [] as $year => $months) {
 
-                if (empty($data['amount'])) {
-                    continue;
-                }
+        foreach ($months as $month => $data) {
 
-                UserSalary::updateOrCreate(
-                    [
-                        'user_id'        => $user->id,
-                        'financial_year' => $request->financial_year,
-                        'month'          => $month,
-                    ],
-                    [
-                        'credited_amount' => $data['amount'],
-                        'remarks'         => $data['remarks'] ?? null,
-                        'credited_on'     => now(),
-                        'created_by'      => auth()->id(),
-                    ]
-                );
+            if (empty($data['amount'])) {
+                continue;
             }
-        }
 
-        return back()->with('success', 'Salary saved successfully');
+            UserSalary::updateOrCreate(
+                [
+                    'user_id'        => $user->id,
+                    'financial_year' => (int) $year,   // ✅ calendar year
+                    'month'          => (int) $month,
+                ],
+                [
+                    'credited_amount' => $data['amount'],
+                    'remarks'         => $data['remarks'] ?? null,
+                    'credited_on'     => now(),
+                    'created_by'      => auth()->id(),
+                ]
+            );
+        }
     }
+
+    return back()->with('success', 'Salary saved successfully');
+}
+
+
 
 
 }

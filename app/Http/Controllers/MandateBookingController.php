@@ -221,9 +221,9 @@ class MandateBookingController extends Controller
 
         try {
 
-            /**
-             * STEP 1: VALIDATION
-             */
+            /* =========================
+            * STEP 1: VALIDATION
+            * ========================= */
             $validated = $request->validate([
                 'booking_date' => 'required|date',
                 'project_id'   => 'required|exists:mandate_projects,id',
@@ -236,17 +236,16 @@ class MandateBookingController extends Controller
                 'finance.unit_value' => 'required|numeric|min:1',
 
                 // Payments
-                'payments' => 'required|array|min:1',
-                'payments.*.amount' => 'required|numeric|min:1',
-                'payments.*.mode'   => 'required|string',
-                'payments.*.proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-
+                'payments'            => 'required|array|min:1',
+                'payments.*.mode'     => 'required|string',
+                'payments.*.amount'   => 'required|numeric|min:1',
+                'payments.*.proof'    => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             ]);
 
-            /**
-             * STEP 2: BOOKING
-             */
-            $bookingFormPath = $request->hasFile('booking_form_file')
+            /* =========================
+            * STEP 2: BOOKING
+            * ========================= */
+            $bookingFormPath = $request->file('booking_form_file')
                 ? $request->file('booking_form_file')->store('booking_forms', 'public')
                 : null;
 
@@ -273,14 +272,12 @@ class MandateBookingController extends Controller
                 'updated_at' => now(),
             ]);
 
-            /**
-             * STEP 3: APPLICANTS
-             */
-            foreach ($request->applicants ?? [] as $applicant) {
+            /* =========================
+            * STEP 3: APPLICANTS
+            * ========================= */
+            foreach ($request->applicants as $applicant) {
 
-                if (empty($applicant['first_name'])) {
-                    continue;
-                }
+                if (empty($applicant['first_name'])) continue;
 
                 $panPath = isset($applicant['pan_file']) && $applicant['pan_file'] instanceof \Illuminate\Http\UploadedFile
                     ? $applicant['pan_file']->store('kyc', 'public')
@@ -321,9 +318,9 @@ class MandateBookingController extends Controller
                 }
             }
 
-            /**
-             * STEP 4: FINANCE
-             */
+            /* =========================
+            * STEP 4: FINANCE
+            * ========================= */
             $finance = $request->finance;
 
             $agreementValue =
@@ -343,12 +340,10 @@ class MandateBookingController extends Controller
                 'updated_at' => now(),
             ]);
 
-            /**
-             * STEP 5: PAYMENTS
-             */
-            foreach ($request->payments ?? [] as $payment) {
-
-                if (empty($payment['amount'])) continue;
+            /* =========================
+            * STEP 5: PAYMENTS
+            * ========================= */
+            foreach ($request->payments as $payment) {
 
                 $proofPath = isset($payment['proof']) && $payment['proof'] instanceof \Illuminate\Http\UploadedFile
                     ? $payment['proof']->store('payment_proofs', 'public')
@@ -368,68 +363,18 @@ class MandateBookingController extends Controller
                 ]);
             }
 
-            /**
-             * STEP 6: SIGNATURES
-             */
-            DB::table('mandate_booking_signatures')->insert([
-                'booking_id' => $bookingId,
-                'developer_consent_file' => $request->file('developer_consent_file')?->store('signature', 'public'),
-                'mandate_consent_file'   => $request->file('mandate_consent_file')?->store('signature', 'public'),
-                'cp_consent_file'        => $request->file('cp_consent_file')?->store('signature', 'public'),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            /**
-             * STEP 7: BROKERAGE
-             */
-            $project = DB::table('mandate_projects')->where('id', $request->project_id)->first();
-            $finance = DB::table('mandate_booking_finances')->where('booking_id', $bookingId)->first();
-
-            $totalPaid = DB::table('mandate_booking_payments')
-                ->where('booking_id', $bookingId)
-                ->sum('amount');
-
-            $paymentPercent = $agreementValue > 0
-                ? round(($totalPaid / $agreementValue) * 100, 2)
-                : 0;
-
-            $isEligible = false;
-            $scenario = null;
-            $reason = 'Not eligible yet';
-
-            if ($paymentPercent >= $project->threshold_percentage && $finance->is_registered) {
-                $isEligible = true;
-                $scenario = 'SCENARIO_1';
-                $reason = 'Threshold payment completed and registration done.';
-            } elseif ($paymentPercent >= $finance->current_due_percent) {
-                $isEligible = true;
-                $scenario = 'SCENARIO_2';
-                $reason = 'Payment completed up to current due percentage.';
-            }
-
-            DB::table('mandate_booking_brokerages')->insert([
-                'booking_id' => $bookingId,
-                'agreement_value' => $agreementValue,
-                'total_paid' => $totalPaid,
-                'payment_percent' => $paymentPercent,
-                'threshold_percentage' => $project->threshold_percentage,
-                'current_due_percentage' => $finance->current_due_percent,
-                'is_registered' => $finance->is_registered,
-                'is_eligible' => $isEligible,
-                'eligibility_scenario' => $scenario,
-                'eligibility_reason' => $reason,
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
             DB::commit();
 
             return redirect()
                 ->route('mandate_bookings.index')
                 ->with('success', 'Booking created successfully');
 
-        } catch (\Throwable $e) {
+        }
+        catch (\Illuminate\Validation\ValidationException $e) {
+            // 🔥 DO NOT swallow validation errors
+            throw $e;
+        }
+        catch (\Throwable $e) {
 
             DB::rollBack();
 
@@ -438,6 +383,7 @@ class MandateBookingController extends Controller
                 ->withErrors(['error' => $e->getMessage()]);
         }
     }
+
 
 
 

@@ -334,12 +334,11 @@
 
                                 <div class="mb-3 col-md-6">
                                     <label class="form-label">PF Status</label>
-                                    <select name="pf_status" class="form-select @error('pf_status') is-invalid @enderror">
+                                    <select name="pf_status" id="pf_status" class="form-select">
                                         <option value="">Select Status</option>
-                                        <option value="Active" {{ old('pf_status', $user->pf_status) == 'Active' ? 'selected' : '' }}>Active</option>
-                                        <option value="Inactive" {{ old('pf_status', $user->pf_status) == 'Inactive' ? 'selected' : '' }}>Inactive</option>
+                                        <option value="1" {{ old('pf_status', $user->pf_status) == 1 ? 'selected' : '' }}>Active</option>
+                                        <option value="0" {{ old('pf_status', $user->pf_status) == 0 ? 'selected' : '' }}>Inactive</option>
                                     </select>
-                                    @error('pf_status') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <div class="mb-3 col-md-6">
@@ -461,30 +460,48 @@
 @section('script')
 <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
 <script>
-    // Salary calculation
-    const ctcInput = document.getElementById('current_ctc');
-    if(ctcInput){
-        ctcInput.dispatchEvent(new Event('input'));
-        ctcInput.addEventListener('input', function () {
-            const ctc = parseFloat(this.value || 0);
-            const monthly = ctc/12;
-            const basic = monthly*0.5;
-            const hra = basic*0.5;
-            const special = monthly*0.1;
-            const convey = monthly*0.1;
-            const medical = monthly*0.05;
-            const pfEmployer = 1800;
-            const pfEmployee = 1800;
-            const profTax = 200;
-            const deductions = pfEmployee + pfEmployer + profTax;
-            const net = monthly - deductions;
+const ctcInput = document.getElementById('current_ctc');
+const pfStatusInput = document.getElementById('pf_status');
 
-            const fields = ['monthly_basic','monthly_hra','special_allowance','conveyance_allowance','medical_reimbursement','professional_tax','pf_employer','pf_employee','net_deductions','net_salary'];
-            const values = [basic, hra, special, convey, medical, profTax, pfEmployer, pfEmployee, deductions, net];
-            fields.forEach((field, i) => {
-                if(document.getElementById(field)) document.getElementById(field).value = values[i].toFixed(2);
-            });
-        });
-    }
+function calculateSalary() {
+    const ctc = parseFloat(ctcInput?.value || 0);
+    if (!ctc) return;
+
+    const basic = ctc * 0.50;
+    const hra = basic * 0.50;
+    const special = ctc * 0.10;
+    const convey = ctc * 0.10;
+    const medical = ctc * 0.05;
+
+    const profTax = 200;
+
+    const pfActive = pfStatusInput && pfStatusInput.value == "1";
+    const pfEmployee = pfActive ? 1800 : 0;
+    const pfEmployer = pfActive ? 1800 : 0;
+
+    const deductions = pfEmployee + profTax;
+    const netSalary = ctc - deductions;
+
+    const values = {
+        monthly_basic: basic,
+        monthly_hra: hra,
+        special_allowance: special,
+        conveyance_allowance: convey,
+        medical_reimbursement: medical,
+        professional_tax: profTax,
+        pf_employee: pfEmployee,
+        pf_employer: pfEmployer,
+        net_deductions: deductions,
+        net_salary: netSalary
+    };
+
+    Object.entries(values).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val.toFixed(2);
+    });
+}
+
+ctcInput?.addEventListener('input', calculateSalary);
+pfStatusInput?.addEventListener('change', calculateSalary);
+document.addEventListener('DOMContentLoaded', calculateSalary);
 </script>
-@endsection

@@ -23,7 +23,16 @@
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
-
+    @if ($errors->any())
+    <div class="alert alert-danger">
+        <strong>Please fix the following errors:</strong>
+        <ul class="mb-0 mt-2">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+    @endif
     <div class="card mb-4">
         <form method="POST" action="{{ route('mandate_bookings.store') }}" enctype="multipart/form-data">
             @csrf
@@ -383,152 +392,97 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 
-    // ------------------- STEP NAVIGATION -------------------
+    /* =====================================================
+       STEP NAVIGATION
+    ===================================================== */
     let step = 0;
     const steps = document.querySelectorAll('.step');
     const tabs = document.querySelectorAll('#stepTabs .nav-link');
     const prevBtn = document.getElementById('prevBtn');
     const nextBtn = document.getElementById('nextBtn');
     const submitBtn = document.getElementById('submitBtn');
-    const submitStepIndex = steps.length - 1;
 
     function showStep() {
         steps.forEach((s, i) => s.classList.toggle('d-none', i !== step));
         tabs.forEach((t, i) => t.classList.toggle('active', i === step));
 
         prevBtn.style.display = step === 0 ? 'none' : 'inline-block';
-        nextBtn.style.display = step === submitStepIndex ? 'none' : 'inline-block';
-        submitBtn.classList.toggle('d-none', step !== submitStepIndex);
+        nextBtn.style.display = step === steps.length - 1 ? 'none' : 'inline-block';
+        submitBtn.classList.toggle('d-none', step !== steps.length - 1);
     }
 
     showStep();
 
-    prevBtn.addEventListener('click', () => { step--; showStep(); });
+    prevBtn.addEventListener('click', () => {
+        step--;
+        showStep();
+    });
+
     nextBtn.addEventListener('click', () => {
         if (validateStep(step)) {
-            step++; showStep();
+            step++;
+            showStep();
         }
     });
 
-    // ------------------- STEP-WISE VALIDATION -------------------
+    /* =====================================================
+       STEP VALIDATION (FIXED)
+    ===================================================== */
     function validateStep(currentStep) {
         let valid = true;
         const stepDiv = steps[currentStep];
-        const requiredFields = stepDiv.querySelectorAll('[required]');
 
-        requiredFields.forEach(input => {
+        stepDiv.querySelectorAll('[required]').forEach(input => {
             input.classList.remove('is-invalid');
+
+            if (
+                input.disabled ||
+                input.closest('.d-none') ||
+                input.offsetParent === null
+            ) return;
+
             if (!input.value) {
                 input.classList.add('is-invalid');
                 valid = false;
             }
         });
 
-        if (!valid) {
-            alert('Please fill all required fields before proceeding.');
-        }
+        if (!valid) alert('Please fill all required fields.');
         return valid;
     }
 
-    // ------------------- PAYMENT MODE LOGIC -------------------
-    // 🔹 Single source of truth for payment mode handling
-    function handlePaymentMode(selectEl) {
-        const row = selectEl.closest('.payment-row');
-        const mode = selectEl.value;
+    /* =====================================================
+       BOOKING SOURCE LOGIC
+    ===================================================== */
+    function el(id) { return document.getElementById(id); }
 
-        row.querySelector('.transaction-field')?.classList.add('d-none');
-        row.querySelector('.cheque-field')?.classList.add('d-none');
-        row.querySelector('.cash-proof-field')?.classList.add('d-none');
+    function handleBookingSource(value) {
+        el('sourceCP')?.classList.add('d-none');
+        el('sourceReference')?.classList.add('d-none');
+        el('sourceRemark')?.classList.add('d-none');
 
-        if (['UPI', 'Card', 'NetBanking'].includes(mode)) {
-            row.querySelector('.transaction-field')?.classList.remove('d-none');
-        }
-
-        if (mode === 'Cheque') {
-            row.querySelector('.cheque-field')?.classList.remove('d-none');
-        }
-
-        if (mode === 'Cash') {
-            row.querySelector('.cash-proof-field')?.classList.remove('d-none');
-        }
+        if (value === 'Channel Partner') el('sourceCP')?.classList.remove('d-none');
+        else if (value === 'Reference') el('sourceReference')?.classList.remove('d-none');
+        else if (value) el('sourceRemark')?.classList.remove('d-none');
     }
 
-    // 🔹 Event delegation (handles existing + future rows)
-    document.getElementById('paymentsWrapper').addEventListener('change', function (e) {
-        if (e.target.classList.contains('payment-mode')) {
-            handlePaymentMode(e.target);
-        }
+    el('bookingSource')?.addEventListener('change', function () {
+        handleBookingSource(this.value);
     });
 
-    // 🔹 Add payment row
-    let paymentIndex = document.querySelectorAll('.payment-row').length;
-
-    document.getElementById('addPaymentBtn').addEventListener('click', function () {
-        const wrapper = document.getElementById('paymentsWrapper');
-        const firstRow = wrapper.querySelector('.payment-row');
-        const newRow = firstRow.cloneNode(true);
-
-        newRow.querySelectorAll('input, select').forEach(el => {
-            if (el.name) el.name = el.name.replace(/\[\d+\]/, `[${paymentIndex}]`);
-
-            if (el.type !== 'file') el.value = '';
-            if (el.tagName === 'SELECT') el.selectedIndex = 0;
-        });
-
-        newRow.querySelector('.transaction-field')?.classList.add('d-none');
-        newRow.querySelector('.cheque-field')?.classList.add('d-none');
-        newRow.querySelector('.cash-proof-field')?.classList.add('d-none');
-
-        wrapper.appendChild(newRow);
-        paymentIndex++;
-    });
-
-    // 🔹 Ensure correct state on edit page load
-    document.querySelectorAll('.payment-mode').forEach(select => {
-        if (select.value) handlePaymentMode(select);
-    });
-
-
-    // ------------------- AGREEMENT VALUE CALCULATION -------------------
-    function calculateAgreementValue() {
-        const unit = parseFloat(document.getElementById('unitValue').value) || 0;
-        const other = parseFloat(document.getElementById('otherCharges').value) || 0;
-        const car = parseFloat(document.getElementById('carParkCharges').value) || 0;
-        const total = unit + other + car;
-
-        document.getElementById('agreementValue').value = total.toFixed(2);
-        document.getElementById('bsAgreementValue').innerText = total.toFixed(2);
-
-        updatePaymentSummary();
+    if (el('bookingSource')?.value) {
+        handleBookingSource(el('bookingSource').value);
     }
 
-    ['unitValue', 'otherCharges', 'carParkCharges'].forEach(id => {
-        document.getElementById(id)?.addEventListener('input', calculateAgreementValue);
-    });
-
-    // ------------------- PAYMENT SUMMARY -------------------
-    function updatePaymentSummary() {
-        let totalPaid = 0;
-        document.querySelectorAll('.payment-amount').forEach(input => {
-            totalPaid += parseFloat(input.value) || 0;
-        });
-
-        const agreementValue = parseFloat(document.getElementById('agreementValue').value) || 0;
-        document.getElementById('totalPaid').innerText = totalPaid.toFixed(2);
-        document.getElementById('balanceAmount').innerText = (agreementValue - totalPaid).toFixed(2);
-
-        document.getElementById('bsTotalPaid').innerText = totalPaid.toFixed(2);
-        document.getElementById('bsPaymentPercent').innerText = agreementValue ? ((totalPaid / agreementValue) * 100).toFixed(2) + '%' : '0%';
-    }
-
-    document.getElementById('paymentsWrapper').addEventListener('input', updatePaymentSummary);
-
-    // ------------------- SAME ADDRESS COPY -------------------
+    /* =====================================================
+       SAME ADDRESS COPY
+    ===================================================== */
     document.querySelectorAll('.same-address').forEach(cb => {
         cb.addEventListener('change', function () {
             const key = this.dataset.key;
             const comm = document.querySelectorAll(`[name^="applicants[${key}][addresses][communication]"]`);
             const perm = document.querySelectorAll(`[name^="applicants[${key}][addresses][permanent]"]`);
+
             if (this.checked) {
                 comm.forEach((el, i) => perm[i].value = el.value);
             } else {
@@ -537,17 +491,83 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // ------------------- BOOKING SOURCE LOGIC -------------------
-    const bookingSource = document.getElementById('bookingSource');
-    bookingSource?.addEventListener('change', e => {
-        document.getElementById('sourceCP').classList.add('d-none');
-        document.getElementById('sourceReference').classList.add('d-none');
-        document.getElementById('sourceRemark').classList.add('d-none');
+    /* =====================================================
+       PAYMENT MODE HANDLING
+    ===================================================== */
+    function handlePaymentMode(selectEl) {
+        const row = selectEl.closest('.payment-row');
+        if (!row) return;
 
-        if (e.target.value === 'Channel Partner') document.getElementById('sourceCP').classList.remove('d-none');
-        else if (e.target.value === 'Reference') document.getElementById('sourceReference').classList.remove('d-none');
-        else if (e.target.value) document.getElementById('sourceRemark').classList.remove('d-none');
+        row.querySelector('.transaction-field')?.classList.add('d-none');
+        row.querySelector('.cheque-field')?.classList.add('d-none');
+        row.querySelector('.cash-proof-field')?.classList.add('d-none');
+
+        const mode = selectEl.value;
+
+        if (['UPI', 'Card', 'NetBanking'].includes(mode)) {
+            row.querySelector('.transaction-field')?.classList.remove('d-none');
+        }
+        if (mode === 'Cheque') {
+            row.querySelector('.cheque-field')?.classList.remove('d-none');
+        }
+        if (mode === 'Cash') {
+            row.querySelector('.cash-proof-field')?.classList.remove('d-none');
+        }
+    }
+
+    document.getElementById('paymentsWrapper')?.addEventListener('change', function (e) {
+        if (e.target.classList.contains('payment-mode')) {
+            handlePaymentMode(e.target);
+        }
     });
+
+    /* =====================================================
+       AGREEMENT VALUE CALCULATION (FINAL FIX)
+    ===================================================== */
+    function calculateAgreementValue() {
+        const unit = parseFloat(el('unitValue')?.value) || 0;
+        const other = parseFloat(el('otherCharges')?.value) || 0;
+        const car = parseFloat(el('carParkCharges')?.value) || 0;
+
+        const total = unit + other + car;
+
+        if (el('agreementValue')) el('agreementValue').value = total.toFixed(2);
+        if (el('bsAgreementValue')) el('bsAgreementValue').innerText = total.toFixed(2);
+
+        updatePaymentSummary();
+    }
+
+    document.addEventListener('input', function (e) {
+        if (
+            e.target.id === 'unitValue' ||
+            e.target.id === 'otherCharges' ||
+            e.target.id === 'carParkCharges'
+        ) {
+            calculateAgreementValue();
+        }
+    });
+
+    /* =====================================================
+       PAYMENT SUMMARY
+    ===================================================== */
+    function updatePaymentSummary() {
+        let totalPaid = 0;
+        document.querySelectorAll('.payment-amount').forEach(input => {
+            totalPaid += parseFloat(input.value) || 0;
+        });
+
+        const agreementValue = parseFloat(el('agreementValue')?.value) || 0;
+
+        el('totalPaid') && (el('totalPaid').innerText = totalPaid.toFixed(2));
+        el('balanceAmount') && (el('balanceAmount').innerText = (agreementValue - totalPaid).toFixed(2));
+        el('bsTotalPaid') && (el('bsTotalPaid').innerText = totalPaid.toFixed(2));
+        el('bsPaymentPercent') && (
+            el('bsPaymentPercent').innerText =
+                agreementValue ? ((totalPaid / agreementValue) * 100).toFixed(2) + '%' : '0%'
+        );
+    }
+
+    document.getElementById('paymentsWrapper')?.addEventListener('input', updatePaymentSummary);
 
 });
 </script>
