@@ -140,6 +140,14 @@
                         </a>
                     </li>
                     @endif
+                    {{-- Brokerage Ledgers --}}
+                    @can('mandate-booking-view')
+                    <li class="menu-item {{ Request::segment(1) == 'brokerage-ledgers' ? 'active' : '' }}">
+                        <a href="{{ url('/brokerage-ledgers') }}" class="menu-link">
+                            <div>Brokerage Ledgers</div>
+                        </a>
+                    </li>
+                    @endcan
 
                 </ul>
             </li>

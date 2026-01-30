@@ -72,5 +72,12 @@ class MandateBooking extends Model
             'booking_id'
         );
     }
+    public function brokerageLedgers()
+    {
+        return $this->hasMany(
+            MandateBookingBrokerageLedger::class,
+            'booking_id'
+        );
+    }
 
 }

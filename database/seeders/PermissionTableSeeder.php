@@ -123,7 +123,8 @@ class PermissionTableSeeder extends Seeder
             'mandate-booking-view',
             'mandate-booking-create',
             'mandate-booking-edit',
-            'mandate-booking-approve'
+            'mandate-booking-approve',
+            'brokerage-ledgers-pay'
         ];
 
         foreach ($permissions as $permission) {

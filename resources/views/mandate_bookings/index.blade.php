@@ -84,6 +84,15 @@
                 <label class="form-label">Booking Date To</label>
                 <input type="date" id="booking_date_to" class="form-control">
             </div>
+            <div class="col-md-3">
+                <label class="form-label">Channel Partner</label>
+                <select class="form-select" id="channel_partner_id">
+                    <option value="">All</option>
+                    @foreach ($channelPartners as $cp)
+                        <option value="{{ $cp->id }}">{{ $cp->firm_name }}</option>
+                    @endforeach
+                </select>
+            </div>
 
             <div class="mb-3 col-md-3">
                 <label class="form-label">&nbsp;</label><br>
@@ -111,6 +120,7 @@
                         <th>Brokerage Status</th>
                         <th>Booking Status</th>
                         <th>Booking Source</th>
+                        <th>Channel Partner</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -140,7 +150,9 @@ $(document).ready(function () {
                 d.booking_source = $('#booking_source').val();
                 d.booking_date_from = $('#booking_date_from').val();
                 d.booking_date_to = $('#booking_date_to').val();
-            }
+                d.channel_partner_id = $('#channel_partner_id').val();
+
+            }   
         },
         columns: [
             { data: 'id', name: 'b.id' },
@@ -154,19 +166,31 @@ $(document).ready(function () {
                 if (data === null) return '<span class="badge bg-secondary">Not Evaluated</span>';
                 return data==1 ? '<span class="badge bg-success">Eligible</span>' : '<span class="badge bg-danger">Not Eligible</span>';
             }},
-            { 
+            {
                 data: 'brokerage_status',
-                name: 'br.brokerage_status',
-                render: function(data, type, row){
-                    let options = ['pending','approved','paid']; // ✅ Only valid enums
+                name: 'br.status',
+                render: function (data, type, row) {
+
+                    // ✅ If already PAID → show text, no dropdown
+                    if (data === 'paid') {
+                        return `<span class="badge bg-success">Paid</span>`;
+                    }
+
+                    // ✅ Only allowed options when NOT paid
+                    let options = ['pending', 'approved'];
+
                     let html = `<select class="form-select form-select-sm brokerage-status" data-id="${row.id}">`;
                     html += `<option value="">—</option>`;
+
                     options.forEach(opt => {
-                        html += `<option value="${opt}" ${data === opt ? 'selected' : ''}>${opt.charAt(0).toUpperCase() + opt.slice(1)}</option>`;
+                        html += `<option value="${opt}" ${data === opt ? 'selected' : ''}>
+                                    ${opt.charAt(0).toUpperCase() + opt.slice(1)}
+                                </option>`;
                     });
+
                     html += `</select>`;
                     return html;
-                } 
+                }
             },
             { 
                 data: 'booking_status', 
@@ -183,6 +207,7 @@ $(document).ready(function () {
                 } 
             },
             { data: 'booking_source', name: 'b.booking_source', render: function(data){ return data ?? '—'; }},
+            {  data: 'cp_name', name: 'cp.name',render: function(data){ return data ?? '—';} },
             { data: 'action', orderable:false, searchable:false }
         ]
     });

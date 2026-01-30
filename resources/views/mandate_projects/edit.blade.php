@@ -46,8 +46,6 @@
                         <option value="commercial" {{ $mandateProject->property_type == 'commercial' ? 'selected' : '' }}>Commercial</option>
                     </select>
                 </div>
-            </div>
-            <div class="row mb-3">
                 <!-- Threshold Percentage -->
                 <div class="col-md-6">
                     <label class="form-label">Threshold (%)</label>
@@ -63,6 +61,22 @@
                     >
                 </div>
 
+            </div>
+            <div class="row mb-3">
+                 <div class="col-md-6">
+                    <label class="form-label">Brokerage (%)</label>
+                    <input
+                        type="number"
+                        name="brokerage"
+                        class="form-control"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        placeholder="e.g. 2.65"
+                        value="{{ old('brokerage', $mandateProject->brokerage ?? '') }}"
+                    >
+                </div>
+                
                 <!-- Brokerage Criteria -->
                 <div class="col-md-6">
                     <label class="form-label">Brokerage Criteria</label>
@@ -114,6 +128,69 @@
                         </div>
                         <div class="col-md-2">
                             <button type="button" class="btn btn-success add-config">+</button>
+                        </div>
+                    </div>
+                @endif
+            </div>
+            <hr>
+            <h5>Ladders</h5>
+
+            <div id="ladders-wrapper">
+                @foreach($mandateProject->ladders as $ladder)
+                    <div class="row ladder-row mb-2">
+                        <div class="col-md-3">
+                            <input type="date"
+                                name="ladder_from[]"
+                                class="form-control"
+                                value="{{ $ladder->timeline_from->format('Y-m-d') }}">
+                        </div>
+
+                        <div class="col-md-3">
+                            <input type="date"
+                                name="ladder_to[]"
+                                class="form-control"
+                                value="{{ $ladder->timeline_to->format('Y-m-d') }}">
+                        </div>
+
+                        <div class="col-md-2">
+                            <input type="number"
+                                name="ladder_units[]"
+                                class="form-control"
+                                placeholder="Units"
+                                value="{{ $ladder->no_of_units }}">
+                        </div>
+
+                        <div class="col-md-2">
+                            <input type="number"
+                                name="ladder_payout[]"
+                                class="form-control"
+                                step="0.01"
+                                placeholder="Payout %"
+                                value="{{ $ladder->payout_percentage }}">
+                        </div>
+
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-success add-ladder">+</button>
+                        </div>
+                    </div>
+                @endforeach
+
+                @if($mandateProject->ladders->isEmpty())
+                    <div class="row ladder-row mb-2">
+                        <div class="col-md-3">
+                            <input type="date" name="ladder_from[]" class="form-control">
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" name="ladder_to[]" class="form-control">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" name="ladder_units[]" class="form-control" placeholder="Units">
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" name="ladder_payout[]" class="form-control" step="0.01" placeholder="Payout %">
+                        </div>
+                        <div class="col-md-2">
+                            <button type="button" class="btn btn-success add-ladder">+</button>
                         </div>
                     </div>
                 @endif
@@ -172,6 +249,48 @@ $(document).ready(function() {
 
         // Update buttons after every add/remove
         updateButtons();
+    });
+});
+</script>
+<script>
+$(document).ready(function () {
+    const $ladderWrapper = $('#ladders-wrapper');
+
+    function updateLadderButtons() {
+        const $rows = $ladderWrapper.find('.ladder-row');
+
+        $rows.each(function(index) {
+            const $btn = $(this).find('button');
+
+            if(index === $rows.length - 1) {
+                $btn.removeClass('btn-danger remove-ladder')
+                    .addClass('btn-success add-ladder')
+                    .text('+');
+            } else {
+                $btn.removeClass('btn-success add-ladder')
+                    .addClass('btn-danger remove-ladder')
+                    .text('-');
+            }
+        });
+    }
+
+    updateLadderButtons();
+
+    $ladderWrapper.on('click', 'button', function () {
+        const $btn = $(this);
+        const $row = $btn.closest('.ladder-row');
+
+        if ($btn.hasClass('add-ladder')) {
+            const $clone = $row.clone();
+            $clone.find('input').val('');
+            $ladderWrapper.append($clone);
+        }
+
+        if ($btn.hasClass('remove-ladder')) {
+            $row.remove();
+        }
+
+        updateLadderButtons();
     });
 });
 </script>

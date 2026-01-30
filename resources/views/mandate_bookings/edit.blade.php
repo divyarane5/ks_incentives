@@ -836,6 +836,26 @@
                                 </div>
 
                             @endif
+                          @if($brokerage)
+                            <div class="col-md-4">
+                                <label>Brokerage %</label>
+                                <input type="text" class="form-control"
+                                    value="{{ $brokerage->brokerage_percent }}%"
+                                    readonly>
+                            </div>
+
+                            <div class="col-md-4">
+                                <label>Brokerage Amount</label>
+                                <input type="text" class="form-control"
+                                    value="₹ {{ number_format($brokerage->brokerage_amount, 2) }}"
+                                    readonly>
+                            </div>
+                        @else
+                            <div class="col-md-12 alert alert-warning">
+                                Brokerage not calculated yet.
+                            </div>
+                        @endif
+
                             <div class="mb-3">
                             <label for="bill_copy" class="form-label">Upload Bill Copy</label>
                             <input type="file" name="bill_copy" id="bill_copy" class="form-control">

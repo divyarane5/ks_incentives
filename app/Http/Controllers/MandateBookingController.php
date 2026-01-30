@@ -10,6 +10,7 @@ use App\Models\MandateBookingApplicant;
 use App\Models\MandateBookingAddress;
 use App\Models\MandateBookingBrokerage;
 use Illuminate\Support\Facades\DB;
+use App\Services\BrokerageLedgerService;
 
 
 class MandateBookingController extends Controller
@@ -27,6 +28,7 @@ class MandateBookingController extends Controller
                 ->leftJoin('mandate_projects as p', 'p.id', '=', 'b.project_id')
                 ->leftJoin('mandate_booking_finances as f', 'f.booking_id', '=', 'b.id')
                 ->leftJoin('mandate_booking_brokerages as br', 'br.booking_id', '=', 'b.id')
+                ->leftJoin('channel_partners as cp', 'cp.id', '=', 'b.channel_partner_id')
                 ->select([
                     'b.id',
                     'b.booking_date',
@@ -39,6 +41,14 @@ class MandateBookingController extends Controller
                     'br.payment_percent',
                     'br.is_eligible',
                     'br.status as brokerage_status',
+                    // ✅ CP NAME (only meaningful for CP source)
+                    DB::raw("
+                        CASE 
+                            WHEN b.booking_source = 'Channel Partner' 
+                            THEN COALESCE(cp.firm_name, '—')
+                            ELSE '—'
+                        END as cp_name
+                    "),
                 ]);
 
             // Filters
@@ -69,7 +79,10 @@ class MandateBookingController extends Controller
             } elseif ($request->filled('booking_date_to')) {
                 $query->where('b.booking_date', '<=', $request->booking_date_to);
             }
-
+            // 🔍 Channel Partner filter
+            if ($request->filled('channel_partner_id')) {
+                $query->where('b.channel_partner_id', $request->channel_partner_id);
+            }
             return datatables()->of($query)
                 ->addColumn('registered', function($row) {
                     return $row->is_registered == 1
@@ -92,6 +105,11 @@ class MandateBookingController extends Controller
                     if (auth()->user()->can('mandate_bookings-edit')) {
                         $actions .= '<a class="dropdown-item" href="'.route('mandate_bookings.edit', $row->id).'">
                                         <i class="bx bx-edit-alt me-1"></i> Edit
+                                    </a>';
+                    }
+                    if (auth()->user()->can('mandate_bookings-edit')) {
+                        $actions .= '<a class="dropdown-item" href="'.route('mandate_bookings.ledgers', $row->id).'" class="btn btn-sm btn-outline-primary">
+                                        <i class="bx bx-edit-alt me-1"></i> Ledger
                                     </a>';
                     }
                     if (auth()->user()->can('mandate_bookings-delete')) {
@@ -118,8 +136,12 @@ class MandateBookingController extends Controller
             'Mailers/SMS','Online Ad','Call Center','Walk in','Exhibition',
             'Insert','Existing Client','Property Portal'
         ];
+        $channelPartners = DB::table('channel_partners')
+            ->where('status', 1)
+            ->orderBy('firm_name')
+            ->get(['id', 'firm_name']);
 
-        return view('mandate_bookings.index', compact('projects','sources'));
+        return view('mandate_bookings.index', compact('projects','sources','channelPartners'));
     }
 
     public function updateStatus(Request $request)
@@ -421,10 +443,14 @@ class MandateBookingController extends Controller
             'brokerage',
             'channel_partner',
             'signature',
+            'brokerageLedgers',
         ])->findOrFail($id);
+        // SAFE: brokerage may or may not exist
+        $brokerage = $booking->brokerage;
 
         return view('mandate_bookings.edit', [
             'booking' => $booking,
+            'brokerage' => $brokerage,
             'projects' => MandateProject::all(),
             'channelPartners' => ChannelPartner::all(),
         ]);
@@ -440,131 +466,56 @@ class MandateBookingController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // echo "<pre>"; 
-        // print_r($request->all()); exit;
         DB::beginTransaction();
 
         try {
+
             /**
              * STEP 1: VALIDATION
              */
             $request->validate([
                 'booking_date' => 'required|date',
                 'project_id'   => 'required|exists:mandate_projects,id',
-                'applicants' => 'required|array|min:1',
+                'applicants'   => 'required|array|min:1',
                 'applicants.*.type' => 'required|in:primary,co',
                 'applicants.*.first_name' => 'required|string|max:100',
                 'applicants.*.mobile' => 'required|digits:10',
-                'finance' => 'required|array',
                 'finance.unit_value' => 'required|numeric|min:1',
                 'payments' => 'required|array|min:1',
                 'payments.*.amount' => 'required|numeric|min:1',
                 'payments.*.mode'   => 'required|in:UPI,Card,NetBanking,Cheque,Cash',
-                'payments.*.proof' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
             ]);
 
             if ($request->booking_source === 'Channel Partner') {
-                $request->validate(['channel_partner_id' => 'required|exists:channel_partners,id']);
-            }
-
-            if ($request->booking_source === 'Reference') {
                 $request->validate([
-                    'reference_name' => 'required|string|max:100',
-                    'reference_contact' => 'required|string|max:20',
+                    'channel_partner_id' => 'required|exists:channel_partners,id'
                 ]);
             }
 
-            foreach ($request->payments as $i => $payment) {
-                if (in_array($payment['mode'], ['UPI', 'Card', 'NetBanking'])) {
-                    $request->validate(["payments.$i.transaction_id" => 'required|string']);
-                }
-                if ($payment['mode'] === 'Cheque') {
-                    $request->validate(["payments.$i.cheque_number" => 'required|string']);
-                }
-            }
-
             /**
-             * STEP 2: BOOKING UPDATE
+             * STEP 2: UPDATE BOOKING MASTER
              */
             $booking = DB::table('mandate_bookings')->where('id', $id)->first();
-
-            $bookingFormPath = $request->hasFile('booking_form_file')
-                ? $request->file('booking_form_file')->store('booking_forms', 'public')
-                : $booking->booking_form_file;
 
             DB::table('mandate_bookings')->where('id', $id)->update([
                 'booking_date' => $request->booking_date,
                 'project_id'   => $request->project_id,
-                'tower'        => $request->tower,
-                'wing'         => $request->wing,
-                'unit_no'      => $request->unit_no,
-                'floor_no'     => $request->floor_no,
-                'configuration'=> $request->configuration,
-                'rera_carpet_area' => $request->rera_carpet_area,
-                'parking_count'=> $request->parking_count,
-                'parking_type' => $request->parking_type,
-                'property_type'=> $request->property_type,
                 'booking_source' => $request->booking_source,
                 'channel_partner_id' => $request->channel_partner_id,
-                'reference_name' => $request->reference_name,
-                'reference_contact' => $request->reference_contact,
-                'source_remark' => $request->source_remark,
-                'booking_form_file' => $bookingFormPath,
                 'updated_at' => now(),
             ]);
 
             /**
-             * STEP 3: APPLICANTS + ADDRESSES
-             */
-            $existingApplicants = DB::table('mandate_booking_applicants')->where('booking_id', $id)->pluck('id');
-            DB::table('mandate_booking_addresses')->whereIn('applicant_id', $existingApplicants)->delete();
-            DB::table('mandate_booking_applicants')->where('booking_id', $id)->delete();
-
-            foreach ($request->applicants as $applicant) {
-                $panPath = isset($applicant['pan_file']) && $applicant['pan_file'] instanceof \Illuminate\Http\UploadedFile
-                    ? $applicant['pan_file']->store('kyc', 'public')
-                    : null;
-                $aadhaarPath = isset($applicant['aadhar_file']) && $applicant['aadhar_file'] instanceof \Illuminate\Http\UploadedFile
-                    ? $applicant['aadhar_file']->store('kyc', 'public')
-                    : null;
-
-                $applicantId = DB::table('mandate_booking_applicants')->insertGetId([
-                    'booking_id' => $id,
-                    'type' => $applicant['type'],
-                    'first_name' => $applicant['first_name'],
-                    'middle_name'=> $applicant['middle_name'] ?? null,
-                    'last_name'  => $applicant['last_name'] ?? null,
-                    'mobile'     => $applicant['mobile'],
-                    'alternate_mobile' => $applicant['alternate_mobile'] ?? null,
-                    'email' => $applicant['email'] ?? null,
-                    'pan_number' => $applicant['pan_number'] ?? null,
-                    'aadhar_number' => $applicant['aadhar_number'] ?? null,
-                    'pan_file' => $panPath,
-                    'aadhar_file' => $aadhaarPath,
-                    'created_at' => now(),
-                    'updated_at' => now(),
-                ]);
-
-                foreach ($applicant['addresses'] ?? [] as $type => $address) {
-                    DB::table('mandate_booking_addresses')->insert([
-                        'applicant_id' => $applicantId,
-                        'address_type' => $type,
-                        'address' => $address['address'] ?? null,
-                        'city' => $address['city'] ?? null,
-                        'state' => $address['state'] ?? null,
-                        'pincode' => $address['pincode'] ?? null,
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-                }
-            }
-
-            /**
-             * STEP 4: FINANCE
+             * STEP 3: FINANCE
              */
             DB::table('mandate_booking_finances')->where('booking_id', $id)->delete();
+
             $finance = $request->finance;
-            $agreementValue = ($finance['unit_value'] ?? 0) + ($finance['other_charges'] ?? 0) + ($finance['car_park_charges'] ?? 0);
+
+            $agreementValue =
+                ($finance['unit_value'] ?? 0) +
+                ($finance['other_charges'] ?? 0) +
+                ($finance['car_park_charges'] ?? 0);
 
             DB::table('mandate_booking_finances')->insert([
                 'booking_id' => $id,
@@ -579,171 +530,149 @@ class MandateBookingController extends Controller
             ]);
 
             /**
-             * STEP 5: PAYMENTS
+             * STEP 4: PAYMENTS
              */
-            /**
-             * STEP 5: PAYMENTS (SAFE UPDATE)
-             */
-            $existingPaymentIds = DB::table('mandate_booking_payments')
-                ->where('booking_id', $id)
-                ->pluck('id')
-                ->toArray();
+            DB::table('mandate_booking_payments')->where('booking_id', $id)->delete();
 
-            $requestPaymentIds = [];
-
-            foreach ($request->payments as $i => $payment) {
-
-                $proofPath = null;
-
-                // ✅ HANDLE FILE UPLOAD
-                if ($request->hasFile("payments.$i.proof")) {
-                    $proofPath = $request->file("payments.$i.proof")
-                        ->store('payment_proofs', 'public');
-                }
-
-                // UPDATE existing payment
-                if (!empty($payment['id'])) {
-
-                    $updateData = [
-                        'amount' => $payment['amount'],
-                        'mode' => $payment['mode'],
-                        'date' => $payment['date'] ?? null,
-                        'bank_name' => $payment['bank_name'] ?? null,
-                        'transaction_id' => $payment['transaction_id'] ?? null,
-                        'cheque_number' => $payment['cheque_number'] ?? null,
-                        'updated_at' => now(),
-                    ];
-
-                    // ✅ update proof ONLY if new file uploaded
-                    if ($proofPath) {
-                        $updateData['proof'] = $proofPath;
-                    }
-
-                    DB::table('mandate_booking_payments')
-                        ->where('id', $payment['id'])
-                        ->update($updateData);
-
-                    $requestPaymentIds[] = $payment['id'];
-
-                } else {
-                    // INSERT new payment
-                    $newId = DB::table('mandate_booking_payments')->insertGetId([
-                        'booking_id' => $id,
-                        'amount' => $payment['amount'],
-                        'mode' => $payment['mode'],
-                        'date' => $payment['date'] ?? null,
-                        'bank_name' => $payment['bank_name'] ?? null,
-                        'transaction_id' => $payment['transaction_id'] ?? null,
-                        'cheque_number' => $payment['cheque_number'] ?? null,
-                        'proof' => $proofPath, // ✅ saved here
-                        'created_at' => now(),
-                        'updated_at' => now(),
-                    ]);
-
-                    $requestPaymentIds[] = $newId;
-                }
-            }
-
-            // DELETE payments removed from UI
-            $paymentsToDelete = array_diff($existingPaymentIds, $requestPaymentIds);
-
-            if (!empty($paymentsToDelete)) {
-                DB::table('mandate_booking_payments')
-                    ->whereIn('id', $paymentsToDelete)
-                    ->delete();
-            }
-
-
-            /**
-             * STEP 6: CONSENTS
-             */
-            DB::table('mandate_booking_signatures')->where('booking_id', $id)->delete();
-            DB::table('mandate_booking_signatures')->insert([
-                'booking_id' => $id,
-                'developer_consent_file' => $request->file('developer_consent_file')?->store('signature', 'public'),
-                'mandate_consent_file'   => $request->file('mandate_consent_file')?->store('signature', 'public'),
-                'cp_consent_file'        => $request->file('cp_consent_file')?->store('signature', 'public'),
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
-            /**
-             * STEP 7: BROKERAGE CALCULATION + BILL & ACCEPTANCE FILES
-             */
-            $project = DB::table('mandate_projects')->where('id', $request->project_id)->first();
-            $totalPaid = DB::table('mandate_booking_payments')->where('booking_id', $id)->sum('amount');
-            $paymentPercent = $agreementValue > 0 ? round(($totalPaid / $agreementValue) * 100, 2) : 0;
-
-            $isEligible = false;
-            $scenario = null;
-            $reason = 'Not eligible yet';
-
-            if ($paymentPercent >= $project->threshold_percentage && $request->boolean('is_registered')) {
-                $isEligible = true;
-                $scenario = 'SCENARIO_1';
-                $reason = 'Threshold payment completed and registration done.';
-            } elseif ($paymentPercent >= ($finance['current_due_percent'] ?? 0)) {
-                $isEligible = true;
-                $scenario = 'SCENARIO_2';
-                $reason = 'Payment completed up to current due percentage.';
-            }
-
-            // Handle bill & acceptance files
-            $brokerage = DB::table('mandate_booking_brokerages')->where('booking_id', $id)->first();
-            $billCopyPath = $request->file('bill_copy') 
-                ? $request->file('bill_copy')->store('bill_copies', 'public') 
-                : ($brokerage->bill_copy ?? null);
-            $acceptanceCopyPath = $request->file('acceptance_copy') 
-                ? $request->file('acceptance_copy')->store('acceptance_copies', 'public') 
-                : ($brokerage->acceptance_copy ?? null);
-
-            if ($brokerage) {
-                DB::table('mandate_booking_brokerages')->where('booking_id', $id)->update([
-                    'agreement_value' => $agreementValue,
-                    'total_paid' => $totalPaid,
-                    'payment_percent' => $paymentPercent,
-                    'threshold_percentage' => $project->threshold_percentage,
-                    'current_due_percentage' => $finance['current_due_percent'] ?? 0,
-                    'is_registered' => $request->boolean('is_registered'),
-                    'is_eligible' => $isEligible,
-                    'eligibility_scenario' => $scenario,
-                    'eligibility_reason' => $reason,
-                    'bill_copy' => $billCopyPath,
-                    'acceptance_copy' => $acceptanceCopyPath,
-                    'status' => ($billCopyPath && $acceptanceCopyPath && $isEligible) ? 'approved' : ($brokerage->status ?? 'pending'),
-                    'eligible_at' => ($billCopyPath && $acceptanceCopyPath && $isEligible && !$brokerage->eligible_at) ? now() : $brokerage->eligible_at,
-                    'updated_at' => now(),
-                ]);
-            } else {
-                DB::table('mandate_booking_brokerages')->insert([
+            foreach ($request->payments as $payment) {
+                DB::table('mandate_booking_payments')->insert([
                     'booking_id' => $id,
-                    'agreement_value' => $agreementValue,
-                    'total_paid' => $totalPaid,
-                    'payment_percent' => $paymentPercent,
-                    'threshold_percentage' => $project->threshold_percentage,
-                    'current_due_percentage' => $finance['current_due_percent'] ?? 0,
-                    'is_registered' => $request->boolean('is_registered'),
-                    'is_eligible' => $isEligible,
-                    'eligibility_scenario' => $scenario,
-                    'eligibility_reason' => $reason,
-                    'bill_copy' => $billCopyPath,
-                    'acceptance_copy' => $acceptanceCopyPath,
-                    'status' => ($billCopyPath && $acceptanceCopyPath && $isEligible) ? 'approved' : 'pending',
-                    'eligible_at' => ($billCopyPath && $acceptanceCopyPath && $isEligible) ? now() : null,
+                    'amount' => $payment['amount'],
+                    'mode' => $payment['mode'],
+                    'date' => $payment['date'] ?? null,
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
             }
 
+            /**
+             * STEP 5: CALCULATE PAYMENT %
+             */
+            $totalPaid = DB::table('mandate_booking_payments')
+                ->where('booking_id', $id)
+                ->sum('amount');
+
+            $paymentPercent = $agreementValue > 0
+                ? round(($totalPaid / $agreementValue) * 100, 2)
+                : 0;
+
+            /**
+             * STEP 6: ELIGIBILITY CHECK
+             */
+            $project = MandateProject::with('ladders')->findOrFail($request->project_id);
+
+            $isEligible = false;
+            $scenario = null;
+            $reason = 'Not eligible yet';
+
+            if (
+                $paymentPercent >= (float) $project->threshold_percentage &&
+                $request->boolean('is_registered')
+            ) {
+                $isEligible = true;
+                $scenario = 'SCENARIO_1';
+                $reason = 'Threshold payment completed & registration done';
+            } elseif (
+                $paymentPercent >= (float) ($finance['current_due_percent'] ?? 0)
+            ) {
+                $isEligible = true;
+                $scenario = 'SCENARIO_2';
+                $reason = 'Current due payment completed';
+            }
+
+            /**
+             * STEP 7: TOTAL BROKERAGE (PROJECT LEVEL)
+             */
+            $projectTotalPercent = (float) $project->brokerage;
+
+            /**
+             * STEP 8: CP BROKERAGE FROM LADDER
+             */
+            $cpPercent = 0;
+            $bookingDate = \Carbon\Carbon::parse($request->booking_date);
+
+            foreach ($project->ladders as $ladder) {
+                if (
+                    $bookingDate->between(
+                        \Carbon\Carbon::parse($ladder->timeline_from),
+                        \Carbon\Carbon::parse($ladder->timeline_to)
+                    )
+                ) {
+                    $cpPercent = (float) $ladder->payout_percentage;
+                    break;
+                }
+            }
+
+            $cpPercent = min($cpPercent, $projectTotalPercent);
+
+            /**
+             * STEP 9: BROKERAGE BASE AMOUNT
+             */
+            $brokerageBaseAmount = match ($project->brokerage_criteria) {
+                'AV' => $agreementValue,
+                'UCV_OCC' => $finance['unit_value'],
+                'UCV_CPC' => $finance['unit_value'] + ($finance['car_park_charges'] ?? 0),
+                default => $agreementValue,
+            };
+
+            /**
+             * STEP 10: TOTAL BROKERAGE AMOUNT
+             */
+            $totalBrokerageAmount = round(
+                ($brokerageBaseAmount * $projectTotalPercent) / 100,
+                2
+            );
+
+            /**
+             * STEP 11: SAVE BOOKING BROKERAGE (TOTAL)
+             */
+            MandateBookingBrokerage::updateOrCreate(
+                ['booking_id' => $id],
+                [
+                    'agreement_value' => $agreementValue,
+                    'total_paid' => $totalPaid,
+                    'payment_percent' => $paymentPercent,
+
+                    // TOTAL brokerage only
+                    'brokerage_percent' => $projectTotalPercent,
+                    'brokerage_amount'  => $totalBrokerageAmount,
+
+                    'threshold_percentage' => $project->threshold_percentage,
+                    'current_due_percentage' => $finance['current_due_percent'] ?? 0,
+                    'is_registered' => $request->boolean('is_registered'),
+                    'is_eligible' => $isEligible,
+                    'eligibility_scenario' => $scenario,
+                    'eligibility_reason' => $reason,
+                    'status' => $isEligible ? 'approved' : 'pending',
+                    'eligible_at' => $isEligible ? now() : null,
+                ]
+            );
+
+            /**
+             * STEP 12: CREATE LEDGER (ONLY ONCE)
+             */
+            // if ($isEligible) {
+            //     app(\App\Services\BrokerageLedgerService::class)
+            //         ->createInitialLedger($id);
+            // }
+            if ($isEligible) {
+                $booking = MandateBooking::with('brokerage')->findOrFail($id);
+
+                app(\App\Services\BrokerageLedgerService::class)
+                    ->handleEligibilityAndLadder($booking);
+            }
             DB::commit();
 
-            return redirect()->route('mandate_bookings.index')->with('success', 'Booking updated successfully');
+            return redirect()
+                ->route('mandate_bookings.index')
+                ->with('success', 'Booking updated successfully');
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            return back()->withInput()->withErrors(['error' => $e->getMessage()]);
+            return back()->withErrors(['error' => $e->getMessage()]);
         }
     }
+
 
 
     /**

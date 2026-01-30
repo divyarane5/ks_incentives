@@ -173,7 +173,29 @@ Route::group(['middleware' => 'auth'], function () {
         App\Http\Controllers\MandateBookingController::class,
         'updateStatus'
     ])->name('mandate_bookings.updateStatus');
+    Route::get(
+        '/mandate-bookings/{booking}/ledgers',
+        [App\Http\Controllers\BookingLedgerController::class, 'index']
+    )->name('mandate_bookings.ledgers');
 
+    Route::post(
+        '/mandate-bookings/{booking}/ledgers',
+        [App\Http\Controllers\BookingLedgerController::class, 'store']
+    )->name('mandate_bookings.ledgers.store');
+
+    // Delete ledger (only unlocked + adjustment)
+    Route::delete('ledgers/{ledger}', [App\Http\Controllers\BookingLedgerController::class, 'destroy'])
+        ->name('mandate_bookings.ledgers.destroy');
+
+    Route::get(
+        '/brokerage-ledgers',
+        [App\Http\Controllers\BookingLedgerController::class, 'cpIndex']
+    )->name('brokerage_ledgers.index');
+
+    Route::post(
+        '/brokerage-ledgers/{ledger}/mark-paid',
+        [App\Http\Controllers\BookingLedgerController::class, 'markPaid']
+    )->name('brokerage_ledgers.markPaid');
     /*
     |--------------------------------------------------------------------------
     | Locations (AJAX)

@@ -47,8 +47,6 @@
                         <option value="both">Both</option>
                     </select>
                 </div>
-            </div>
-            <div class="row mb-3">
                 <div class="col-md-6">
                     <label class="form-label">Threshold (%)</label>
                     <input
@@ -60,6 +58,22 @@
                         max="100"
                         placeholder="Enter threshold percentage"
                         value="{{ old('threshold_percentage') }}"
+                    >
+                </div>
+               
+            </div>
+            <div class="row mb-3">
+                 <div class="col-md-6">
+                    <label class="form-label">Brokerage (%)</label>
+                    <input
+                        type="number"
+                        name="brokerage"
+                        class="form-control"
+                        step="0.01"
+                        min="0"
+                        max="100"
+                        placeholder="e.g. 2.65"
+                        value="{{ old('brokerage', $mandateProject->brokerage ?? '') }}"
                     >
                 </div>
 
@@ -98,6 +112,49 @@
                     </div>
                     <div class="col-md-2">
                         <button type="button" class="btn btn-success add-config">+</button>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+            <h5>Brokerage Ladders</h5>
+
+            <div id="ladders-wrapper">
+                <div class="row ladder-row mb-2">
+                    <div class="col-md-3">
+                        <input type="date"
+                            name="timeline_from[]"
+                            class="form-control"
+                            placeholder="From Date">
+                    </div>
+
+                    <div class="col-md-3">
+                        <input type="date"
+                            name="timeline_to[]"
+                            class="form-control"
+                            placeholder="To Date">
+                    </div>
+
+                    <div class="col-md-2">
+                        <input type="number"
+                            name="no_of_units[]"
+                            class="form-control"
+                            placeholder="Units"
+                            min="1">
+                    </div>
+
+                    <div class="col-md-2">
+                        <input type="number"
+                            name="payout_percentage[]"
+                            class="form-control"
+                            placeholder="% Payout"
+                            step="0.01"
+                            min="0"
+                            max="100">
+                    </div>
+
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-success add-ladder">+</button>
                     </div>
                 </div>
             </div>
@@ -144,5 +201,32 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+<script>
+    // LADDERS add/remove
+const ladderWrapper = document.getElementById('ladders-wrapper');
 
+ladderWrapper.addEventListener('click', function (e) {
+    const target = e.target;
+
+    // Add ladder row
+    if (target.classList.contains('add-ladder')) {
+        const row = target.closest('.ladder-row');
+        const clone = row.cloneNode(true);
+
+        clone.querySelectorAll('input').forEach(input => input.value = '');
+
+        const btn = clone.querySelector('button');
+        btn.className = 'btn btn-danger remove-ladder';
+        btn.textContent = '-';
+
+        ladderWrapper.appendChild(clone);
+    }
+
+    // Remove ladder row
+    if (target.classList.contains('remove-ladder')) {
+        target.closest('.ladder-row').remove();
+    }
+});
+
+</script>
 @endsection
