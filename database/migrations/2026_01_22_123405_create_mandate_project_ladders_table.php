@@ -35,12 +35,10 @@ class CreateMandateProjectLaddersTable extends Migration
             $table->softDeletes();
 
             // Prevent duplicate ladder slabs for same project
-            $table->unique([
-                'mandate_project_id',
-                'timeline_from',
-                'timeline_to'
-            ]);
-
+            $table->unique(
+                ['mandate_project_id', 'timeline_from', 'timeline_to'],
+                'mpl_project_timeline_unique'
+            );
         });
     }
 
