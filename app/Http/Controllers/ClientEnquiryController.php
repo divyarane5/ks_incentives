@@ -31,16 +31,11 @@ class ClientEnquiryController extends Controller
 
             $user = auth()->user();
 
-            if ($user->hasRole('Superadmin')) {
-                $users = User::select('id', 'name')->get();
-            } else {
-                $accessibleUserIds = $this->getAccessibleUserIds($user);
-
-                $users = User::whereIn('id', $accessibleUserIds)
-                    ->select('id', 'name')
-                    ->get();
-            }
-
+            $users = $this->getUsersForDropdown(
+                auth()->user(),
+                ['AI'], // business units
+                true            // APPLY hierarchy for filters
+            );
 
             // Base query
             $query = ClientEnquiry::with([
@@ -257,9 +252,7 @@ class ClientEnquiryController extends Controller
     public function create()
     {
         $channelPartners = ChannelPartner::all(['id', 'firm_name']);
-         $managers =  \App\Models\User::whereHas('businessUnit', function ($query) {
-            $query->where('code', 'AI');
-        })->get(['id', 'name']);
+        $managers = $this->getUsersForDropdown(auth()->user(), ['AI','KRAE'], false);
         $projects = MandateProject::where('status', 1)->get(['id', 'project_name']);
         $sources = [
             'Reference','Channel Partner','Website','News','Paper Ad','Hoarding','Mailers/SMS',
@@ -288,9 +281,7 @@ class ClientEnquiryController extends Controller
         $clientEnquiry = ClientEnquiry::findOrFail($id);
 
         $channelPartners = ChannelPartner::all(['id', 'firm_name']);
-         $managers =  \App\Models\User::whereHas('businessUnit', function ($query) {
-            $query->where('code', 'AI');
-        })->get(['id', 'name']);
+        $managers = $this->getUsersForDropdown(auth()->user(), ['AI','KRAE'], false);
         $sources = [
             'Reference','Channel Partner','Website','News','Paper Ad','Hoarding','Mailers/SMS',
             'Online Ad','Call Center','Walk in','Exhibition','Insert','Existing Client','Property Portal'

@@ -93,6 +93,25 @@
                     @endforeach
                 </select>
             </div>
+            <div class="mb-3 col-md-3">
+                <label class="form-label">Sourcing Manager</label>
+                <select id="sourcing_manager_id" class="form-select">
+                    <option value="">All</option>
+                    @foreach ($users as $user)
+                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="mb-3 col-md-3">
+                <label class="form-label">Closing Manager</label>
+                <select id="closing_manager_id" class="form-select">
+                    <option value="">All</option>
+                    @foreach ($users as $user)
+                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                    @endforeach
+                </select>
+            </div>
 
             <div class="mb-3 col-md-3">
                 <label class="form-label">&nbsp;</label><br>
@@ -121,6 +140,8 @@
                         <th>Booking Status</th>
                         <th>Booking Source</th>
                         <th>Channel Partner</th>
+                        <th>Sourcing Manager</th>
+                        <th>Closing Manager</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -151,6 +172,9 @@ $(document).ready(function () {
                 d.booking_date_from = $('#booking_date_from').val();
                 d.booking_date_to = $('#booking_date_to').val();
                 d.channel_partner_id = $('#channel_partner_id').val();
+                 // ✅ ADD THESE
+                d.sourcing_manager_id = $('#sourcing_manager_id').val();
+                d.closing_manager_id  = $('#closing_manager_id').val();
 
             }   
         },
@@ -208,6 +232,16 @@ $(document).ready(function () {
             },
             { data: 'booking_source', name: 'b.booking_source', render: function(data){ return data ?? '—'; }},
             {  data: 'cp_name', name: 'cp.name',render: function(data){ return data ?? '—';} },
+            {
+                data: 'sourcing_manager_name',
+                name: 'sm.name',
+                defaultContent: '—'
+            },
+            {
+                data: 'closing_manager_name',
+                name: 'cm.name',
+                defaultContent: '—'
+            },
             { data: 'action', orderable:false, searchable:false }
         ]
     });

@@ -31,6 +31,9 @@ class MandateBookingController extends Controller
                 ->leftJoin('mandate_booking_finances as f', 'f.booking_id', '=', 'b.id')
                 ->leftJoin('mandate_booking_brokerages as br', 'br.booking_id', '=', 'b.id')
                 ->leftJoin('channel_partners as cp', 'cp.id', '=', 'b.channel_partner_id')
+                ->leftJoin('users as sm', 'sm.id', '=', 'b.sourcing_manager_id')
+                ->leftJoin('users as cm', 'cm.id', '=', 'b.closing_manager_id')
+                ->leftJoin('users as ps', 'ps.id', '=', 'b.presales_id')
                 ->select([
                     'b.id',
                     'b.booking_date',
@@ -39,6 +42,9 @@ class MandateBookingController extends Controller
                     DB::raw('COALESCE(p.project_name, "—") as project_name'),
                     'f.agreement_value',
                     'f.is_registered',
+                    'sm.name as sourcing_manager_name',
+                    'cm.name as closing_manager_name',
+                    'ps.name as presales_name',
                     'br.total_paid',
                     'br.payment_percent',
                     'br.is_eligible',
@@ -82,8 +88,16 @@ class MandateBookingController extends Controller
                 $query->where('b.booking_date', '<=', $request->booking_date_to);
             }
             // 🔍 Channel Partner filter
-            if ($request->filled('channel_partner_id')) {
-                $query->where('b.channel_partner_id', $request->channel_partner_id);
+            if ($request->filled('sourcing_manager_id')) {
+                $query->where('b.sourcing_manager_id', $request->sourcing_manager_id);
+            }
+
+            if ($request->filled('closing_manager_id')) {
+                $query->where('b.closing_manager_id', $request->closing_manager_id);
+            }
+
+            if ($request->filled('closing_manager_id')) {
+                $query->where('closing_manager_id', $request->closing_manager_id);
             }
             return datatables()->of($query)
                 ->addColumn('registered', function($row) {
@@ -142,8 +156,8 @@ class MandateBookingController extends Controller
             ->where('status', 1)
             ->orderBy('firm_name')
             ->get(['id', 'firm_name']);
-
-        return view('mandate_bookings.index', compact('projects','sources','channelPartners'));
+        $users = $this->getUsersForDropdown(auth()->user(), ['AI', 'KRE'], true);
+        return view('mandate_bookings.index', compact('projects','sources','channelPartners','users'));
     }
 
     public function updateStatus(Request $request)
@@ -228,7 +242,7 @@ class MandateBookingController extends Controller
         return view('mandate_bookings.create', [
             'projects' => MandateProject::orderBy('project_name')->get(),
             'channelPartners' => ChannelPartner::orderBy('firm_name')->get(),
-            'managers' => $this->getAccessibleUsersByBusinessUnit(auth()->user(), 'AI'),
+            'managers' => $this->getUsersForDropdown(auth()->user(), ['AI', 'KRE'], false),
         ]);
     }
 
@@ -463,7 +477,8 @@ class MandateBookingController extends Controller
             'brokerage' => $brokerage,
             'projects' => MandateProject::all(),
             'channelPartners' => ChannelPartner::all(),
-            'managers' => $this->getAccessibleUsersByBusinessUnit(auth()->user(), 'AI'),
+            'managers' => $this->getUsersForDropdown(auth()->user(), ['AI', 'KRE'], false),
+
         ]);
     }
 

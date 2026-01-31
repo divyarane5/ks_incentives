@@ -86,10 +86,11 @@ class ChannelPartnerController extends Controller
         }
         // Dropdown data
          // ✅ DROPDOWN DATA (FIXED)
-        $sourcingManagers = \App\Models\User::whereIn(
-            'id',
-            $this->getAccessibleUserIds($user)
-        )->get();
+        $sourcingManagers = $this->getUsersForDropdown(
+                auth()->user(),
+                ['AI'], // business units
+                true            // APPLY hierarchy for filters
+            );
 
         return view('channel_partners.index', compact('sourcingManagers'));
     }

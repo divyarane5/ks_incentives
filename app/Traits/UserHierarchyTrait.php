@@ -37,13 +37,30 @@ trait UserHierarchyTrait
         return $ids;
     }
 
-    public function getAccessibleUsersByBusinessUnit($user, string $unitCode)
-    {
-        $query = User::whereHas('businessUnit', function ($q) use ($unitCode) {
-            $q->where('code', $unitCode);
-        });
+    public function getUsersForDropdown(
+        $user,
+        array $businessUnitCodes = [],
+        bool $applyHierarchy = true,
+        array $roles = [] // optional: filter by role
+    ) {
+        $query = User::query();
 
-        if (!$user->hasRole('Superadmin')) {
+        // 1️⃣ Business unit filter
+        if (!empty($businessUnitCodes)) {
+            $query->whereHas('businessUnit', function ($q) use ($businessUnitCodes) {
+                $q->whereIn('code', $businessUnitCodes);
+            });
+        }
+
+        // 2️⃣ Role filter
+        if (!empty($roles)) {
+            $query->whereHas('roles', function ($q) use ($roles) {
+                $q->whereIn('name', $roles);
+            });
+        }
+
+        // 3️⃣ Apply hierarchy
+        if ($applyHierarchy && !$user->hasRole('Superadmin')) {
             $accessibleUserIds = $this->getAccessibleUserIds($user);
             $query->whereIn('id', $accessibleUserIds);
         }
