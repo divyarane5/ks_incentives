@@ -180,7 +180,7 @@ class BrokerageLedgerService
            // ->orderBy('eligible_at', 'asc')
             ->get();
             // echo "<pre>"; 
-             echo count($oldBookings); exit;
+           //  echo count($oldBookings); exit;
         if ($oldBookings->isEmpty()) {
             return;
         }

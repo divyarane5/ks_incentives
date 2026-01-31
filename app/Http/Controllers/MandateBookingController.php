@@ -11,10 +11,12 @@ use App\Models\MandateBookingAddress;
 use App\Models\MandateBookingBrokerage;
 use Illuminate\Support\Facades\DB;
 use App\Services\BrokerageLedgerService;
+use App\Traits\UserHierarchyTrait;
 
 
 class MandateBookingController extends Controller
 {
+    use UserHierarchyTrait;
     /**
      * Display a listing of the resource.
      *
@@ -225,8 +227,8 @@ class MandateBookingController extends Controller
     {
         return view('mandate_bookings.create', [
             'projects' => MandateProject::orderBy('project_name')->get(),
-            'clientEnquiries' => ClientEnquiry::orderBy('customer_name')->get(),
             'channelPartners' => ChannelPartner::orderBy('firm_name')->get(),
+            'managers' => $this->getAccessibleUsersByBusinessUnit(auth()->user(), 'AI'),
         ]);
     }
 
@@ -289,6 +291,14 @@ class MandateBookingController extends Controller
                 'reference_contact' => $request->reference_contact,
                 'source_remark' => $request->source_remark,
                 'booking_form_file' => $bookingFormPath,
+                // ✅ MANAGERS
+                'closing_manager_id'  => $request->closing_manager_id,
+                'presales_id'         => $request->presales_id,
+                'sourcing_manager_id' => $request->sourcing_manager_id,
+
+                // ✅ CREATED BY (logged-in user)
+                'created_by' => auth()->id(),
+
                 'booking_status' => 'pending',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -453,6 +463,7 @@ class MandateBookingController extends Controller
             'brokerage' => $brokerage,
             'projects' => MandateProject::all(),
             'channelPartners' => ChannelPartner::all(),
+            'managers' => $this->getAccessibleUsersByBusinessUnit(auth()->user(), 'AI'),
         ]);
     }
 
@@ -466,6 +477,8 @@ class MandateBookingController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // echo "<pre>"; 
+        // print_r($_REQUEST); exit;
         DB::beginTransaction();
 
         try {
@@ -496,15 +509,31 @@ class MandateBookingController extends Controller
              * STEP 2: UPDATE BOOKING MASTER
              */
             $booking = DB::table('mandate_bookings')->where('id', $id)->first();
+            $closingManagerId  = $request->filled('closing_manager_id')
+                ? (int) $request->closing_manager_id
+                : null;
 
+            $presalesId = $request->filled('presales_id')
+                ? (int) $request->presales_id
+                : null;
+
+            $sourcingManagerId = $request->filled('sourcing_manager_id')
+                ? (int) $request->sourcing_manager_id
+                : null;
             DB::table('mandate_bookings')->where('id', $id)->update([
                 'booking_date' => $request->booking_date,
                 'project_id'   => $request->project_id,
                 'booking_source' => $request->booking_source,
                 'channel_partner_id' => $request->channel_partner_id,
+                'closing_manager_id'  => $closingManagerId,
+                'presales_id'         => $presalesId,
+                'sourcing_manager_id' => $sourcingManagerId,
+
+                // ✅ CREATED BY (logged-in user)
+                'created_by' => auth()->id(),
                 'updated_at' => now(),
             ]);
-
+ 
             /**
              * STEP 3: FINANCE
              */
@@ -622,7 +651,7 @@ class MandateBookingController extends Controller
                 ($brokerageBaseAmount * $projectTotalPercent) / 100,
                 2
             );
-
+            
             /**
              * STEP 11: SAVE BOOKING BROKERAGE (TOTAL)
              */
@@ -656,11 +685,13 @@ class MandateBookingController extends Controller
             //         ->createInitialLedger($id);
             // }
             if ($isEligible) {
+                 
                 $booking = MandateBooking::with('brokerage')->findOrFail($id);
 
                 app(\App\Services\BrokerageLedgerService::class)
                     ->handleEligibilityAndLadder($booking);
             }
+            
             DB::commit();
 
             return redirect()

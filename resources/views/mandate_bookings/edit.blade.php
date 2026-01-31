@@ -652,6 +652,53 @@
                            
                         </div>
                     </div>
+                    <hr>
+                    <h6 class="mb-3">Assigned Managers</h6>
+
+                    <div class="row mb-3">
+                        {{-- Closing Manager --}}
+                        <div class="col-md-4">
+                            <label class="form-label">Closing Manager</label>
+                            <select name="closing_manager_id" class="form-select">
+                                <option value="">Select Closing Manager</option>
+                                @foreach($managers as $manager)
+                                    <option value="{{ $manager->id }}"
+                                        {{ old('closing_manager_id', $booking->closing_manager_id) == $manager->id ? 'selected' : '' }}>
+                                        {{ $manager->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Pre Sales --}}
+                        <div class="col-md-4">
+                            <label class="form-label">Pre-Sales</label>
+                            <select name="presales_id" class="form-select">
+                                <option value="">Select Pre-Sales</option>
+                                @foreach($managers as $manager)
+                                    <option value="{{ $manager->id }}"
+                                        {{ old('presales_id', $booking->presales_id) == $manager->id ? 'selected' : '' }}>
+                                        {{ $manager->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        {{-- Sourcing Manager --}}
+                        <div class="col-md-4">
+                            <label class="form-label">Sourcing Manager</label>
+                            <select name="sourcing_manager_id" class="form-select">
+                                <option value="">Select Sourcing Manager</option>
+                                @foreach($managers as $manager)
+                                    <option value="{{ $manager->id }}"
+                                        {{ old('sourcing_manager_id', $booking->sourcing_manager_id) == $manager->id ? 'selected' : '' }}>
+                                        {{ $manager->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+
 
                     {{-- OPTIONAL: SIGNATURES (ENABLE LATER IF NEEDED) --}}
                     {{-- 
@@ -708,7 +755,7 @@
                                     @endif
                                 </div>
                             </div>
-                        
+                            
                         </div>
                     </div>
                     --}}

@@ -306,6 +306,51 @@
                         </div>
                     </div>
 
+                    {{-- ================= MANAGER ASSIGNMENT ================= --}}
+                    <div class="card mt-4">
+                        <div class="card-body">
+                            <h6 class="mb-3">Manager Assignment</h6>
+
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <label class="form-label">Sourcing Manager</label>
+                                    <select name="sourcing_manager_id" class="form-select">
+                                        <option value="">Select</option>
+                                        @foreach($managers as $manager)
+                                            <option value="{{ $manager->id }}">
+                                                {{ $manager->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label">Pre-Sales</label>
+                                    <select name="presales_id" class="form-select">
+                                        <option value="">Select</option>
+                                        @foreach($managers as $manager)
+                                            <option value="{{ $manager->id }}">
+                                                {{ $manager->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label">Closing Manager</label>
+                                    <select name="closing_manager_id" class="form-select">
+                                        <option value="">Select</option>
+                                        @foreach($managers as $manager)
+                                            <option value="{{ $manager->id }}">
+                                                {{ $manager->name }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- <div class="card">
                         <div class="card-body">
                             <h6 class="mb-3">Signatures</h6>
