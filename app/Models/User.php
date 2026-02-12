@@ -22,24 +22,86 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'employee_code', 'entity', 'title', 'first_name', 'middle_name', 'last_name',
-        'name', 'gender', 'photo', 'status', 'official_contact', 'personal_contact',
-        'email', 'official_email', 'personal_email', 'department_id', 'designation_id',
-        'role_id', 'reporting_manager_id', 'work_location_id', 'location_handled',
-        'joining_date', 'confirm_date', 'leaving_date', 'exit_status', 
-        'reason_for_leaving', 'fnf_status', 'current_ctc', 'monthly_basic', 
-        'monthly_hra', 'special_allowance', 'conveyance_allowance', 
-        'medical_reimbursement', 'professional_tax', 'pf_employer', 
-        'pf_employee', 'net_deductions', 'net_salary', 'pf_status', 
-        'pf_joining_date', 'uan_number', 'bank_name', 'ifsc_code', 
-        'bank_account_number', 'dob', 'age', 'birthday_month', 'blood_group',
-        'communication_address', 'permanent_address', 'languages_known', 
-        'education_qualification', 'marital_status', 'marriage_date', 
-        'spouse_name', 'parents_contact', 'emergency_contact_name', 
-        'emergency_contact_relationship', 'emergency_contact_number', 
-        'pan_no', 'aadhar_no', 'laptop_desktop', 'company_phone', 
-        'company_sim', 'work_off', 'additional_comments', 'created_by', 
-        'password', 'remember_token', 'last_login','business_unit_id'
+        'name', 'gender', 'photo', 'status',
+
+        /* Contact */
+        'official_contact', 'personal_contact',
+        'email', 'official_email', 'personal_email',
+
+        /* Employment */
+        'department_id', 'designation_id', 'role_id',
+        'reporting_manager_id',
+        'work_location_id', 'location_handled',
+        'joining_date', 'confirm_date',
+        'employment_status',            // ✅ ADD
+        'probation_period_days',        // ✅ ADD
+        'leaving_date',
+        'notice_period_days',           // ✅ ADD
+        'exit_status',
+        'reason_for_leaving',
+        'fnf_status',
+
+        /* Salary */
+        'annual_ctc',                   // ✅ ADD
+        'current_ctc',
+        'monthly_basic',
+        'monthly_hra',
+        'special_allowance',
+        'conveyance_allowance',
+        'medical_reimbursement',
+        'professional_tax',
+        'pf_employer',
+        'pf_employee',
+        'net_deductions',
+        'net_salary',
+
+        /* Statutory */
+        'pf_status',
+        'pf_joining_date',
+        'uan_number',
+
+        /* Banking */
+        'bank_name',
+        'bank_account_name',
+        'bank_branch_name',
+        'bank_account_type',
+        'ifsc_code',
+        'bank_account_number',
+
+        /* Personal */
+        'dob',
+        'age',
+        'birthday_month',
+        'blood_group',
+        'communication_address',
+        'permanent_address',
+        'languages_known',
+        'education_qualification',
+        'marital_status',
+        'marriage_date',
+        'spouse_name',
+        'parents_contact',
+        'emergency_contact_name',
+        'emergency_contact_relationship',
+        'emergency_contact_number',
+        'pan_no',
+        'aadhar_no',
+
+        /* Assets & Misc */
+        'laptop_desktop',
+        'company_phone',
+        'company_sim',
+        'work_off',
+        'additional_comments',
+
+        /* Meta */
+        'business_unit_id',
+        'created_by',
+        'password',
+        'remember_token',
+        'last_login',
     ];
+
 
     /**
      * The attributes that should be hidden for serialization.
@@ -96,9 +158,77 @@ class User extends Authenticatable
         return $this->hasMany(ChannelPartner::class, 'sourcing_manager');
     }
 
-    public function salaries()
+    // ========================
+    // Reporting Manager Accessor
+    // ========================
+    public function reportingManagerHistories()
     {
-        return $this->hasMany(UserSalary::class);
+        return $this->hasMany(EmployeeReportingManagerHistory::class);
+    }
+
+    public function latestReportingManagerHistory()
+    {
+        return $this->hasOne(EmployeeReportingManagerHistory::class)->latestOfMany();
+    }
+
+    /**
+     * Get the current reporting manager (from history table or fallback to users.reporting_manager_id)
+     */
+    public function getCurrentManagerAttribute()
+    {
+        // Check history first
+        $history = $this->reportingManagerHistories()
+            ->whereNull('effective_to')
+            ->latest('effective_from')
+            ->first();
+
+        if ($history && $history->manager) {
+            return $history->manager;
+        }
+
+        // Fallback to user.reporting_manager_id
+        return $this->reporting_manager_id ? User::find($this->reporting_manager_id) : null;
+    }
+
+    // ========================
+    // Salary Relations
+    // ========================
+    public function salaryHistories()
+    {
+        return $this->hasMany(EmployeeSalaryHistory::class);
+    }
+
+    public function latestSalaryHistory()
+    {
+        return $this->hasOne(EmployeeSalaryHistory::class)->latestOfMany();
+    }
+
+    // ========================
+    // Exit Relations
+    // ========================
+    public function exitHistories()
+    {
+        return $this->hasMany(EmployeeExitHistory::class);
+    }
+
+    public function latestExitHistory()
+    {
+        return $this->hasOne(EmployeeExitHistory::class)->latestOfMany();
+    }
+
+    // User.php
+
+    
+    public function previousEmploymentDocuments()
+    {
+        return $this->hasMany(\App\Models\EmployeeDocument::class, 'user_id')
+                    ->where('document_type', 'previous_employment');
+    }
+    public function currentReportingManagerHistory()
+    {
+        return $this->hasOne(EmployeeReportingManagerHistory::class)
+                    ->whereNull('effective_to')
+                    ->latestOfMany();
     }
 
 }

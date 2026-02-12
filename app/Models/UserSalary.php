@@ -10,13 +10,18 @@ class UserSalary extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
+         'user_id',
         'financial_year',
         'month',
-        'credited_amount',
-        'credited_on',
+        'gross_salary',
+        'professional_tax',
+        'pf_amount',
+        'extra_deduction',
+        'system_net_salary',
+        'salary_credited',
+        'total_employee_cost',
+        'status',
         'remarks',
-        'created_by'
     ];
 
     protected $casts = [

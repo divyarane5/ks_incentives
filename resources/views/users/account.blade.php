@@ -10,12 +10,12 @@
         <div class="card mb-4">
             <form id="formAccountSettings" method="POST" action="{{ route('update_profile') }}" enctype="multipart/form-data">
                 @csrf
-                <h5 class="card-header">Profile Details - {{ auth()->user()->employee_code }}</h5>
+                <h5 class="card-header">Profile Details - {{ $user->employee_code }}</h5>
                 <!-- Account -->
                 <div class="card-body">
                     <div class="d-flex align-items-start align-items-sm-center gap-4">
                     <img
-                        src="{{ (auth()->user()->photo != "") ? url('storage/app/'.auth()->user()->photo) : asset("assets/img/avatars/profile.png") }}"
+                        src="{{ ($user->photo != "") ? url('storage/app/'.$user->photo) : asset("assets/img/avatars/profile.png") }}"
                         alt="user-avatar"
                         class="d-block rounded"
                         height="100"
@@ -48,7 +48,7 @@
                         <div class="row">
                             <div class="mb-3 col-md-6">
                                 <label for="name" class="form-label">Name</label>
-                                <input class="form-control" type="text" id="name" name="name" value="{{ (old('name') != "") ? old('name') : auth()->user()->name }}" @error('name') autofocus @enderror />
+                                <input class="form-control" type="text" id="name" name="name" value="{{ (old('name') != "") ? old('name') : $user->name }}" @error('name') autofocus @enderror />
                                 @error('name')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
@@ -57,7 +57,7 @@
                             </div>
                             <div class="mb-3 col-md-6">
                                 <label for="email" class="form-label">E-mail</label>
-                                <input class="form-control" type="text" id="email" value="{{ (old('email') != "") ? old('email') : auth()->user()->email }}" placeholder="john.doe@example.com" @error('email') autofocus @enderror readonly />
+                                <input class="form-control" type="text" id="email" value="{{ (old('email') != "") ? old('email') : $user->email }}" placeholder="john.doe@example.com" @error('email') autofocus @enderror readonly />
                                 @error('email')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
@@ -72,7 +72,7 @@
                                     @endphp
                                     <option value="">Select Gender</option>
                                     @foreach ($genders as $key => $gender)
-                                        <option value="{{ $key }}" {{ ($key == ((old('gender') != "") ? old('gender') : auth()->user()->gender ) ? 'selected' : '') }}>{{ $gender }}</option>
+                                        <option value="{{ $key }}" {{ ($key == ((old('gender') != "") ? old('gender') : $user->gender ) ? 'selected' : '') }}>{{ $gender }}</option>
                                     @endforeach
                                 </select>
                                 @error('gender')
@@ -83,7 +83,7 @@
                             </div>
                             <div class="mb-3 col-md-6">
                                 <label for="dob" class="form-label">Date Of Birth</label>
-                                <input class="form-control" type="date" value="{{ (old('dob') != "") ? old('dob') : auth()->user()->dob }}" id="dob" name="dob" @error('dob') autofocus @enderror />
+                                <input class="form-control" type="date" value="{{ (old('dob') != "") ? old('dob') : $user->dob }}" id="dob" name="dob" @error('dob') autofocus @enderror />
                                 @error('dob')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
@@ -107,11 +107,11 @@
                         <table class="table table-borderless col-md-6">
                             <tr>
                                 <th>Company: </th>
-                                <td>{{ (!empty(auth()->user()->entity) ? auth()->user()->entity : '') }}</td>
+                                <td>{{ (!empty($user->entity) ? $user->entity : '') }}</td>
                             </tr>
                             <tr>
                                 <th>Reporting To: </th>
-                                <td>{{ (isset(auth()->user()->reportingTo->name) ? auth()->user()->reportingTo->name : '-') }}</td>
+                                <td>    {{ $user->latestReportingManagerHistory->manager->name ?? '-' }}</td>
                             </tr>
                         </table>
                     </div>
@@ -119,15 +119,15 @@
                         <table class="table table-borderless col-md-6">
                             <tr>
                                 <th>Location: </th>
-                                <td>{{ (isset(auth()->user()->location->name) ? auth()->user()->location->name : '-') }}</td>
+                                <td>{{ (isset($user->location->name) ? $user->location->name : '-') }}</td>
                             </tr>
                             <tr>
                                 <th>Department: </th>
-                                <td>{{ (isset(auth()->user()->department->name) ? auth()->user()->department->name : '-') }}</td>
+                                <td>{{ (isset($user->department->name) ? $user->department->name : '-') }}</td>
                             </tr>
                             <tr>
                                 <th>Designation: </th>
-                                <td>{{ (isset(auth()->user()->designation->name) ? auth()->user()->designation->name : '-') }}</td>
+                                <td>{{ (isset($user->designation->name) ? $user->designation->name : '-') }}</td>
                             </tr>
                         </table>
                     </div>

@@ -74,15 +74,22 @@
                                     @error('entity') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="mb-3 col-md-6">
-                                    <label for="form-label" class="form-label">Business Unit</label>
-                                    <select name="business_unit_id" id="business_unit_id" class="form-select">
+                                    <label class="form-label">Business Unit</label>
+                                    <select name="business_unit_id" id="business_unit_id"
+                                            class="form-select @error('business_unit_id') is-invalid @enderror">
                                         <option value="">Select Business Unit</option>
+
                                         @foreach($businessUnits as $id => $name)
-                                            <option value="{{ $id }}" {{ (isset($model) && $model->business_unit_id == $id) ? 'selected' : '' }}>
+                                            <option value="{{ $id }}"
+                                                {{ old('business_unit_id', $user->business_unit_id) == $id ? 'selected' : '' }}>
                                                 {{ $name }}
                                             </option>
                                         @endforeach
+
                                     </select>
+                                    @error('business_unit_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
                                 </div>
                                 <div class="mb-3 col-md-6">
                                     <label class="form-label">Gender</label>
@@ -149,144 +156,176 @@
                     </div>
 
                     <!-- 3️⃣ Employment Details (complete) -->
+                    <!-- 3️⃣ Employment Details (EDIT – COMPLETE & FIXED) -->
                     <div class="accordion-item mb-3">
                         <h2 class="accordion-header" id="headingEmployment">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapseEmployment" aria-expanded="false" aria-controls="collapseEmployment">
+                            <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse" data-bs-target="#collapseEmployment"
+                                aria-expanded="false" aria-controls="collapseEmployment">
                                 🏢 Employment Details
                             </button>
                         </h2>
 
-                        <div id="collapseEmployment" class="accordion-collapse collapse" aria-labelledby="headingEmployment" data-bs-parent="#userAccordion">
+                        <div id="collapseEmployment" class="accordion-collapse collapse"
+                            aria-labelledby="headingEmployment" data-bs-parent="#userAccordion">
+
                             <div class="accordion-body row g-3">
 
                                 <!-- Department -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="department_id" class="form-label">Department</label>
-                                    <select id="department_id" name="department_id" class="form-select @error('department_id') is-invalid @enderror">
+                                <div class="col-md-6">
+                                    <label class="form-label">Department</label>
+                                    <select name="department_id" class="form-select">
                                         <option value="">Select Department</option>
                                         @foreach($departments as $department)
-                                            <option value="{{ $department->id }}" {{ old('department_id', $user->department_id) == $department->id ? 'selected' : '' }}>
+                                            <option value="{{ $department->id }}"
+                                                {{ old('department_id', $user->department_id) == $department->id ? 'selected' : '' }}>
                                                 {{ $department->name }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('department_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <!-- Designation -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="designation_id" class="form-label">Designation</label>
-                                    <select id="designation_id" name="designation_id" class="form-select @error('designation_id') is-invalid @enderror">
+                                <div class="col-md-6">
+                                    <label class="form-label">Designation</label>
+                                    <select name="designation_id" class="form-select">
                                         <option value="">Select Designation</option>
                                         @foreach($designations as $designation)
-                                            <option value="{{ $designation->id }}" {{ old('designation_id', $user->designation_id) == $designation->id ? 'selected' : '' }}>
+                                            <option value="{{ $designation->id }}"
+                                                {{ old('designation_id', $user->designation_id) == $designation->id ? 'selected' : '' }}>
                                                 {{ $designation->name }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('designation_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <!-- Role -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="role_id" class="form-label">Role <span class="text-danger">*</span></label>
-                                    <select id="role_id" name="role_id" class="form-select @error('role_id') is-invalid @enderror" required>
+                                <div class="col-md-6">
+                                    <label class="form-label">Role <span class="text-danger">*</span></label>
+                                    <select name="role_id" class="form-select" required>
                                         <option value="">Select Role</option>
                                         @foreach($roles as $role)
-                                            <option value="{{ $role->id }}" {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>
+                                            <option value="{{ $role->id }}"
+                                                {{ old('role_id', $user->role_id) == $role->id ? 'selected' : '' }}>
                                                 {{ $role->name }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('role_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                                 <!-- Reporting Manager -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="reporting_manager_id" class="form-label">Reporting Manager</label>
-                                    <select id="reporting_manager_id" name="reporting_manager_id" class="form-select @error('reporting_manager_id') is-invalid @enderror">
+                                <div class="col-md-6">
+                                    <label class="form-label">Reporting Manager</label>
+                                    <select name="reporting_manager_id" class="form-select">
                                         <option value="">Select Manager</option>
                                         @foreach($reportingUsers as $mgr)
-                                            <option value="{{ $mgr->id }}" {{ old('reporting_manager_id', $user->reporting_manager_id) == $mgr->id ? 'selected' : '' }}>
+                                            <option value="{{ $mgr->id }}"
+                                                {{ old('reporting_manager_id', $user->reporting_manager_id) == $mgr->id ? 'selected' : '' }}>
                                                 {{ $mgr->full_name ?? $mgr->name }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('reporting_manager_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+
+                                <!-- Joining Date -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Joining Date</label>
+                                    <input type="date"
+                                        name="joining_date"
+                                        id="joining_date"
+                                        value="{{ old('joining_date', $user->joining_date) }}"
+                                        class="form-control">
+                                </div>
+
+                                <!-- Probation Period -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Probation Period (Days)</label>
+                                    <input type="number"
+                                        name="probation_period_days"
+                                        id="probation_period_days"
+                                        value="{{ old('probation_period_days', $user->probation_period_days) }}"
+                                        class="form-control">
+                                </div>
+
+                                <!-- Confirmation Date -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Confirmation Date</label>
+                                    <input type="date"
+                                        name="confirm_date"
+                                        id="confirm_date"
+                                        value="{{ old('confirm_date', $user->confirm_date) }}"
+                                        class="form-control"
+                                        readonly>
+                                </div>
+
+                                <!-- Employment Status -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Employment Status</label>
+                                    <select name="employment_status" class="form-select">
+                                        <option value="Probation" {{ old('employment_status', $user->employment_status) == 'Probation' ? 'selected' : '' }}>Probation</option>
+                                        <option value="Confirmed" {{ old('employment_status', $user->employment_status) == 'Confirmed' ? 'selected' : '' }}>Confirmed</option>
+                                    </select>
+                                </div>
+
+                                <!-- Leaving Date -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Leaving Date</label>
+                                    <input type="date" name="leaving_date"
+                                        class="form-control"
+                                        value="{{ old('leaving_date', $user->leaving_date ?? $user->latestExitHistory?->exit_date) }}">
+                                </div>
+
+                                <!-- Notice Period -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Notice Period (Days)</label>
+                                    <input type="number" name="notice_period_days"
+                                        class="form-control"
+                                        value="{{ old('notice_period_days', $user->notice_period_days) }}">
+                                </div>
+
+                                <!-- Exit Status -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Exit Status</label>
+                                    <select name="exit_status" class="form-select">
+                                        <option value="">Select Exit Status</option>
+                                        @foreach(['Resigned','Terminated','Absconded','Retired'] as $status)
+                                            <option value="{{ $status }}"
+                                                {{ old('exit_status', $user->exit_status ?? $user->latestExitHistory?->exit_type) == $status ? 'selected' : '' }}>
+                                                {{ $status }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+
+                                <!-- Reason for Leaving -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Reason for Leaving</label>
+                                    <input type="text" name="reason_for_leaving"
+                                        class="form-control"
+                                        value="{{ old('reason_for_leaving', $user->reason_for_leaving ?? $user->latestExitHistory?->exit_reason) }}">
+
                                 </div>
 
                                 <!-- Location Handled -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="location_handled" class="form-label">Location Handled</label>
-                                    <input id="location_handled" type="text" name="location_handled" value="{{ old('location_handled', $user->location_handled) }}" class="form-control @error('location_handled') is-invalid @enderror">
-                                    @error('location_handled') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                <div class="col-md-6">
+                                    <label class="form-label">Location Handled</label>
+                                    <input type="text" name="location_handled"
+                                        value="{{ old('location_handled', $user->location_handled) }}"
+                                        class="form-control">
                                 </div>
 
                                 <!-- Work Location -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="work_location_id" class="form-label">Work Location</label>
-                                    <select id="work_location_id" name="work_location_id" class="form-select @error('work_location_id') is-invalid @enderror">
+                                <div class="col-md-6">
+                                    <label class="form-label">Work Location</label>
+                                    <select name="work_location_id" class="form-select">
                                         <option value="">Select Location</option>
                                         @foreach($locations as $location)
-                                            <option value="{{ $location->id }}" {{ old('work_location_id', $user->work_location_id) == $location->id ? 'selected' : '' }}>
+                                            <option value="{{ $location->id }}"
+                                                {{ old('work_location_id', $user->work_location_id) == $location->id ? 'selected' : '' }}>
                                                 {{ $location->name }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    @error('work_location_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-
-                                <!-- Joining Date -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="joining_date" class="form-label">Joining Date</label>
-                                    <input id="joining_date" type="date" name="joining_date" value="{{ old('joining_date', optional($user->joining_date)->format('Y-m-d') ?? $user->joining_date) }}" class="form-control @error('joining_date') is-invalid @enderror">
-                                    @error('joining_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-
-                                <!-- Confirmation Date -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="confirm_date" class="form-label">Confirmation Date</label>
-                                    <input id="confirm_date" type="date" name="confirm_date" value="{{ old('confirm_date', optional($user->confirm_date)->format('Y-m-d') ?? $user->confirm_date) }}" class="form-control @error('confirm_date') is-invalid @enderror">
-                                    @error('confirm_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-
-                                <!-- Leaving Date -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="leaving_date" class="form-label">Leaving Date</label>
-                                    <input id="leaving_date" type="date" name="leaving_date" value="{{ old('leaving_date', optional($user->leaving_date)->format('Y-m-d') ?? $user->leaving_date) }}" class="form-control @error('leaving_date') is-invalid @enderror">
-                                    @error('leaving_date') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-
-                                <!-- Exit Status -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="exit_status" class="form-label">Exit Status</label>
-                                    <select id="exit_status" name="exit_status" class="form-select @error('exit_status') is-invalid @enderror">
-                                        <option value="">Select Exit Status</option>
-                                        @foreach(['Resigned','Terminated','Absconded','Retired'] as $status)
-                                            <option value="{{ $status }}" {{ old('exit_status', $user->exit_status) == $status ? 'selected' : '' }}>{{ $status }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('exit_status') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-
-                                <!-- Reason for Leaving -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="reason_for_leaving" class="form-label">Reason for Leaving</label>
-                                    <input id="reason_for_leaving" type="text" name="reason_for_leaving" value="{{ old('reason_for_leaving', $user->reason_for_leaving) }}" class="form-control @error('reason_for_leaving') is-invalid @enderror">
-                                    @error('reason_for_leaving') <div class="invalid-feedback">{{ $message }}</div> @enderror
-                                </div>
-
-                                <!-- FNF Status -->
-                                <div class="col-md-6 mb-3">
-                                    <label for="fnf_status" class="form-label">FNF Status</label>
-                                    <select id="fnf_status" name="fnf_status" class="form-select @error('fnf_status') is-invalid @enderror">
-                                        <option value="">Select FNF Status</option>
-                                        @foreach(['Pending','In Progress','Completed'] as $fnf)
-                                            <option value="{{ $fnf }}" {{ old('fnf_status', $user->fnf_status) == $fnf ? 'selected' : '' }}>{{ $fnf }}</option>
-                                        @endforeach
-                                    </select>
-                                    @error('fnf_status') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
                             </div>
@@ -294,77 +333,172 @@
                     </div>
 
 
-                    <!-- 4️⃣ Salary Information -->
+
+                    <!-- 4️⃣ Salary & Compensation (Edit) -->
                     <div class="accordion-item mb-3">
                         <h2 class="accordion-header" id="headingSalary">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseSalary">
-                                💰 Salary Information
+                            <button class="accordion-button collapsed" type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#collapseSalary"
+                                    aria-expanded="false">
+                                💰 Salary & Compensation
                             </button>
                         </h2>
-                        <div id="collapseSalary" class="accordion-collapse collapse" data-bs-parent="#userAccordion">
-                            <div class="accordion-body row">
+
+                        <div id="collapseSalary" class="accordion-collapse collapse"
+                            data-bs-parent="#userAccordion">
+                            <div class="accordion-body row g-3">
+
+                                <!-- Annual CTC -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Annual CTC</label>
+                                    <input type="number" step="0.01"
+                                        name="annual_ctc"
+                                        id="annual_ctc"
+                                        value="{{ old('annual_ctc', $user->annual_ctc) }}"
+                                        class="form-control">
+                                </div>
+
+                                <!-- Monthly CTC -->
+                                <div class="col-md-4">
+                                    <label class="form-label">Monthly CTC</label>
+                                    <input type="number" step="0.01"
+                                        name="current_ctc"
+                                        id="current_ctc"
+                                        value="{{ old('current_ctc', $user->current_ctc) }}"
+                                        class="form-control bg-light"
+                                        readonly>
+                                </div>
+
                                 @php
-                                    $salaryFields = [
-                                        'current_ctc', 'monthly_basic', 'monthly_hra', 'special_allowance',
-                                        'conveyance_allowance', 'medical_reimbursement', 'professional_tax',
-                                        'pf_employer', 'pf_employee', 'net_deductions', 'net_salary'
+                                    $salary_fields = [
+                                        'monthly_basic' => 'Monthly Basic',
+                                        'monthly_hra' => 'Monthly HRA',
+                                        'special_allowance' => 'Special Allowance',
+                                        'conveyance_allowance' => 'Conveyance Allowance',
+                                        'medical_reimbursement' => 'Medical Reimbursement',
+                                        'professional_tax' => 'Professional Tax',
+                                        'pf_employer' => 'PF Employer',
+                                        'pf_employee' => 'PF Employee',
+                                        'net_deductions' => 'Net Deductions',
+                                        'net_salary' => 'Net Salary',
                                     ];
                                 @endphp
-                                @foreach($salaryFields as $field)
-                                    <div class="mb-3 col-md-6">
-                                        <label class="form-label">{{ ucwords(str_replace('_',' ',$field)) }}</label>
-                                        <input type="{{ $field == 'current_ctc' ? 'number' : 'text' }}" id="{{ $field }}" name="{{ $field }}" value="{{ old($field, $user->$field) }}" class="form-control" {{ $field != 'current_ctc' ? 'readonly' : '' }}>
+
+                                @foreach($salary_fields as $field => $label)
+                                    <div class="col-md-4">
+                                        <label class="form-label">{{ $label }}</label>
+                                        <input type="text"
+                                            name="{{ $field }}"
+                                            id="{{ $field }}"
+                                            value="{{ old($field, $user->$field) }}"
+                                            class="form-control bg-light"
+                                            readonly>
                                     </div>
                                 @endforeach
+
                             </div>
                         </div>
                     </div>
 
-                    <!-- 6️⃣ Statutory & Banking -->
+
+                    <!-- 6️⃣ Statutory & Banking (Edit) -->
                     <div class="accordion-item mb-3">
                         <h2 class="accordion-header" id="headingBanking">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapseBanking" aria-expanded="false" aria-controls="collapseBanking">
+                            <button class="accordion-button collapsed" type="button"
+                                    data-bs-toggle="collapse"
+                                    data-bs-target="#collapseBanking"
+                                    aria-expanded="false"
+                                    aria-controls="collapseBanking">
                                 🧾 Statutory & Banking Details
                             </button>
                         </h2>
-                        <div id="collapseBanking" class="accordion-collapse collapse" aria-labelledby="headingBanking"
-                            data-bs-parent="#userAccordion">
-                            <div class="accordion-body row">
 
-                                <div class="mb-3 col-md-6">
+                        <div id="collapseBanking" class="accordion-collapse collapse"
+                            aria-labelledby="headingBanking"
+                            data-bs-parent="#userAccordion">
+                            <div class="accordion-body row g-3">
+
+                                <!-- PF Status -->
+                                <div class="col-md-6">
                                     <label class="form-label">PF Status</label>
-                                    <select name="pf_status" id="pf_status" class="form-select">
+                                    <select name="pf_status" id="pf_status"
+                                            class="form-select @error('pf_status') is-invalid @enderror">
                                         <option value="">Select Status</option>
                                         <option value="1" {{ old('pf_status', $user->pf_status) == 1 ? 'selected' : '' }}>Active</option>
                                         <option value="0" {{ old('pf_status', $user->pf_status) == 0 ? 'selected' : '' }}>Inactive</option>
                                     </select>
+                                    @error('pf_status') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                <div class="mb-3 col-md-6">
+                                <!-- UAN Number -->
+                                <div class="col-md-6">
                                     <label class="form-label">UAN Number</label>
-                                    <input type="text" name="uan_number" value="{{ old('uan_number', $user->uan_number) }}"
+                                    <input type="text"
+                                        name="uan_number"
+                                        value="{{ old('uan_number', $user->uan_number) }}"
                                         class="form-control @error('uan_number') is-invalid @enderror">
                                     @error('uan_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                <div class="mb-3 col-md-6">
+                                <!-- Name as per Bank -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Name as per Bank</label>
+                                    <input type="text"
+                                        name="bank_account_name"
+                                        value="{{ old('bank_account_name', $user->bank_account_name) }}"
+                                        class="form-control @error('bank_account_name') is-invalid @enderror">
+                                    @error('bank_account_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+
+                                <!-- Bank Branch Name -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Bank Branch Name</label>
+                                    <input type="text"
+                                        name="bank_branch_name"
+                                        value="{{ old('bank_branch_name', $user->bank_branch_name) }}"
+                                        class="form-control @error('bank_branch_name') is-invalid @enderror">
+                                    @error('bank_branch_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+
+                                <!-- Account Type -->
+                                <div class="col-md-6">
+                                    <label class="form-label">Account Type</label>
+                                    <select name="bank_account_type"
+                                            class="form-select @error('bank_account_type') is-invalid @enderror">
+                                        <option value="">Select Account Type</option>
+                                        <option value="salary" {{ old('bank_account_type', $user->bank_account_type) == 'salary' ? 'selected' : '' }}>Salary</option>
+                                        <option value="savings" {{ old('bank_account_type', $user->bank_account_type) == 'savings' ? 'selected' : '' }}>Savings</option>
+                                        <option value="current" {{ old('bank_account_type', $user->bank_account_type) == 'current' ? 'selected' : '' }}>Current</option>
+                                    </select>
+                                    @error('bank_account_type') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                                </div>
+
+                                <!-- Bank Name -->
+                                <div class="col-md-6">
                                     <label class="form-label">Bank Name</label>
-                                    <input type="text" name="bank_name" value="{{ old('bank_name', $user->bank_name) }}"
+                                    <input type="text"
+                                        name="bank_name"
+                                        value="{{ old('bank_name', $user->bank_name) }}"
                                         class="form-control @error('bank_name') is-invalid @enderror">
                                     @error('bank_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                <div class="mb-3 col-md-6">
+                                <!-- IFSC Code -->
+                                <div class="col-md-6">
                                     <label class="form-label">IFSC Code</label>
-                                    <input type="text" name="ifsc_code" value="{{ old('ifsc_code', $user->ifsc_code) }}"
+                                    <input type="text"
+                                        name="ifsc_code"
+                                        value="{{ old('ifsc_code', $user->ifsc_code) }}"
                                         class="form-control @error('ifsc_code') is-invalid @enderror">
                                     @error('ifsc_code') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
 
-                                <div class="mb-3 col-md-6">
+                                <!-- Bank Account Number -->
+                                <div class="col-md-6">
                                     <label class="form-label">Bank Account Number</label>
-                                    <input type="text" name="bank_account_number"
+                                    <input type="text"
+                                        name="bank_account_number"
                                         value="{{ old('bank_account_number', $user->bank_account_number) }}"
                                         class="form-control @error('bank_account_number') is-invalid @enderror">
                                     @error('bank_account_number') <div class="invalid-feedback">{{ $message }}</div> @enderror
@@ -374,17 +508,126 @@
                         </div>
                     </div>
 
+                    <!-- 6️⃣ Offer & Joining Letters -->
+                    <div class="accordion-item mb-3">
+                        <h2 class="accordion-header" id="headingDocuments">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                                data-bs-target="#collapseDocuments" aria-expanded="false">
+                                📄 Offer & Joining Letters
+                            </button>
+                        </h2>
 
-                    <!-- 7️⃣ Personal -->
+                        <div id="collapseDocuments" class="accordion-collapse collapse" data-bs-parent="#userAccordion">
+                            <div class="accordion-body row">
+
+                                {{-- Offer Letter --}}
+                                <div class="mb-3 col-md-4">
+                                    <label class="form-label">Offer Letter Sent</label>
+                                    <select name="offer_letter_sent" class="form-select">
+                                        <option value="0" {{ old('offer_letter_sent', $user->offer_letter_sent) == 0 ? 'selected' : '' }}>No</option>
+                                        <option value="1" {{ old('offer_letter_sent', $user->offer_letter_sent) == 1 ? 'selected' : '' }}>Yes</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3 col-md-4">
+                                    <label class="form-label">Offer Letter Acknowledged</label>
+                                    <select name="offer_letter_acknowledged" class="form-select">
+                                        <option value="0" {{ old('offer_letter_acknowledged', $user->offer_letter_acknowledged) == 0 ? 'selected' : '' }}>No</option>
+                                        <option value="1" {{ old('offer_letter_acknowledged', $user->offer_letter_acknowledged) == 1 ? 'selected' : '' }}>Yes</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3 col-md-4">
+                                    <label class="form-label">Upload Offer Letter</label>
+                                    <input type="file" name="offer_letter_file" class="form-control" accept=".pdf,.doc,.docx">
+                                    @if($user->offer_letter_file)
+                                        <small class="d-block mt-1">
+                                            📎 <a href="{{ asset('storage/'.$user->offer_letter_file) }}" target="_blank">
+                                                View Offer Letter
+                                            </a>
+                                        </small>
+                                    @endif
+                                </div>
+
+                                {{-- Joining Letter --}}
+                                <div class="mb-3 col-md-4">
+                                    <label class="form-label">Joining Letter Sent</label>
+                                    <select name="joining_letter_sent" class="form-select">
+                                        <option value="0" {{ old('joining_letter_sent', $user->joining_letter_sent) == 0 ? 'selected' : '' }}>No</option>
+                                        <option value="1" {{ old('joining_letter_sent', $user->joining_letter_sent) == 1 ? 'selected' : '' }}>Yes</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3 col-md-4">
+                                    <label class="form-label">Joining Letter Acknowledged</label>
+                                    <select name="joining_letter_acknowledged" class="form-select">
+                                        <option value="0" {{ old('joining_letter_acknowledged', $user->joining_letter_acknowledged) == 0 ? 'selected' : '' }}>No</option>
+                                        <option value="1" {{ old('joining_letter_acknowledged', $user->joining_letter_acknowledged) == 1 ? 'selected' : '' }}>Yes</option>
+                                    </select>
+                                </div>
+
+                                <div class="mb-3 col-md-4">
+                                    <label class="form-label">Upload Joining Letter</label>
+                                    <input type="file" name="joining_letter_file" class="form-control" accept=".pdf,.doc,.docx">
+                                    @if($user->joining_letter_file)
+                                        <small class="d-block mt-1">
+                                            📎 <a href="{{ asset('storage/'.$user->joining_letter_file) }}" target="_blank">
+                                                View Joining Letter
+                                            </a>
+                                        </small>
+                                    @endif
+                                </div>
+
+                                {{-- Previous Employment Documents --}}
+                                <div class="mb-3 col-md-12">
+                                    <label class="form-label">Previous Employment Documents</label>
+                                    <input type="file" name="previous_documents[]" class="form-control" multiple>
+
+                                    @if($user->previousEmploymentDocuments->count())
+                                        <div class="mt-2">
+                                            <strong>Uploaded Documents:</strong>
+                                            <ul class="mb-0">
+                                                @foreach($user->previousEmploymentDocuments as $doc)
+                                                    <li>
+                                                        📎 <a href="{{ asset('storage/'.$doc->file_path) }}" target="_blank">
+                                                            {{ basename($doc->file_path) }}
+                                                        </a>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
+                                    @else
+                                        <small class="text-muted d-block mt-1">
+                                            No previous employment documents uploaded.
+                                        </small>
+                                    @endif
+                                </div>
+
+
+                            </div>
+                        </div>
+                    </div>
+
+
+
+
+                    <!-- 7️⃣ Personal & Emergency -->
                     <div class="accordion-item mb-3">
                         <h2 class="accordion-header" id="headingPersonal">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
-                                data-bs-target="#collapsePersonal" aria-expanded="false" aria-controls="collapsePersonal">
+                            <button class="accordion-button collapsed" type="button"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#collapsePersonal"
+                                aria-expanded="false"
+                                aria-controls="collapsePersonal">
                                 🏠 Personal & Emergency Info
                             </button>
                         </h2>
-                        <div id="collapsePersonal" class="accordion-collapse collapse" aria-labelledby="headingPersonal"
+
+                        <div id="collapsePersonal"
+                            class="accordion-collapse collapse"
+                            aria-labelledby="headingPersonal"
                             data-bs-parent="#userAccordion">
+
                             <div class="accordion-body row">
                                 @php
                                     $personal_fields = [
@@ -408,18 +651,24 @@
 
                                 @foreach($personal_fields as $field => $type)
                                     <div class="mb-3 col-md-6">
-                                        <label class="form-label">{{ ucwords(str_replace('_',' ',$field)) }}</label>
-                                        @if($type == 'textarea')
-                                            <textarea name="{{ $field }}" class="form-control">{{ old($field, $user->$field) }}</textarea>
+                                        <label class="form-label">
+                                            {{ ucwords(str_replace('_',' ',$field)) }}
+                                        </label>
+
+                                        @if($type === 'textarea')
+                                            <textarea name="{{ $field }}" class="form-control"
+                                                rows="2">{{ old($field, $user->$field ?? '') }}</textarea>
                                         @else
-                                            <input type="{{ $type }}" name="{{ $field }}" value="{{ old($field, $user->$field) }}" class="form-control">
+                                            <input type="{{ $type }}"
+                                                name="{{ $field }}"
+                                                value="{{ old($field, $user->$field ?? '') }}"
+                                                class="form-control">
                                         @endif
                                     </div>
                                 @endforeach
                             </div>
                         </div>
                     </div>
-
 
                     <!-- 8️⃣ Assets -->
                     <div class="accordion-item mb-3">
@@ -460,48 +709,66 @@
 @section('script')
 <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
 <script>
-const ctcInput = document.getElementById('current_ctc');
-const pfStatusInput = document.getElementById('pf_status');
+document.addEventListener('DOMContentLoaded', function () {
 
-function calculateSalary() {
-    const ctc = parseFloat(ctcInput?.value || 0);
-    if (!ctc) return;
+    const joiningDate = document.getElementById('joining_date');
+    const probationDays = document.getElementById('probation_period_days');
+    const confirmDate = document.getElementById('confirm_date');
 
-    const basic = ctc * 0.50;
-    const hra = basic * 0.50;
-    const special = ctc * 0.10;
-    const convey = ctc * 0.10;
-    const medical = ctc * 0.05;
+    function calculateConfirmDate() {
+        if (!joiningDate.value || !probationDays.value) return;
 
-    const profTax = 200;
+        const join = new Date(joiningDate.value);
+        join.setDate(join.getDate() + parseInt(probationDays.value));
 
-    const pfActive = pfStatusInput && pfStatusInput.value == "1";
-    const pfEmployee = pfActive ? 1800 : 0;
-    const pfEmployer = pfActive ? 1800 : 0;
+        const yyyy = join.getFullYear();
+        const mm = String(join.getMonth() + 1).padStart(2, '0');
+        const dd = String(join.getDate()).padStart(2, '0');
 
-    const deductions = pfEmployee + profTax;
-    const netSalary = ctc - deductions;
+        confirmDate.value = `${yyyy}-${mm}-${dd}`;
+    }
 
-    const values = {
-        monthly_basic: basic,
-        monthly_hra: hra,
-        special_allowance: special,
-        conveyance_allowance: convey,
-        medical_reimbursement: medical,
-        professional_tax: profTax,
-        pf_employee: pfEmployee,
-        pf_employer: pfEmployer,
-        net_deductions: deductions,
-        net_salary: netSalary
-    };
+    probationDays.addEventListener('input', calculateConfirmDate);
+    joiningDate.addEventListener('change', calculateConfirmDate);
 
-    Object.entries(values).forEach(([id, val]) => {
-        const el = document.getElementById(id);
-        if (el) el.value = val.toFixed(2);
-    });
-}
+    // auto-calc on edit load
+    calculateConfirmDate();
+});
 
-ctcInput?.addEventListener('input', calculateSalary);
-pfStatusInput?.addEventListener('change', calculateSalary);
-document.addEventListener('DOMContentLoaded', calculateSalary);
 </script>
+
+<script>
+
+    // Annual → Monthly CTC
+    document.getElementById('annual_ctc')?.addEventListener('input', function () {
+        const annual = parseFloat(this.value || 0);
+        if (annual <= 0) return;
+        const monthly = annual / 12;
+        document.getElementById('current_ctc').value = monthly.toFixed(2);
+
+        const basic = monthly * 0.50;
+        const hra = basic * 0.50;
+        const special = monthly * 0.10;
+        const convey = monthly * 0.10;
+        const medical = monthly * 0.05;
+
+        const pfEmployer = 1800;
+        const pfEmployee = 1800;
+        const profTax = 200;
+
+        const deductions = (pfEmployee + pfEmployer) + profTax;
+        const net = monthly - deductions;
+
+        document.getElementById('monthly_basic').value = basic.toFixed(2);
+        document.getElementById('monthly_hra').value = hra.toFixed(2);
+        document.getElementById('special_allowance').value = special.toFixed(2);
+        document.getElementById('conveyance_allowance').value = convey.toFixed(2);
+        document.getElementById('medical_reimbursement').value = medical.toFixed(2);
+        document.getElementById('professional_tax').value = profTax.toFixed(2);
+        document.getElementById('pf_employer').value = pfEmployer.toFixed(2);
+        document.getElementById('pf_employee').value = pfEmployee.toFixed(2);
+        document.getElementById('net_deductions').value = deductions.toFixed(2);
+        document.getElementById('net_salary').value = net.toFixed(2);
+    });
+</script>
+@endsection

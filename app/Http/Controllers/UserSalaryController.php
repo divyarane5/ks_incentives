@@ -13,8 +13,10 @@ class UserSalaryController extends Controller
     // 1️⃣ SHOW SALARY PAGE
     public function index(User $user, Request $request)
     {
-        $fy = $request->get('fy', $this->currentFY());
-        [$startYear, $endYear] = explode('-', $fy);
+        $fy = $request->get('fy', $this->currentFY()); // Example: 2025-26
+        [$startYear, $shortEndYear] = explode('-', $fy);
+
+        $startYear = (int) $startYear;
 
         $fyStart = Carbon::create($startYear, 4, 1);
         $fyEnd   = Carbon::create($startYear + 1, 3, 31);
@@ -22,44 +24,42 @@ class UserSalaryController extends Controller
         $joining = Carbon::parse($user->joining_date)->startOfMonth();
         $salaryStart = $joining->greaterThan($fyStart) ? $joining : $fyStart;
 
-        // ✅ Fetch FY data
+        // ✅ Fetch salary records for this FY
         $existing = UserSalary::where('user_id', $user->id)
-            ->whereIn('financial_year', [$startYear, $startYear + 1])
+            ->where('financial_year', $fy)
             ->get()
-            ->keyBy(fn ($s) => $s->financial_year.'-'.$s->month);
-        // echo "<pre>";
-        // echo count($existing); exit;
+            ->keyBy('month'); // key by month only (1–12)
+
         $months = [];
         $cursor = $fyStart->copy();
 
         while ($cursor <= $fyEnd) {
 
-            // 🔑 Jan–Mar belong to next calendar year
-            $salaryYear = $cursor->month <= 3
-                ? $startYear + 1
-                : $startYear;
+            $monthNumber = $cursor->month;
 
-            $key = $salaryYear . '-' . $cursor->month;
+            $record = $existing[$monthNumber] ?? null;
 
             $months[] = [
-                'label'   => $cursor->format('M Y'),
-                'month'   => $cursor->month,
-                'year'    => $salaryYear, // IMPORTANT
-                'enabled' => $cursor >= $salaryStart,
-                'amount'  => $existing[$key]->credited_amount ?? null,
-                'remarks' => $existing[$key]->remarks ?? null,
-                'status'  => isset($existing[$key]) ? 'Credited' : 'Pending',
+                'label'            => $cursor->format('M Y'),
+                'month'            => $monthNumber,
+                'year'             => $cursor->year,
+                'enabled'          => $cursor >= $salaryStart,
+                'salary_credited'  => $record->salary_credited ?? 0,
+                'remarks'          => $record->remarks ?? null,
+                'status'           => $record->status ?? 'Pending',
+                'extra_deduction'  => $record->extra_deduction ?? 0,
             ];
 
             $cursor->addMonth();
         }
 
-        $total = $existing->sum('credited_amount');
+        $total = $existing->sum('salary_credited');
 
         return view('users.salary.index', compact(
             'user', 'fy', 'months', 'total'
         ));
     }
+
 
 
 
@@ -74,34 +74,75 @@ class UserSalaryController extends Controller
         return ($today->year - 1) . '-' . substr($today->year, 2);
     }
 
-    public function store(User $user, Request $request)
-{
-    foreach ($request->salary ?? [] as $year => $months) {
+    public function store(Request $request, $userId)
+    {
+        $user = User::findOrFail($userId);
 
-        foreach ($months as $month => $data) {
+        foreach ($request->salary as $year => $months) {
 
-            if (empty($data['amount'])) {
-                continue;
+            foreach ($months as $month => $data) {
+
+                $credited = $data['salary_credited'] ?? 0;
+
+                if ($credited <= 0) {
+                    continue;
+                }
+
+                $monthDate = \Carbon\Carbon::create($year, $month, 1);
+
+                $confirmationDate = $user->confirm_date
+                    ? \Carbon\Carbon::parse($user->confirm_date)
+                    : null;
+
+                // PF Logic
+                if (
+                    $confirmationDate &&
+                    $monthDate->gte($confirmationDate) &&
+                    $user->employment_status === 'confirmed'
+                ) {
+                    $pf = ($user->pf_employee ?? 0) + ($user->pf_employer ?? 0);
+                } else {
+                    $pf = 0;
+                }
+
+                // PT Logic
+                if ($user->gender === 'female' && $user->current_ctc < 25000) {
+                    $pt = 0;
+                } else {
+                    $pt = $user->professional_tax ?? 0;
+                }
+
+                $standardNet = $user->net_salary ?? 0;
+
+                $deduction = max($standardNet - $credited, 0);
+
+                $gross = $credited + $pt + $pf;
+
+                UserSalary::updateOrCreate(
+                    [
+                        'user_id' => $user->id,
+                        'financial_year' => $request->financial_year,
+                        'month' => $month
+                    ],
+                    [
+                        'gross_salary' => $gross,
+                        'professional_tax' => $pt,
+                        'pf_amount' => $pf,
+                        'extra_deduction' => $deduction,
+                        'system_net_salary' => $standardNet,
+                        'salary_credited' => $credited,
+                        'total_employee_cost' => $gross,
+                        'status' => 'Credited',
+                        'remarks' => $data['remarks'] ?? null,
+                    ]
+                );
             }
-
-            UserSalary::updateOrCreate(
-                [
-                    'user_id'        => $user->id,
-                    'financial_year' => (int) $year,   // ✅ calendar year
-                    'month'          => (int) $month,
-                ],
-                [
-                    'credited_amount' => $data['amount'],
-                    'remarks'         => $data['remarks'] ?? null,
-                    'credited_on'     => now(),
-                    'created_by'      => auth()->id(),
-                ]
-            );
         }
+
+        return back()->with('success', 'Salary saved successfully.');
     }
 
-    return back()->with('success', 'Salary saved successfully');
-}
+
 
 
 

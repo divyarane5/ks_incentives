@@ -19,6 +19,7 @@ use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
+use DB;
 use DataTables;
 use App\Helpers\ExcelSanitizer;
 
@@ -97,11 +98,11 @@ class UserController extends Controller
                                     </form>';
                     }
 
-                    if (auth()->user()->can('configuration-view')) {
-                        $actions .= '<a class="dropdown-item" href="'.route('indent_configuration.index').'?user_id='.$row->id.'">
-                                        <i class="bx bx-list-ul me-1"></i> Indent Configuration
-                                    </a>';
-                    }
+                    // if (auth()->user()->can('configuration-view')) {
+                    //     $actions .= '<a class="dropdown-item" href="'.route('indent_configuration.index').'?user_id='.$row->id.'">
+                    //                     <i class="bx bx-list-ul me-1"></i> Indent Configuration
+                    //                 </a>';
+                    // }
                     // ✅ NEW: Add Salary / View Salary
                     if(auth()->user()->can('salary-view')) {
                         $actions .= '<a class="dropdown-item" href="'.route('users.salary.index', $row->id).'">
@@ -142,169 +143,404 @@ class UserController extends Controller
 
    public function store(Request $request)
     {
-        //dd("1");
-        // ✅ Validate core required fields
-        // $validated = $request->validate([
-        //     'employee_code' => 'required|unique:users,employee_code',
-        //     'entity' => 'required|string',
-        //     'first_name' => 'required|string|max:255',
-        //     'last_name' => 'required|string|max:255',
-        //     'role_id' => 'required|numeric',
-        //     'official_email' => 'nullable|email|unique:users,official_email',
-        //     'photo' => 'nullable|file|mimes:jpg,jpeg,png|max:2048',
-        // ]);
-        //dd("2");
-        // ✅ Handle photo upload
-        $photoPath = $request->hasFile('photo') ? $request->file('photo')->store('user_photos', 'public') : null;
-
-        // ✅ Calculate salary components server-side
-        $ctc = floatval($request->current_ctc ?? 0);
-        $monthly = $ctc / 12;
-        $monthly_basic = $monthly * 0.5;
-        $monthly_hra = $monthly_basic * 0.5;
-        $special_allowance = $monthly * 0.1;
-        $conveyance_allowance = $monthly * 0.1;
-        $medical_reimbursement = $monthly * 0.05;
-        $pfEmployer = 1800;
-        $pfEmployee = 1800;
-        $profTax = 200;
-        $deductions = $pfEmployee + $pfEmployer + $profTax;
-        $net_salary = $monthly - $deductions;
-
-        // ✅ Create new user
-        $user = new User();
-        $user->employee_code = $request->employee_code;
-        $user->entity = $request->entity;
-        $user->title = $request->title;
-        $user->first_name = $request->first_name;
-        $user->middle_name = $request->middle_name;
-        $user->last_name = $request->last_name;
-        $user->gender = $request->gender;
-        $user->photo = $photoPath;
-        $user->status = $request->status ?? 'Active';
-        $user->name = trim($request->title . ' ' . $request->first_name . ' ' . $request->middle_name . ' ' . $request->last_name);
-        // 🔹 Add business unit
-        $user->business_unit_id = $request->business_unit_id ?: null; 
-
-        // Contact info
-        $user->official_contact = $request->official_contact;
-        $user->personal_contact = $request->personal_contact;
-        $user->official_email = $request->official_email;
-        $user->personal_email = $request->personal_email;
-        $user->email = $request->official_email; // login email
-
-        // Employment details
-        $user->department_id = $request->department_id;
-        $user->designation_id = $request->designation_id;
-        $user->role_id = $request->role_id;
-        $user->reporting_manager_id = $request->reporting_manager_id;
-        $user->location_handled = $request->location_handled;
-        $user->work_location_id = $request->work_location_id;
-        $user->joining_date = $request->joining_date;
-        $user->confirm_date = $request->confirm_date;
-        $user->leaving_date = $request->leaving_date;
-        $user->exit_status = $request->exit_status;
-        $user->reason_for_leaving = $request->reason_for_leaving;
-        $user->fnf_status = $request->fnf_status;
-
-        // Salary & Compensation (server-side calculated)
-        $user->current_ctc = $ctc;
-        $user->monthly_basic = $monthly_basic;
-        $user->monthly_hra = $monthly_hra;
-        $user->special_allowance = $special_allowance;
-        $user->conveyance_allowance = $conveyance_allowance;
-        $user->medical_reimbursement = $medical_reimbursement;
-        $user->professional_tax = $profTax;
-        $user->pf_employer = $pfEmployer;
-        $user->pf_employee = $pfEmployee;
-        $user->net_deductions = $deductions;
-        $user->net_salary = $net_salary;
-
-        // Statutory & Banking
-        $user->pf_status = $request->pf_status == 'Active' ? 1 : 0; // map to int
-
-        $user->uan_number = $request->uan_number;
-        $user->bank_name = $request->bank_name;
-        $user->ifsc_code = $request->ifsc_code;
-        $user->bank_account_number = $request->bank_account_number;
-        
-        // Personal & Emergency
-        $personal_fields = [
-            'dob', 'blood_group', 'communication_address', 'permanent_address',
-            'languages_known', 'education_qualification', 'marital_status', 'marriage_date',
-            'spouse_name', 'parents_contact', 'emergency_contact_name', 'emergency_contact_relationship',
-            'emergency_contact_number', 'pan_no', 'aadhar_no'
-        ];
-        foreach ($personal_fields as $field) {
-            $user->$field = $request->$field;
+        // ✅ Validate using custom helper
+        $errors = validateUserForm($request);
+        if (!empty($errors)) {
+            return redirect()->back()->withErrors($errors)->withInput();
         }
 
-        // Assets & Misc
-        $user->work_off = $request->work_off;
-        $user->additional_comments = $request->additional_comments;
+        DB::transaction(function() use ($request) {
 
-        // Default password
-        $user->password = Hash::make('Welcome@123');
-        //dd("3");
-        $user->business_unit_id = $request->business_unit_id;
+            // -------------------------
+            // Handle file uploads
+            // -------------------------
+            $photoPath = $request->hasFile('photo') ? $request->file('photo')->store('user_photos', 'public') : null;
+            $offerLetterPath = $request->hasFile('offer_letter_file') ? $request->file('offer_letter_file')->store('user_documents', 'public') : null;
+            $joiningLetterPath = $request->hasFile('joining_letter_file') ? $request->file('joining_letter_file')->store('user_documents', 'public') : null;
 
-        $user->save();
-        //dd("4");
-        return redirect()->route('users.index')->with('success', 'User created successfully!');
+            $previousDocs = [];
+            if ($request->hasFile('previous_documents')) {
+                foreach ($request->file('previous_documents') as $file) {
+                    $previousDocs[] = $file->store('user_documents', 'public');
+                }
+            }
+
+            // -------------------------
+            // Calculate salary components
+            // -------------------------
+            $ctc = floatval($request->annual_ctc / 12 ?? 0);
+            $monthly_basic = $ctc * 0.5 / 12;
+            $monthly_hra = $monthly_basic * 0.5;
+            $special_allowance = $ctc * 0.1 / 12;
+            $conveyance_allowance = $ctc * 0.1 / 12;
+            $medical_reimbursement = $ctc * 0.05 / 12;
+            $pfEmployer = 1800;
+            $pfEmployee = 1800;
+            $profTax = 200;
+            $deductions = $pfEmployer + $pfEmployee + $profTax;
+            $net_salary = ($ctc/12) - $deductions;
+
+            // -------------------------
+            // Create User
+            // -------------------------
+            $user = new \App\Models\User();
+            $user->employee_code = $request->employee_code;
+            $user->entity = $request->entity;
+            $user->title = $request->title;
+            $user->first_name = $request->first_name;
+            $user->middle_name = $request->middle_name;
+            $user->last_name = $request->last_name;
+            $user->name = trim($request->title.' '.$request->first_name.' '.$request->middle_name.' '.$request->last_name);
+            $user->gender = $request->gender;
+            $user->photo = $photoPath;
+            $user->status = $request->status ?? 'Active';
+
+            // Business unit
+            $user->business_unit_id = $request->business_unit_id ?: null;
+
+            // Contact info
+            $user->official_contact = $request->official_contact;
+            $user->personal_contact = $request->personal_contact;
+            $user->official_email = $request->official_email;
+            $user->personal_email = $request->personal_email;
+            $user->email = $request->official_email; // login email
+
+            // Employment details
+            $user->department_id = $request->department_id;
+            $user->designation_id = $request->designation_id;
+            $user->role_id = $request->role_id;
+            $user->reporting_manager_id = $request->reporting_manager_id;
+            $user->location_handled = $request->location_handled;
+            $user->work_location_id = $request->work_location_id;
+            $user->joining_date = $request->joining_date;
+            $user->probation_period_days = $request->probation_period_days ?? null;
+
+            // ✅ Calculate confirmation date from joining + probation
+            $user->confirm_date = $request->probation_period_days 
+                ? \Carbon\Carbon::parse($request->joining_date)->addDays($request->probation_period_days)
+                : $request->confirm_date;
+
+            // Employment status (default probation)
+            $user->employment_status = $request->employment_status ?? 'probation';
+            $user->leaving_date = $request->leaving_date;
+            $user->notice_period_days = $request->notice_period_days ?? null;
+            $user->exit_status = $request->exit_status;
+            $user->reason_for_leaving = $request->reason_for_leaving;
+            $user->fnf_status = $request->fnf_status;
+
+            // Salary & Compensation
+            $user->annual_ctc = $request->annual_ctc;
+            $user->current_ctc = $ctc;
+            $user->monthly_basic = $monthly_basic;
+            $user->monthly_hra = $monthly_hra;
+            $user->special_allowance = $special_allowance;
+            $user->conveyance_allowance = $conveyance_allowance;
+            $user->medical_reimbursement = $medical_reimbursement;
+            $user->professional_tax = $profTax;
+            $user->pf_employer = $pfEmployer;
+            $user->pf_employee = $pfEmployee;
+            $user->net_deductions = $deductions;
+            $user->net_salary = $net_salary;
+
+            // Statutory & Banking
+            $user->pf_status = $request->pf_status == 'Active' ? 1 : 0;
+            $user->pf_joining_date = $request->pf_joining_date;
+            $user->uan_number = $request->uan_number;
+            $user->bank_name = $request->bank_name;
+            $user->bank_account_name = $request->bank_account_name;
+            $user->bank_branch_name = $request->bank_branch_name;
+            $user->bank_account_type = $request->bank_account_type;
+            $user->ifsc_code = $request->ifsc_code;
+            $user->bank_account_number = $request->bank_account_number;
+
+            // Documents
+            $user->offer_letter_sent = $request->offer_letter_sent ?? 0;
+            $user->offer_letter_acknowledged = $request->offer_letter_acknowledged ?? 0;
+            $user->offer_letter_file = $offerLetterPath;
+
+            $user->joining_letter_sent = $request->joining_letter_sent ?? 0;
+            $user->joining_letter_acknowledged = $request->joining_letter_acknowledged ?? 0;
+            $user->joining_letter_file = $joiningLetterPath;
+
+            // Personal & Emergency
+            $personal_fields = [
+                'dob','blood_group','communication_address','permanent_address',
+                'languages_known','education_qualification','marital_status','marriage_date',
+                'spouse_name','parents_contact','emergency_contact_name','emergency_contact_relationship',
+                'emergency_contact_number','pan_no','aadhar_no'
+            ];
+            foreach($personal_fields as $field){
+                $user->$field = $request->$field;
+            }
+
+            // Assets & Misc
+            $user->work_off = $request->work_off;
+            $user->additional_comments = $request->additional_comments;
+
+            // Default password
+            $user->password = \Hash::make('Welcome@123');
+
+            $user->save();
+
+            // -------------------------
+            // Previous Employment Documents
+            // -------------------------
+            if(!empty($previousDocs)){
+                foreach($previousDocs as $path){
+                    \App\Models\EmployeeDocument::create([
+                        'user_id' => $user->id,
+                        'file_path' => $path,
+                        'document_type' => 'previous_employment',
+                    ]);
+                }
+            }
+
+            // -------------------------
+            // Salary History
+            // -------------------------
+            \App\Models\EmployeeSalaryHistory::create([
+                'user_id' => $user->id,
+                'annual_ctc' => $user->annual_ctc,
+                'monthly_basic' => $user->monthly_basic,
+                'monthly_hra' => $user->monthly_hra,
+                'special_allowance' => $user->special_allowance,
+                'conveyance_allowance' => $user->conveyance_allowance,
+                'medical_reimbursement' => $user->medical_reimbursement,
+                'professional_tax' => $user->professional_tax,
+                'pf_employer' => $user->pf_employer,
+                'pf_employee' => $user->pf_employee,
+                'net_deductions' => $user->net_deductions,
+                'net_salary' => $user->net_salary,
+                'effective_from' => now(),
+                'changed_by' => auth()->id(),
+            ]);
+
+            // -------------------------
+            // Reporting Manager History
+            // -------------------------
+            if($user->reporting_manager_id){
+                \App\Models\EmployeeReportingManagerHistory::create([
+                    'user_id' => $user->id,
+                    'reporting_manager_id' => $user->reporting_manager_id,
+                    'effective_from' => now(),
+                    'changed_by' => auth()->id(),
+                ]);
+            }
+
+            // -------------------------
+            // Exit History
+            // -------------------------
+            if($user->leaving_date){
+                \App\Models\EmployeeExitHistory::create([
+                    'user_id' => $user->id,
+                    'leaving_date' => $user->leaving_date,
+                    'notice_period_days' => $user->notice_period_days,
+                    'exit_status' => $user->exit_status,
+                    'reason_for_leaving' => $user->reason_for_leaving,
+                    'created_by' => auth()->id(),
+                ]);
+            }
+
+        }); // End Transaction
+
+        return redirect()->route('users.index')->with('success','User created successfully!');
     }
+
 
     public function edit($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::with([
+            'latestSalaryHistory',
+            'latestReportingManagerHistory',
+            'latestExitHistory',
+        ])->findOrFail($id);
+         // $user = User::findOrFail($id);
         $departments = Department::all();
-        $designations = Designation::all();
+       // $designations = Designation::all();
+        $designations = Designation::select(['id', 'name'])->orderBy('name')->get();
         $roles = Role::all();
         $reportingUsers = User::all();
         $locations = Location::all();
         $businessUnits = BusinessUnit::where('status', 1)->pluck('name', 'id');
         $users = User::where('id', '!=', $id)->get(); // for reporting user dropdown
-
         return view('users.edit', compact(
             'user',
-            'roles',
             'departments',
             'designations',
-            'reportingUsers',
+            'roles',
             'locations',
-            'users',
+            'reportingUsers',
             'businessUnits'
         ));
     }
 
     public function update(UserRequest $request, $id)
     {
-        
-       // print_r($request->all); exit;
+        // echo "<pre>"; 
+        // print_r($request->all()); exit;
         $user = User::findOrFail($id);
-       
-        $this->userRepository->updateUser($user, $request);
 
-        // ✅ Handle photo upload separately
-        if ($request->hasFile('photo')) {
-            // Delete old photo if exists
-            if (!empty($user->photo) && file_exists(storage_path('app/public/'.$user->photo))) {
-                unlink(storage_path('app/public/'.$user->photo));
+        DB::transaction(function () use ($request, $user) {
+
+            /* =========================
+            | FILE UPLOADS
+            ========================= */
+
+            // Photo
+            if ($request->hasFile('photo')) {
+                if ($user->photo && file_exists(storage_path('app/public/' . $user->photo))) {
+                    unlink(storage_path('app/public/' . $user->photo));
+                }
+                $user->photo = $request->file('photo')->store('user_photos', 'public');
             }
 
-            // Store new photo in public disk
-            $user->photo = $request->file('photo')->store('uploads/users', 'public');
+            // Offer Letter
+            if ($request->hasFile('offer_letter_file')) {
+                if ($user->offer_letter_file && file_exists(storage_path('app/public/' . $user->offer_letter_file))) {
+                    unlink(storage_path('app/public/' . $user->offer_letter_file));
+                }
+                $user->offer_letter_file = $request->file('offer_letter_file')->store('user_documents', 'public');
+            }
+
+            // Joining Letter
+            if ($request->hasFile('joining_letter_file')) {
+                if ($user->joining_letter_file && file_exists(storage_path('app/public/' . $user->joining_letter_file))) {
+                    unlink(storage_path('app/public/' . $user->joining_letter_file));
+                }
+                $user->joining_letter_file = $request->file('joining_letter_file')->store('user_documents', 'public');
+            }
+
+            /* =========================
+            | BASIC DATA UPDATE
+            ========================= */
+            $user->fill($request->except([
+                'photo',
+                'offer_letter_file',
+                'joining_letter_file',
+                'previous_documents',
+            ]));
+
+            // Full Name
+            $user->name = trim(
+                $request->title . ' ' .
+                $request->first_name . ' ' .
+                $request->middle_name . ' ' .
+                $request->last_name
+            );
+
+            /* =========================
+            | EMPLOYMENT LOGIC
+            ========================= */
+
+            // Normalize employment status
+            if ($request->filled('employment_status')) {
+                $user->employment_status = ucfirst(strtolower($request->employment_status));
+            }
+
+            // Confirmation date
+            if (
+                $user->wasChanged('probation_period_days') ||
+                $user->wasChanged('joining_date')
+            ) {
+                $user->confirm_date = \Carbon\Carbon::parse($user->joining_date)
+                    ->addDays((int) $user->probation_period_days);
+            }
+
+            // PF status
+            $user->pf_status = $request->pf_status === 'Active' ? 1 : 0;
+
+            // 🔐 SAVE FIRST (important for wasChanged)
             $user->save();
-        }
 
-        // ✅ Update role
-        if ($request->filled('role_id')) {
-            $user->syncRoles([$request->role_id]);
-        }
+            /* =========================
+            | PREVIOUS EMPLOYMENT DOCS
+            ========================= */
+            if ($request->hasFile('previous_documents')) {
+                foreach ($request->file('previous_documents') as $file) {
+                    \App\Models\EmployeeDocument::create([
+                        'user_id' => $user->id,
+                        'file_path' => $file->store('user_documents', 'public'),
+                        'document_type' => 'previous_employment',
+                    ]);
+                }
+            }
 
-        return redirect()->route('users.index')->with('success', 'User updated successfully!');
+            /* =========================
+            | SALARY HISTORY
+            ========================= */
+            if ($user->wasChanged('annual_ctc')) {
+                \App\Models\EmployeeSalaryHistory::create([
+                    'user_id' => $user->id,
+                    'annual_ctc' => $user->annual_ctc,
+                    'monthly_basic' => $user->monthly_basic,
+                    'monthly_hra' => $user->monthly_hra,
+                    'special_allowance' => $user->special_allowance,
+                    'conveyance_allowance' => $user->conveyance_allowance,
+                    'medical_reimbursement' => $user->medical_reimbursement,
+                    'professional_tax' => $user->professional_tax,
+                    'pf_employer' => $user->pf_employer,
+                    'pf_employee' => $user->pf_employee,
+                    'net_deductions' => $user->net_deductions,
+                    'net_salary' => $user->net_salary,
+                    'effective_from' => now(),
+                    'changed_by' => auth()->id(),
+                ]);
+            }
+
+            /* =========================
+            | REPORTING MANAGER HISTORY
+            ========================= */
+            if ($user->wasChanged('reporting_manager_id')) {
+
+                // Close previous active manager
+                \App\Models\EmployeeReportingManagerHistory::where('user_id', $user->id)
+                    ->whereNull('effective_to')
+                    ->update([
+                        'effective_to' => now()->toDateString(),
+                    ]);
+
+                // Create new history
+                \App\Models\EmployeeReportingManagerHistory::create([
+                    'user_id' => $user->id,
+                    'reporting_manager_id' => $user->reporting_manager_id,
+                    'effective_from' => now()->toDateString(),
+                    'changed_by' => auth()->id(),
+                ]);
+            }
+
+
+            /* =========================
+            | EXIT HISTORY
+            ========================= */
+            if (
+                $user->wasChanged('leaving_date') ||
+                $user->wasChanged('exit_status') ||
+                $user->wasChanged('notice_period_days')
+            ) {
+
+                \App\Models\EmployeeExitHistory::create([
+                    'user_id'      => $user->id,
+                    'exit_date'    => $user->leaving_date,
+                    'exit_type'    => $user->exit_status,
+                    'exit_reason'  => $user->reason_for_leaving,
+                    'remarks'      => 'Notice Period: '.$user->notice_period_days.' days',
+                    'approved_by'  => auth()->id(),
+                    'is_rehirable' => 1,
+                ]);
+            }
+
+            /* =========================
+            | ROLE SYNC
+            ========================= */
+            if ($request->filled('role_id')) {
+                $user->syncRoles([$request->role_id]);
+            }
+        });
+
+        return redirect()
+            ->route('users.index')
+            ->with('success', 'User updated successfully!');
     }
-
-
 
     public function destroy($id)
     {
@@ -314,19 +550,27 @@ class UserController extends Controller
 
     public function account()
     {
-        return view('users.account');
-    }
+        $user = auth()->user()->load([
+            'location',
+            'department',
+            'designation',
+            'businessUnit',
+            'latestReportingManagerHistory.manager'
+        ]);
+        
 
+        return view('users.account', compact('user'));
+    }
     public function updateProfile(UserProfileRequest $request)
     {
-        $user = User::find(auth()->user()->id);
+        $user = auth()->user();
         $user->name = $request->name;
         $user->dob = $request->dob;
         $user->gender = $request->gender;
         $user->save();
 
         if ($request->has('photo')) {
-            if ($user->photo != "") {
+            if ($user->photo && file_exists(storage_path('app/'.$user->photo))) {
                 unlink(storage_path('app/'.$user->photo));
             }
             $user->photo = uploadFile($request->file('photo'), config('uploadfilepath.USER_PROFILE_PHOTO'));
@@ -384,11 +628,23 @@ class UserController extends Controller
         }
     }
 
-    public function show($id)
+   public function show($id)
     {
-        $user = User::find($id);
+        $user = User::with([
+            'department',
+            'designation',
+            'location',
+            'businessUnit',
+            'salaryHistories',
+            'latestExitHistory',
+            'reportingManagerHistories.manager',
+            'currentReportingManagerHistory.manager' // ADD THIS
+        ])->findOrFail($id);
+
         return view('users.view', compact('user'));
     }
+
+
 
     public function card($slug)
     {
