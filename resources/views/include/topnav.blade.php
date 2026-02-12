@@ -37,7 +37,9 @@
                                 </div>
                                 <div class="flex-grow-1">
                                     <span class="fw-semibold d-block">{{ auth()->user()->name }}</span>
-                                    <small class="text-muted">{{ auth()->user()->getRoleNames()[0] }}</small>
+                                    <small class="text-muted">
+                                        {{ auth()->user()->getRoleNames()->first() ?? 'No Role Assigned' }}
+                                    </small>
                                 </div>
                             </div>
                         </a>
