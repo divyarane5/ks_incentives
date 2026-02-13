@@ -25,17 +25,17 @@ if (!function_exists('validateUserForm')) {
         }
 
         // Leaving date & notice
-        if ($request->filled('leaving_date') && !$request->filled('notice_period_days')) {
-            $errors[] = "Notice period days are required if leaving date is filled";
-        }
+        // if ($request->filled('leaving_date') && !$request->filled('notice_period_days')) {
+        //     $errors[] = "Notice period days are required if leaving date is filled";
+        // }
 
         // Bank Details
-        $bankFields = ['bank_account_name','bank_branch_name','bank_account_type','bank_name','ifsc_code','bank_account_number'];
-        foreach ($bankFields as $field) {
-            if (!$request->filled($field)) {
-                $errors[] = "$field is required";
-            }
-        }
+        // $bankFields = ['bank_account_name','bank_branch_name','bank_account_type','bank_name','ifsc_code','bank_account_number'];
+        // foreach ($bankFields as $field) {
+        //     if (!$request->filled($field)) {
+        //         $errors[] = "$field is required";
+        //     }
+        // }
 
         // Offer & Joining Letters (files)
         $offerFile = $request->file('offer_letter_file');
@@ -49,18 +49,18 @@ if (!function_exists('validateUserForm')) {
         }
 
         // Previous Employment Documents
-        if ($request->hasFile('previous_documents')) {
-            foreach ($request->file('previous_documents') as $file) {
-                if (!$file->isValid()) {
-                    $errors[] = "One of the previous documents is invalid";
-                }
-            }
-        }
+        // if ($request->hasFile('previous_documents')) {
+        //     foreach ($request->file('previous_documents') as $file) {
+        //         if (!$file->isValid()) {
+        //             $errors[] = "One of the previous documents is invalid";
+        //         }
+        //     }
+        // }
 
         // Photo
-        if (!$request->file('photo')) {
-            $errors[] = "Photo is required";
-        }
+        // if (!$request->file('photo')) {
+        //     $errors[] = "Photo is required";
+        // }
 
         return $errors;
     }
