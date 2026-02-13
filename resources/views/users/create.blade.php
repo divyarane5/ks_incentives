@@ -449,7 +449,7 @@
 @section('script')
 <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
 <script>
-   document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', function () {
 
     const joiningDate = document.getElementById('joining_date');
     const probationDays = document.getElementById('probation_period_days');

@@ -172,17 +172,22 @@ class UserController extends Controller
             // -------------------------
             // Calculate salary components
             // -------------------------
-            $ctc = floatval($request->annual_ctc / 12 ?? 0);
-            $monthly_basic = $ctc * 0.5 / 12;
+            $annualCtc = floatval($request->annual_ctc ?? 0);
+            $monthlyCtc = $annualCtc / 12;
+
+            $monthly_basic = $monthlyCtc * 0.5;
             $monthly_hra = $monthly_basic * 0.5;
-            $special_allowance = $ctc * 0.1 / 12;
-            $conveyance_allowance = $ctc * 0.1 / 12;
-            $medical_reimbursement = $ctc * 0.05 / 12;
+            $special_allowance = $monthlyCtc * 0.1;
+            $conveyance_allowance = $monthlyCtc * 0.1;
+            $medical_reimbursement = $monthlyCtc * 0.05;
+
             $pfEmployer = 1800;
             $pfEmployee = 1800;
             $profTax = 200;
+
             $deductions = $pfEmployer + $pfEmployee + $profTax;
-            $net_salary = ($ctc/12) - $deductions;
+
+            $net_salary = $monthlyCtc - $deductions;
 
             // -------------------------
             // Create User
@@ -234,7 +239,7 @@ class UserController extends Controller
 
             // Salary & Compensation
             $user->annual_ctc = $request->annual_ctc;
-            $user->current_ctc = $ctc;
+            $user->current_ctc = $monthlyCtc;
             $user->monthly_basic = $monthly_basic;
             $user->monthly_hra = $monthly_hra;
             $user->special_allowance = $special_allowance;

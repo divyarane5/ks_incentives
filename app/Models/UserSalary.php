@@ -17,6 +17,7 @@ class UserSalary extends Model
         'professional_tax',
         'pf_amount',
         'extra_deduction',
+        'tds', 
         'system_net_salary',
         'salary_credited',
         'total_employee_cost',

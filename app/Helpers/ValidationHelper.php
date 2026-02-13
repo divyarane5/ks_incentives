@@ -41,12 +41,12 @@ if (!function_exists('validateUserForm')) {
         $offerFile = $request->file('offer_letter_file');
         $joiningFile = $request->file('joining_letter_file');
 
-        if ($request->filled('offer_letter_sent') && !$offerFile) {
-            $errors[] = "Offer letter file is required if sent";
-        }
-        if ($request->filled('joining_letter_sent') && !$joiningFile) {
-            $errors[] = "Joining letter file is required if sent";
-        }
+        // if ($request->filled('offer_letter_sent') && !$offerFile) {
+        //     $errors[] = "Offer letter file is required if sent";
+        // }
+        // if ($request->filled('joining_letter_sent') && !$joiningFile) {
+        //     $errors[] = "Joining letter file is required if sent";
+        // }
 
         // Previous Employment Documents
         // if ($request->hasFile('previous_documents')) {

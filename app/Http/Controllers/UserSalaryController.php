@@ -45,6 +45,7 @@ class UserSalaryController extends Controller
                 'year'             => $cursor->year,
                 'enabled'          => $cursor >= $salaryStart,
                 'salary_credited'  => $record->salary_credited ?? 0,
+                'tds' => $record->tds ?? 0,
                 'remarks'          => $record->remarks ?? null,
                 'status'           => $record->status ?? 'Pending',
                 'extra_deduction'  => $record->extra_deduction ?? 0,
@@ -129,6 +130,7 @@ class UserSalaryController extends Controller
                         'professional_tax' => $pt,
                         'pf_amount' => $pf,
                         'extra_deduction' => $deduction,
+                        'tds' => $data['tds'] ?? 0,   // ✅ IMPORTANT
                         'system_net_salary' => $standardNet,
                         'salary_credited' => $credited,
                         'total_employee_cost' => $gross,
