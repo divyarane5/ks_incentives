@@ -15,28 +15,14 @@
     <div class="card my-4" id="UserFilter">
         <div class="card-body row">
             <div class="mb-3 col-md-3">
-                <label class="form-label" for="entity">Company</label>
-                <select id="entity" name="entity" class="">
-                    <option value="">Select Company</option>
-                    @php
-                        $companies = config('constants.COMPANY_OPTIONS');
-                    @endphp
-                    @foreach ($companies as $key => $company)
-                        <option value="{{ $company }}">{{ $company }}</option>
+                <label class="form-label" for="business_unit_id">Business Unit</label>
+                <select id="business_unit_id" name="business_unit_id" class="form-select">
+                    <option value="">Select Business Unit</option>
+                    @foreach ($businessUnits as $id => $name)
+                        <option value="{{ $id }}">{{ $name }}</option>
                     @endforeach
                 </select>
             </div>
-
-            <div class="mb-3 col-md-3">
-                <label class="form-label" for="location_id">Location</label>
-                <select id="location_id" name="location_id" class="">
-                    <option value="">Select Location</option>
-                    @foreach ($locations as $location)
-                        <option value="{{ $location->id }}">{{ $location->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-
             <div class="mb-3 col-md-3">
                 <label class="form-label" for="department_id">Department</label>
                 <select id="department_id" name="department_id" class="">
@@ -69,7 +55,33 @@
                     <span class="invalid-feedback" role="alert"><strong>{{ $message }}</strong></span>
                 @enderror
             </div>
-
+            <div class="mb-3 col-md-3">
+                <label class="form-label" for="reporting_manager_id">Reporting Manager</label>
+                <select id="reporting_manager_id" name="reporting_manager_id" class="form-select">
+                    <option value="">Select Manager</option>
+                    @foreach ($reportingUsers as $user)
+                        <option value="{{ $user->id }}">
+                            {{ $user->full_name ?? $user->name }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+            <div class="mb-3 col-md-3">
+                <label class="form-label" for="employment_status">Employment Status</label>
+                <select id="employment_status" name="employment_status" class="form-select">
+                    <option value="">Select Employment Status</option>
+                    <option value="Probation">Probation</option>
+                    <option value="Confirmed">Confirmed</option>
+                </select>
+            </div>
+            <div class="mb-3 col-md-3">
+                <label class="form-label" for="status">Status</label>
+                <select id="status" name="status" class="form-select">
+                    <option value="">Select Status</option>
+                    <option value="Active">Active</option>
+                    <option value="Exited">Exited</option>
+                </select>
+            </div>
             <div class="mb-3 col-md-3">
                 <label class="form-label">&nbsp;</label><br>
                 <button type="button" id="filter" class="btn btn-primary me-sm-2">Filter</button>
@@ -123,11 +135,14 @@ $(document).ready(function () {
         ajax: {
             url: "{{ route('users.index') }}",
             data: function (d) {
-                d.entity = $("#entity").val();
-                d.location_id = $("#location_id").val();
                 d.department_id = $("#department_id").val();
                 d.designation_id = $("#designation_id").val();
                 d.role_id = $("#role_id").val();
+
+                d.status = $("#status").val();
+                d.employment_status = $("#employment_status").val();
+                d.business_unit_id = $("#business_unit_id").val();
+                d.reporting_manager_id = $("#reporting_manager_id").val();
             }
         },
         columns: [

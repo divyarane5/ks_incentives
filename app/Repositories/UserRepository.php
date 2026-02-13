@@ -30,12 +30,20 @@ class UserRepository implements UserRepositoryInterface
             ->leftJoin('designations', 'users.designation_id', '=', 'designations.id');
 
         // ✅ Filters
-        if (!empty($filters['entity'])) {
-            $query->where('users.entity', $filters['entity']);
+        if (!empty($filters['status'])) {
+            $query->where('users.status', $filters['status']);
         }
 
-        if (!empty($filters['work_location_id'])) {
-            $query->where('users.work_location_id', $filters['work_location_id']);
+        if (!empty($filters['employment_status'])) {
+            $query->where('users.employment_status', $filters['employment_status']);
+        }
+
+        if (!empty($filters['business_unit_id'])) {
+            $query->where('users.business_unit_id', $filters['business_unit_id']);
+        }
+
+        if (!empty($filters['reporting_manager_id'])) {
+            $query->where('users.reporting_manager_id', $filters['reporting_manager_id']);
         }
 
         if (!empty($filters['department_id'])) {

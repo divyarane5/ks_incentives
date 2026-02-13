@@ -41,11 +41,13 @@ class UserController extends Controller
     {
         if ($request->ajax()) {
             $filters = array_filter($request->only([
-                'entity',
-                'work_location_id',
                 'department_id',
                 'designation_id',
-                'role_id'
+                'role_id',
+                'status',
+                'employment_status',
+                'business_unit_id',
+                'reporting_manager_id'
             ]));
 
             $users = $this->userRepository->getUsers($filters);
@@ -119,13 +121,15 @@ class UserController extends Controller
                 ->rawColumns(['action'])
                 ->make(true);
         }
-
+        $reportingUsers = User::select('id', 'first_name', 'middle_name', 'last_name')
+        ->orderBy('first_name')
+        ->get();
         $locations = Location::select(['id', 'name'])->orderBy('name')->get();
         $departments = Department::select(['id', 'name'])->orderBy('name')->get();
         $designations = Designation::select(['id', 'name'])->orderBy('name')->get();
         $roles = Role::select(['id', 'name'])->orderBy('name')->get();
         $businessUnits = BusinessUnit::where('status', 1)->pluck('name', 'id');
-        return view('users.index', compact('locations', 'departments', 'designations', 'roles','businessUnits'));
+        return view('users.index', compact('locations', 'departments', 'designations', 'roles','businessUnits','reportingUsers'));
     }
 
 
