@@ -106,7 +106,7 @@ class UserController extends Controller
                     //                 </a>';
                     // }
                     // ✅ NEW: Add Salary / View Salary
-                    if(auth()->user()->can('salary-view')) {
+                    if(auth()->user()->can('user-salary-view')) {
                         $actions .= '<a class="dropdown-item" href="'.route('users.salary.index', $row->id).'">
                             <i class="bx bx-wallet me-1"></i> Salary
                         </a>';

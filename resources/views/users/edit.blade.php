@@ -122,7 +122,7 @@
                                     <label class="form-label">Status</label>
                                     <select name="status" class="form-select @error('status') is-invalid @enderror">
                                         <option value="Active" {{ old('status', $user->status) == 'Active' ? 'selected' : '' }}>Active</option>
-                                        <option value="Onboarding" {{ old('status', $user->status) == 'Onboarding' ? 'selected' : '' }}>Onboarding</option>
+                                        <!-- <option value="Onboarding" {{ old('status', $user->status) == 'Onboarding' ? 'selected' : '' }}>Onboarding</option> -->
                                         <option value="Exited" {{ old('status', $user->status) == 'Exited' ? 'selected' : '' }}>Exited</option>
                                     </select>
                                     @error('status') <div class="invalid-feedback">{{ $message }}</div> @enderror
