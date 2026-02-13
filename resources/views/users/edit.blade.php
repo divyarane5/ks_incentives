@@ -21,7 +21,16 @@
         <div class="card-header">
             <h5 class="mb-0">Edit User</h5>
         </div>
-
+        @if ($errors->any())
+            <div class="alert alert-danger mx-3 mt-3">
+                <strong>Please fix the following errors:</strong>
+                <ul class="mb-0 mt-2">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         <form action="{{ route('users.update', $user->id) }}" method="POST" enctype="multipart/form-data">
             @csrf
             @method('PUT')
@@ -39,7 +48,7 @@
                             <div class="accordion-body row">
                                 <div class="mb-3 col-md-6">
                                     <label class="form-label">Employee Code *</label>
-                                    <input type="text" name="employee_code" value="{{ old('employee_code', $user->employee_code) }}" class="form-control @error('employee_code') is-invalid @enderror" required>
+                                    <input type="text" name="employee_code" value="{{ old('employee_code', $user->employee_code) }}" class="form-control @error('employee_code') is-invalid @enderror" >
                                     @error('employee_code') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 
@@ -50,7 +59,7 @@
                                 </div>
                                 <div class="mb-3 col-md-3">
                                     <label class="form-label">First Name *</label>
-                                    <input type="text" name="first_name" value="{{ old('first_name', $user->first_name) }}" class="form-control @error('first_name') is-invalid @enderror" required>
+                                    <input type="text" name="first_name" value="{{ old('first_name', $user->first_name) }}" class="form-control @error('first_name') is-invalid @enderror" >
                                     @error('first_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="mb-3 col-md-3">
@@ -60,12 +69,12 @@
                                 </div>
                                 <div class="mb-3 col-md-3">
                                     <label class="form-label">Last Name *</label>
-                                    <input type="text" name="last_name" value="{{ old('last_name', $user->last_name) }}" class="form-control @error('last_name') is-invalid @enderror" required>
+                                    <input type="text" name="last_name" value="{{ old('last_name', $user->last_name) }}" class="form-control @error('last_name') is-invalid @enderror" >
                                     @error('last_name') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>
                                 <div class="mb-3 col-md-6">
                                     <label class="form-label">Company *</label>
-                                    <select name="entity" class="form-select @error('entity') is-invalid @enderror" required>
+                                    <select name="entity" class="form-select @error('entity') is-invalid @enderror" >
                                         <option value="">Select Company</option>
                                         @foreach(config('constants.COMPANY_OPTIONS') as $company)
                                             <option value="{{ $company }}" {{ old('entity', $user->entity) == $company ? 'selected' : '' }}>{{ $company }}</option>
@@ -202,7 +211,7 @@
                                 <!-- Role -->
                                 <div class="col-md-6">
                                     <label class="form-label">Role <span class="text-danger">*</span></label>
-                                    <select name="role_id" class="form-select" required>
+                                    <select name="role_id" class="form-select" >
                                         <option value="">Select Role</option>
                                         @foreach($roles as $role)
                                             <option value="{{ $role->id }}"

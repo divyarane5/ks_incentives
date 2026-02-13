@@ -144,10 +144,10 @@ class UserController extends Controller
    public function store(Request $request)
     {
         // ✅ Validate using custom helper
-        // $errors = validateUserForm($request);
-        // if (!empty($errors)) {
-        //     return redirect()->back()->withErrors($errors)->withInput();
-        // }
+        $errors = validateUserForm($request);
+        if (!empty($errors)) {
+            return redirect()->back()->withErrors($errors)->withInput();
+        }
 
         DB::transaction(function() use ($request) {
 

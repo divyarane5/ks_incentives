@@ -10,7 +10,16 @@
         <div class="card-header">
             <h5 class="mb-0">Add User</h5>
         </div>
-
+        @if ($errors->any())
+            <div class="alert alert-danger mx-3 mt-3">
+                <strong>Please fix the following errors:</strong>
+                <ul class="mb-0 mt-2">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        @endif
         <form action="{{ route('users.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
             <div class="card-body">
@@ -31,7 +40,7 @@
                                 </div>
                                 <div class="mb-3 col-md-3">
                                     <label class="form-label">First Name *</label>
-                                    <input type="text" name="first_name" class="form-control" required>
+                                    <input type="text" name="first_name" class="form-control" >
                                 </div>
                                 <div class="mb-3 col-md-3">
                                     <label class="form-label">Middle Name</label>
@@ -39,16 +48,16 @@
                                 </div>
                                 <div class="mb-3 col-md-3">
                                     <label class="form-label">Last Name *</label>
-                                    <input type="text" name="last_name" class="form-control" required>
+                                    <input type="text" name="last_name" class="form-control" >
                                 </div>
                                 <div class="mb-3 col-md-6">
                                     <label class="form-label">Employee Code *</label>
-                                    <input type="text" name="employee_code" class="form-control" required>
+                                    <input type="text" name="employee_code" class="form-control" >
                                     <small class="text-muted">Must be unique</small>
                                 </div>
                                 <div class="mb-3 col-md-6">
                                     <label class="form-label">Company *</label>
-                                    <select name="entity" class="form-select" required>
+                                    <select name="entity" class="form-select" >
                                         <option value="">Select Company</option>
                                         @foreach(config('constants.COMPANY_OPTIONS') as $company)
                                             <option value="{{ $company }}">{{ $company }}</option>
@@ -150,7 +159,7 @@
 
                                 <div class="mb-3 col-md-6">
                                     <label class="form-label" for="role_id">Role <span class="text-danger">*</span></label>
-                                    <select id="role_id" name="role_id" class="form-select" required>
+                                    <select id="role_id" name="role_id" class="form-select" >
                                         <option value="">Select Role</option>
                                         @foreach($roles as $role)
                                             <option value="{{ $role->id }}" {{ old('role_id') == $role->id ? 'selected' : '' }}>{{ $role->name }}</option>
@@ -440,17 +449,35 @@
 @section('script')
 <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
 <script>
-    // Auto-calc confirmation date
-    function calcConfirmDate() {
-        const joiningDate = document.getElementById('joining_date').value;
-        const probationDays = parseInt(document.getElementById('probation_period_days').value || 0);
-        if (!joiningDate || !probationDays) return;
-        const join = new Date(joiningDate);
-        join.setDate(join.getDate() + probationDays);
-        document.getElementById('confirm_date').value = join.toISOString().split('T')[0];
+   document.addEventListener('DOMContentLoaded', function () {
+
+    const joiningDate = document.getElementById('joining_date');
+    const probationDays = document.getElementById('probation_period_days');
+    const confirmDate = document.getElementById('confirm_date');
+
+    function calculateConfirmDate() {
+        if (!joiningDate.value || !probationDays.value) return;
+
+        const join = new Date(joiningDate.value);
+        join.setDate(join.getDate() + parseInt(probationDays.value));
+
+        const yyyy = join.getFullYear();
+        const mm = String(join.getMonth() + 1).padStart(2, '0');
+        const dd = String(join.getDate()).padStart(2, '0');
+
+        confirmDate.value = `${yyyy}-${mm}-${dd}`;
     }
-    document.getElementById('joining_date')?.addEventListener('change', calcConfirmDate);
-    document.getElementById('probation_period_days')?.addEventListener('input', calcConfirmDate);
+
+    probationDays.addEventListener('input', calculateConfirmDate);
+    joiningDate.addEventListener('change', calculateConfirmDate);
+
+    // auto-calc on edit load
+    calculateConfirmDate();
+});
+
+</script>
+
+<script>
 
     // Annual → Monthly CTC
     document.getElementById('annual_ctc')?.addEventListener('input', function () {
