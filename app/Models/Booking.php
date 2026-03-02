@@ -20,6 +20,36 @@ class Booking extends Model
     }
 
     protected $fillable = [
-
+        'project_id',
+        'developer_id',
+        'client_name',
+        'booking_date',
+        'client_contact',
+        'lead_source',
+        'configuration',
+        'flat_no',
+        'wing',
+        'tower',
+        'booking_amount',
+        'agreement_value',
+        'passback',
+        'additional_kicker',
+        'registration_date',
+        'sales_user_id',
+        'remark',
     ];
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
+
+    public function developer()
+    {
+        return $this->belongsTo(Developer::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'sales_user_id');
+    }
 }

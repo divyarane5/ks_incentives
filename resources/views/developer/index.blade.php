@@ -19,6 +19,7 @@
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Ladders</th>
                     <th>Created On</th>
                     <th>Modified On</th>
                     <th>Actions</th>
@@ -42,9 +43,10 @@
             ajax: "{{ route('developer.index') }}",
             columns: [
                 {data: 'name', name: 'developers.name'},
+                {data: 'view_ladders', orderable: false, searchable: false},
                 {data: 'created_at', name: 'developers.created_at'},
                 {data: 'updated_at', name: 'developers.updated_at'},
-                {data: 'action', 'sortable': false},
+                {data: 'action', orderable: false, searchable: false},
             ]
       });
 

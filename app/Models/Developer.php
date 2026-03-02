@@ -22,4 +22,8 @@ class Developer extends Model
             $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
         });
     }
+    public function ladders()
+    {
+        return $this->hasMany(DeveloperLadder::class);
+    }
 }

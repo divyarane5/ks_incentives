@@ -141,8 +141,6 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('location', App\Http\Controllers\LocationController::class);
     Route::resource('project', App\Http\Controllers\ProjectController::class);
     Route::resource('developer', App\Http\Controllers\DeveloperController::class);
-    Route::resource('developer_ladder', App\Http\Controllers\DeveloperLadderController::class);
-    Route::resource('project_ladder', App\Http\Controllers\ProjectLadderController::class);
     Route::resource('department', App\Http\Controllers\DepartmentController::class);
     Route::resource('designation', App\Http\Controllers\DesignationController::class);
     Route::resource('business_unit', App\Http\Controllers\BusinessUnitController::class);
@@ -248,6 +246,8 @@ Route::group(['middleware' => 'auth'], function () {
     */
 
     Route::resource('booking', App\Http\Controllers\BookingController::class);
+    // Route::match(['get','post'], 'booking', [App\Http\Controllers\BookingController::class, 'index'])
+    //     ->name('booking.index');
 
     Route::post('booking/update_status', [
         App\Http\Controllers\BookingController::class,

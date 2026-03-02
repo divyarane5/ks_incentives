@@ -170,15 +170,7 @@
                     </li>
                 @endcan
             </ul>
-            <ul class="menu-sub ">
-                @can('project_ladder-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'project_ladder')) ? 'active': '' }}">
-                        <a href="{{ route('project_ladder.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Project Ladder</div>
-                        </a>
-                    </li>
-                @endcan
-            </ul>
+           
            
 
         </li>

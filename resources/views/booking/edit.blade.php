@@ -1,186 +1,169 @@
 @extends('layouts.app')
 
 @section('content')
-<?php
-// $curl = curl_init();
-
-// curl_setopt_array($curl, array(
-//   CURLOPT_URL => 'https://www.keystonerealestateadvisory.com/api/v2/searchfilter',
-//   CURLOPT_RETURNTRANSFER => true,
-//   CURLOPT_ENCODING => '',
-//   CURLOPT_MAXREDIRS => 10,
-//   CURLOPT_TIMEOUT => 0,
-//   CURLOPT_FOLLOWLOCATION => true,
-//   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-//   CURLOPT_CUSTOMREQUEST => 'POST',
-//   CURLOPT_POSTFIELDS =>'{"city_name":"Mumbai","city_id":1,"module_type":"buy","limit":5000}',
-//   CURLOPT_HTTPHEADER => array(
-//     'Content-Type: application/json'
-//   ),
-// ));
-
-// $response = curl_exec($curl);
-
-
-// curl_close($curl);
-
-// $json = json_decode($response, TRUE);
-// //print_r($json); exit;
-// // foreach ($json['data'] as $index => $v) {
-// //   echo $v['projectName'].'<br>';
-// // }  exit;
-// ?>
-// <?php
-
-// $curl1 = curl_init();
-
-// curl_setopt_array($curl1, array(
-//   CURLOPT_URL => 'https://www.keystonerealestateadvisory.com/api/v2/developers?skip=0&limit=5000',
-//   CURLOPT_RETURNTRANSFER => true,
-//   CURLOPT_ENCODING => '',
-//   CURLOPT_MAXREDIRS => 10,
-//   CURLOPT_TIMEOUT => 0,
-//   CURLOPT_FOLLOWLOCATION => true,
-//   CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-//   CURLOPT_CUSTOMREQUEST => 'GET',
-//   CURLOPT_HTTPHEADER => array(
-//     'Cookie: AWSALBTG=uGODxQPrbEwmiONbQm7WMr7P3VsN74W8sg0Vk4rmMJTjlAEtwxAbATR2TqBUFEf9fdQBYGDILS4KtdqgSp9lnJdJuP6/betV+JRaddSmvzWiqkCiDi1APjMPOdTool23W4CoIj/BeS50o9oI/hKBUcEhFdEF9DH/crPcOjP1Hzy+Wa+QicM=; AWSALBTGCORS=uGODxQPrbEwmiONbQm7WMr7P3VsN74W8sg0Vk4rmMJTjlAEtwxAbATR2TqBUFEf9fdQBYGDILS4KtdqgSp9lnJdJuP6/betV+JRaddSmvzWiqkCiDi1APjMPOdTool23W4CoIj/BeS50o9oI/hKBUcEhFdEF9DH/crPcOjP1Hzy+Wa+QicM='
-//   ),
-// ));
-
-// $response1 = curl_exec($curl1);
-
-// curl_close($curl1);
-// $json1 = json_decode($response1, TRUE);
-//print_r($json1); exit;
-?>
-
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4 col-md-6"><a href="{{ route('booking.index') }}" class="text-muted fw-light">Booking /</a> Edit</h4>
-    <!-- Basic Layout -->
+    
+    <h4 class="fw-bold py-3 mb-4">
+        <a href="{{ route('booking.index') }}" class="text-muted fw-light">Booking / </a>
+        Edit Booking
+    </h4>
+
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <h5 class="mb-0">Edit Booking</h5>
-            <small class="text-muted float-end"><a class="btn btn-primary" href="{{ route('booking.index') }}"> Back</a></small>
+            <a class="btn btn-primary" href="{{ route('booking.index') }}">Back</a>
         </div>
 
-        <form action="{{ route('booking.update', $id) }}" method="post" enctype="multipart/form-data">
+        <form action="{{ route('booking.update', $booking->id) }}" method="POST">
             @csrf
-            @method('put')
-            <input type="hidden" name="id" value="{{ $id }}">
+            @method('PUT')
+
             <div class="card-body">
                 <div class="row">
+
+                    {{-- Booking Date --}}
                     <div class="mb-3 col-md-6">
-                        <label class="form-label" for="project_name">Project Name<span class="start-mark">*</span></label>
-                            <select id="project_name" name="project_name" class="" @error('project_name') autofocus @enderror required>
-                                <option>Select Project Name</option>
-                                @if (!empty($json))
-                                    @foreach ($json['data'] as $index => $temp)
-                                        <option value="{{ $temp['projectName'] }}" {{ ($temp['projectName'] == ((old('project_name') != "") ? old('project_name') : $booking->project_name) ? 'selected' : '') }}>{{ $temp['projectName'] }}</option>
-                                    @endforeach
-                                @endif
-                            </select>
-                        @error('template_id')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
-                    <div class="mb-3 col-md-6">
-                        <label class="form-label" for="developer_name">Developer Name<span class="start-mark">*</span></label>
-                            <select id="developer_name" name="developer_name" class="" @error('developer_name') autofocus @enderror required>
-                                <option>Select Project Name</option>
-                                @if (!empty($json1))
-                                    @foreach ($json1['data'] as $index => $temp1)
-                                        <option value="{{ $temp1['developer_name'] }}" {{ ($temp1['developer_name'] == ((old('developer_name') != "") ? old('developer_name') : $booking->developer_name) ? 'selected' : '') }}>{{ $temp1['developer_name'] }}</option>
-                                    @endforeach
-                                @endif
-                            </select>
-                        @error('developer_name')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
-                    <div class="mb-3 col-md-6">
-                        <label class="form-label" for="developer_email">Developer Email<span class="start-mark">*</span></label>
-                        <input name="developer_email" class="form-control" id="developer_email" value="{{ (old('developer_email') != "") ? old('developer_email') : $booking->developer_email }}" required />
-                        @error('developer_email')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
-                    <div class="mb-3 col-md-6">
-                        <label class="form-label" for="client_name">Client Name<span class="start-mark">*</span></label>
-                        <input name="client_name" class="form-control" id="client_name" value="{{ (old('client_name') != "") ? old('client_name') : $booking->client_name }}" required />
-                        @error('client_name')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
-                    <div class="mb-3 col-md-6">
-                        <label class="form-label" for="configuration">Configuration<span class="start-mark">*</span></label>
-                        <input name="configuration" class="form-control" id="configuration" value="{{ (old('configuration') != "") ? old('configuration') : $booking->configuration }}" required />
-                        @error('configuration')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
+                        <label class="form-label">Booking Date</label>
+                        <input class="form-control" name="booking_date" type="date" 
+                            value="{{ old('booking_date', $booking->booking_date) }}">
                     </div>
 
+                    {{-- Client Name --}}
                     <div class="mb-3 col-md-6">
-                        <label class="form-label" for="tower">Tower<span class="start-mark">*</span></label>
-                        <input name="tower" class="form-control" id="tower" value="{{ (old('tower') != "") ? old('tower') : $booking->tower }}" required />
-                        @error('tower')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
+                        <label class="form-label">Client Name *</label>
+                        <input name="client_name" class="form-control"
+                            value="{{ old('client_name', $booking->client_name) }}" required>
                     </div>
 
+                    {{-- Client Contact --}}
                     <div class="mb-3 col-md-6">
-                        <label class="form-label" for="flat_no">Flat Number<span class="start-mark">*</span></label>
-                        <input name="flat_no" class="form-control" id="flat_no" value="{{ (old('flat_no') != "") ? old('flat_no') : $booking->flat_no }}" required />
-                        @error('flat_no')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
+                        <label class="form-label">Client Contact</label>
+                        <input name="client_contact" class="form-control"
+                            value="{{ old('client_contact', $booking->client_contact) }}">
                     </div>
 
+                    {{-- Lead Source --}}
                     <div class="mb-3 col-md-6">
-                        <label class="form-label" for="wing">Wing<span class="start-mark">*</span></label>
-                        <input name="wing" class="form-control" id="wing" value="{{ (old('wing') != "") ? old('wing') : $booking->wing }}" required />
-                        @error('wing')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
-                    <div class="mb-3 col-md-6">
-                        <label class="form-label" for="sales_person">Sales Person<span class="start-mark">*</span></label>
-                        <input name="sales_person" class="form-control" id="sales_person" value="{{ (old('sales_person') != "") ? old('sales_person') : $booking->sales_person }}" required />
-                        @error('sales_person')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
-                    <div class="mb-3 col-md-6">
-                        <label class="form-label" for="sourcing_manager">Sourcing Manager<span class="start-mark">*</span></label>
-                        <input name="sourcing_manager" class="form-control" id="sourcing_manager" value="{{ (old('sourcing_manager') != "") ? old('sourcing_manager') : $booking->sourcing_manager }}" required />
-                        @error('sourcing_manager')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
+                        <label class="form-label">Lead Source</label>
+                        <input name="lead_source" class="form-control"
+                            value="{{ old('lead_source', $booking->lead_source) }}">
                     </div>
 
-                    <div>
-                        <button type="submit" class="btn btn-primary" {{ (strtolower($booking->name) == 'superadmin') ? 'disabled' : '' }}>Submit</button>
+                    {{-- Developer --}}
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label">Developer *</label>
+                        <select name="developer_id" class="form-control" required>
+                            <option value="">Select Developer</option>
+                            @foreach ($developer_name as $developer)
+                                <option value="{{ $developer->id }}"
+                                    {{ old('developer_id', $booking->developer_id) == $developer->id ? 'selected' : '' }}>
+                                    {{ $developer->name }}
+                                </option>
+                            @endforeach
+                        </select>
                     </div>
+
+                    {{-- Project --}}
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label">Project *</label>
+                        <select name="project_id" class="form-control" required>
+                            <option value="">Select Project</option>
+                            @foreach ($project_name as $project)
+                                <option value="{{ $project->id }}"
+                                    {{ old('project_id', $booking->project_id) == $project->id ? 'selected' : '' }}>
+                                    {{ $project->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Tower --}}
+                    <div class="mb-3 col-md-4">
+                        <label class="form-label">Tower</label>
+                        <input name="tower" class="form-control"
+                            value="{{ old('tower', $booking->tower) }}">
+                    </div>
+
+                    {{-- Wing --}}
+                    <div class="mb-3 col-md-4">
+                        <label class="form-label">Wing</label>
+                        <input name="wing" class="form-control"
+                            value="{{ old('wing', $booking->wing) }}">
+                    </div>
+
+                    {{-- Flat --}}
+                    <div class="mb-3 col-md-4">
+                        <label class="form-label">Flat No</label>
+                        <input name="flat_no" class="form-control"
+                            value="{{ old('flat_no', $booking->flat_no) }}">
+                    </div>
+
+                    {{-- Configuration --}}
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label">Configuration</label>
+                        <input name="configuration" class="form-control"
+                            value="{{ old('configuration', $booking->configuration) }}">
+                    </div>
+
+                    {{-- Booking Amount --}}
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label">Booking Amount</label>
+                        <input name="booking_amount" type="number" step="0.01" class="form-control"
+                            value="{{ old('booking_amount', $booking->booking_amount) }}">
+                    </div>
+
+                    {{-- Agreement Value --}}
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label">Agreement Value *</label>
+                        <input name="agreement_value" type="number" step="0.01" class="form-control"
+                            value="{{ old('agreement_value', $booking->agreement_value) }}" required>
+                    </div>
+
+                    {{-- Additional Kicker --}}
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label">Additional Kicker</label>
+                        <input name="additional_kicker" type="number" step="0.01" class="form-control"
+                            value="{{ old('additional_kicker', $booking->additional_kicker) }}">
+                    </div>
+
+                    {{-- Passback --}}
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label">Passback</label>
+                        <input name="passback" type="number" step="0.01" class="form-control"
+                            value="{{ old('passback', $booking->passback) }}">
+                    </div>
+
+                    {{-- Registration Date --}}
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label">Registration Date</label>
+                        <input class="form-control" name="registration_date" type="date"
+                            value="{{ old('registration_date', $booking->registration_date) }}">
+                    </div>
+
+                    {{-- Sales Manager --}}
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label">Sales Manager *</label>
+                        <select name="sales_user_id" class="form-control" required>
+                            <option value="">Select Sales Manager</option>
+                            @foreach ($salesManagers as $manager)
+                                <option value="{{ $manager->id }}"
+                                    {{ old('sales_user_id', $booking->sales_user_id) == $manager->id ? 'selected' : '' }}>
+                                    {{ $manager->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    {{-- Remarks --}}
+                    <div class="mb-3 col-md-12">
+                        <label class="form-label">Remarks</label>
+                        <textarea name="remark" class="form-control">{{ old('remark', $booking->remark) }}</textarea>
+                    </div>
+
+                    <div class="mt-3">
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </div>
+
                 </div>
             </div>
         </form>

@@ -24,7 +24,18 @@ class ProjectRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|regex:/^[\pL\s\-]+$/u'
+            'name' => 'required|string|max:255',
+            'developer_id' => 'required|exists:developers,id',
+
+            // Ladders required
+            'ladders' => 'required|array|min:1',
+
+            'ladders.*.s_booking' => 'required|integer|min:0',
+            'ladders.*.e_booking' => 'required|integer|gte:ladders.*.s_booking',
+            'ladders.*.ladder' => 'required|numeric|min:0',
+
+            'ladders.*.project_s_date' => 'required|date',
+            'ladders.*.project_e_date' => 'required|date|after_or_equal:ladders.*.project_s_date',
         ];
     }
 }

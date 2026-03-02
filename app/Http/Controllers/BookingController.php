@@ -6,12 +6,16 @@ use App\Models\Booking;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Developer;
+use App\Models\BusinessUnit;
 use App\Http\Requests\BookingRequest;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
 use App\Mail\BookingMail;
 use Illuminate\Support\Facades\Mail;
 use DB;
+use App\Services\BookingRevenueService;
+use App\Services\BrokerageCalculationService;
+
 class BookingController extends Controller
 {
     function __construct()
@@ -23,585 +27,245 @@ class BookingController extends Controller
 
     }
     
+
+
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Booking::all();
+
+            $data = Booking::withTrashed()
+                ->with([
+                    'project',
+                    'developer',
+                    'user.reportingManager.reportingManager.reportingManager'
+                ])
+                ->select('bookings.*');
+
             return DataTables::of($data)
-                ->addColumn('booking_date', function ($row) {
-                    return $row->booking_date;
-                })
-                ->addColumn('client_name', function ($row) {
-                    return $row->client_name;
-                })
+
                 ->addColumn('project_name', function ($row) {
-                    $project = DB::table('projects')
-                    ->select('projects.name')
-                    ->where('projects.id',$row->project_id)
-                    ->first();
-                    return $project->name;
+                    return optional($row->project)->name ?? '-';
                 })
+
                 ->addColumn('developer_name', function ($row) {
-                    $developer = DB::table('developers')
-                    ->select('developers.name')
-                    ->where('developers.id',$row->developer_id)
-                    ->first();
-                    return $developer->name;
+                    return optional($row->developer)->name ?? '-';
                 })
-                
-                ->addColumn('agreement_value', function ($row) {
-                    return "Rs. ".number_format($row->agreement_value);
-                })
-                
-                ->addColumn('brokerage', function ($row) {
-                    
-                        return $row->brokerage." %";
-                   
-                })
-                ->addColumn('project_brokerage', function ($row) {
-                    // $t_bookings = DB::table('project_ladders')
-                    // ->join('bookings', 'bookings.project_id', '=', 'project_ladders.project_id','right')
-                    // ->select('project_ladders.*','bookings.id')
-                    // ->where('project_ladders.project_id',$row->project_id)
-                    // ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                    // ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                    // //->groupBy('project_ladders.*','bookings.id')
-                    // ->get();    
-                    $t_bookings = DB::table('bookings')
-                    ->leftJoin('project_ladders', 'bookings.project_id', '=', 'project_ladders.project_id')
-                    ->select('bookings.client_name')
-                    ->where('bookings.project_id',$row->project_id)
-                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                    ->groupBy('bookings.client_name')
-                    ->get();    
-                    $project_ladder = DB::table('project_ladders')
-                                    ->select('project_ladders.*')
-                                    ->where('project_ladders.s_booking','<=',count($t_bookings))
-                                    ->where('project_ladders.e_booking','>=',count($t_bookings))
-                                    ->where('project_ladders.project_id',$row->project_id)
-                                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                                   // ->orderBy('project_ladders.booking','desc')
-                                    ->first();
-                    if(!empty($project_ladder)){
-                        //yes
-                        return $project_ladder->ladder." %";
-                    }else{
-                        //no
-                        return "Not Eigible";
-                    }
-                })
-                ->addColumn('aop_brokerage', function ($row) {
-                    $t_agreementv = DB::table('project_ladders')
-                    ->join('bookings', 'bookings.project_id', '=', 'project_ladders.project_id','left')
-                    ->select('project_ladders.*','bookings.id','bookings.agreement_value')
-                    ->where('project_ladders.project_id',$row->project_id)
-                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                    //->groupBy('project_ladders.*','bookings.id')
-                    ->sum('bookings.agreement_value');
-                    
-                    $developer_ladder = DB::table('developer_ladders')
-                    ->select('developer_ladders.*')
-                    ->where('developer_ladders.aop','>=',$t_agreementv)
-                    ->where('developer_ladders.developer_id',$row->developer_id)
-                    ->whereDate('developer_ladders.aop_s_date', '<', $row->booking_date)
-                    ->whereDate('developer_ladders.aop_e_date', '<', $row->booking_date)
-                    ->first();
-                   // $total = $t_agreementv->sum('aop');
-                    if(!empty($developer_ladder)){
-                        //yes
-                        return $developer_ladder->ladder." %";
-                    }else{
-                        //no
-                        return "Not Eigible";
-                    }
-                    
-                })
-                ->addColumn('total_brokerage', function ($row) {
-                    // $brokerage = DB::table('projects')
-                    // ->select('projects.brokerage')
-                    // ->where('projects.id',$row->project_id)
-                    // ->first();
-                    $t_bookings = DB::table('project_ladders')
-                    ->join('bookings', 'bookings.project_id', '=', 'project_ladders.project_id','left')
-                    ->select('project_ladders.*','bookings.id')
-                    ->where('project_ladders.project_id',$row->project_id)
-                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                    //->groupBy('project_ladders.*','bookings.id')
-                    ->get();
-                    $project_ladder = DB::table('project_ladders')
-                                    ->select('project_ladders.*')
-                                    ->where('project_ladders.s_booking','<=',count($t_bookings))
-                                     ->where('project_ladders.e_booking','>=',count($t_bookings))
-                                    ->where('project_ladders.project_id',$row->project_id)
-                                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                                   // ->orderBy('project_ladders.booking','desc')
-                                    ->first();
-                    $t_agreementv = DB::table('project_ladders')
-                    ->join('bookings', 'bookings.project_id', '=', 'project_ladders.project_id','left')
-                    ->select('project_ladders.*','bookings.id','bookings.agreement_value')
-                    ->where('project_ladders.project_id',$row->project_id)
-                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                    //->groupBy('project_ladders.*','bookings.id')
-                    ->sum('bookings.agreement_value');
-                    
-                    $developer_ladder = DB::table('developer_ladders')
-                    ->select('developer_ladders.*')
-                    ->where('developer_ladders.aop','>=',$t_agreementv)
-                    ->where('developer_ladders.developer_id',$row->developer_id)
-                    ->whereDate('developer_ladders.aop_s_date', '<', $row->booking_date)
-                    ->whereDate('developer_ladders.aop_e_date', '<', $row->booking_date)
-                    ->first();
-                    if(!empty($developer_ladder)){
-                        //yes
-                        return ($developer_ladder->ladder+$project_ladder->ladder + $row->brokerage)." %";
-                    }else{
-                        if(!empty($project_ladder)){
-                            //yes
-                            return ($project_ladder->ladder + $row->brokerage)." %";
-                        }else{
-                            //no
-                            return $row->brokerage." %";
-                        }
-                    }
-                    
-                       
-                })
-                ->addColumn('base_revenue', function ($row) {
-                    // $brokerage = DB::table('projects')
-                    // ->select('projects.brokerage')
-                    // ->where('projects.id',$row->project_id)
-                    // ->first();
-                    $t_bookings = DB::table('project_ladders')
-                    ->join('bookings', 'bookings.project_id', '=', 'project_ladders.project_id','left')
-                    ->select('project_ladders.*','bookings.id')
-                    ->where('project_ladders.project_id',$row->project_id)
-                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                    //->groupBy('project_ladders.*','bookings.id')
-                    ->get();
-                    $project_ladder = DB::table('project_ladders')
-                                    ->select('project_ladders.*')
-                                    ->where('project_ladders.s_booking','<=',count($t_bookings))
-                                    ->where('project_ladders.e_booking','>=',count($t_bookings))
-                                    ->where('project_ladders.project_id',$row->project_id)
-                                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                                   // ->orderBy('project_ladders.booking','desc')
-                                    ->first();
-                    $t_agreementv = DB::table('project_ladders')
-                    ->join('bookings', 'bookings.project_id', '=', 'project_ladders.project_id','left')
-                    ->select('project_ladders.*','bookings.id','bookings.agreement_value')
-                    ->where('project_ladders.project_id',$row->project_id)
-                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                    //->groupBy('project_ladders.*','bookings.id')
-                    ->sum('bookings.agreement_value');
-                    
-                    $developer_ladder = DB::table('developer_ladders')
-                    ->select('developer_ladders.*')
-                    ->where('developer_ladders.aop','>=',$t_agreementv)
-                    ->where('developer_ladders.developer_id',$row->developer_id)
-                    ->whereDate('developer_ladders.aop_s_date', '<', $row->booking_date)
-                    ->whereDate('developer_ladders.aop_e_date', '<', $row->booking_date)
-                    ->first();
-                    if(!empty($developer_ladder)){
-                        //yes
-                        $revenue = ((($developer_ladder->ladder+$project_ladder->ladder + $row->brokerage)/100)* $row->agreement_value);
-                    }else{
-                        if(!empty($project_ladder)){
-                            //yes
-                            $revenue = ((($project_ladder->ladder + $row->brokerage)/100)* $row->agreement_value);
-                        }else{
-                            //no
-                            $revenue = (($row->brokerage/100)* $row->agreement_value);
-                        }
-                    }
-                    
-                    return "Rs. ".number_format($revenue);
-                })
-                ->addColumn('tds', function ($row) {
-                    return "2 %";
-                })
-                ->addColumn('net_base_revenue', function ($row) {
-                    // $brokerage = DB::table('projects')
-                    // ->select('projects.brokerage')
-                    // ->where('projects.id',$row->project_id)
-                    // ->first();
-                    $t_bookings = DB::table('project_ladders')
-                    ->join('bookings', 'bookings.project_id', '=', 'project_ladders.project_id','left')
-                    ->select('project_ladders.*','bookings.id')
-                    ->where('project_ladders.project_id',$row->project_id)
-                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                    //->groupBy('project_ladders.*','bookings.id')
-                    ->get();
-                    $project_ladder = DB::table('project_ladders')
-                                    ->select('project_ladders.*')
-                                    ->where('project_ladders.s_booking','<=',count($t_bookings))
-                                    ->where('project_ladders.e_booking','>=',count($t_bookings))
-                                    ->where('project_ladders.project_id',$row->project_id)
-                                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                                   // ->orderBy('project_ladders.booking','desc')
-                                    ->first();
-                    $t_agreementv = DB::table('project_ladders')
-                    ->join('bookings', 'bookings.project_id', '=', 'project_ladders.project_id','left')
-                    ->select('project_ladders.*','bookings.id','bookings.agreement_value')
-                    ->where('project_ladders.project_id',$row->project_id)
-                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                    //->groupBy('project_ladders.*','bookings.id')
-                    ->sum('bookings.agreement_value');
-                    
-                    $developer_ladder = DB::table('developer_ladders')
-                    ->select('developer_ladders.*')
-                    ->where('developer_ladders.aop','>=',$t_agreementv)
-                    ->where('developer_ladders.developer_id',$row->developer_id)
-                    ->whereDate('developer_ladders.aop_s_date', '<', $row->booking_date)
-                    ->whereDate('developer_ladders.aop_e_date', '<', $row->booking_date)
-                    ->first();
-                    if(!empty($developer_ladder)){
-                        //yes
-                        $revenue = ((($developer_ladder->ladder+$project_ladder->ladder + $row->brokerage)/100)* $row->agreement_value);
-                    }else{
-                        if(!empty($project_ladder)){
-                            //yes
-                            $revenue = ((($project_ladder->ladder + $row->brokerage)/100)* $row->agreement_value);
-                        }else{
-                            //no
-                            $revenue = (($row->brokerage/100)* $row->agreement_value);
-                        }
-                    }
-                    
-                    return "Rs. ".number_format($revenue * 0.98);
-                })
-                ->addColumn('passback', function ($row) {
-                    return "Rs. ".number_format($row->passback);
-                })
-                ->addColumn('actual_revenue', function ($row) {
-                    // $brokerage = DB::table('projects')
-                    // ->select('projects.brokerage')
-                    // ->where('projects.id',$row->project_id)
-                    // ->first();
-                    $t_bookings = DB::table('project_ladders')
-                    ->join('bookings', 'bookings.project_id', '=', 'project_ladders.project_id','left')
-                    ->select('project_ladders.*','bookings.id')
-                    ->where('project_ladders.project_id',$row->project_id)
-                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                    //->groupBy('project_ladders.*','bookings.id')
-                    ->get();
-                    $project_ladder = DB::table('project_ladders')
-                                    ->select('project_ladders.*')
-                                    ->where('project_ladders.s_booking','<=',count($t_bookings))
-                                    ->where('project_ladders.e_booking','>=',count($t_bookings))
-                                    ->where('project_ladders.project_id',$row->project_id)
-                                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                                   // ->orderBy('project_ladders.booking','desc')
-                                    ->first();
-                    $t_agreementv = DB::table('project_ladders')
-                    ->join('bookings', 'bookings.project_id', '=', 'project_ladders.project_id','left')
-                    ->select('project_ladders.*','bookings.id','bookings.agreement_value')
-                    ->where('project_ladders.project_id',$row->project_id)
-                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                    //->groupBy('project_ladders.*','bookings.id')
-                    ->sum('bookings.agreement_value');
-                    
-                    $developer_ladder = DB::table('developer_ladders')
-                    ->select('developer_ladders.*')
-                    ->where('developer_ladders.aop','>=',$t_agreementv)
-                    ->where('developer_ladders.developer_id',$row->developer_id)
-                    ->whereDate('developer_ladders.aop_s_date', '<', $row->booking_date)
-                    ->whereDate('developer_ladders.aop_e_date', '<', $row->booking_date)
-                    ->first();
-                    if(!empty($developer_ladder)){
-                        //yes
-                        $revenue = ((($developer_ladder->ladder+$project_ladder->ladder + $row->brokerage)/100)* $row->agreement_value);
-                    }else{
-                        if(!empty($project_ladder)){
-                            //yes
-                            $revenue = ((($project_ladder->ladder + $row->brokerage)/100)* $row->agreement_value);
-                        }else{
-                            //no
-                            $revenue = (($row->brokerage/100)* $row->agreement_value);
-                        }
-                    }
-                    
-                    $actual_revenue = ($revenue * 0.98) - $row->passback;
-                    return "Rs. ".number_format($actual_revenue);
-                })
-               
-                ->addColumn('additional_kicker', function ($row) {
-                    return "Rs. ".number_format($row->additional_kicker);
-                })
-                ->addColumn('total_revenue', function ($row) {
-                    // $brokerage = DB::table('projects')
-                    // ->select('projects.brokerage')
-                    // ->where('projects.id',$row->project_id)
-                    // ->first();
-                    $t_bookings = DB::table('project_ladders')
-                    ->join('bookings', 'bookings.project_id', '=', 'project_ladders.project_id','left')
-                    ->select('project_ladders.*','bookings.id')
-                    ->where('project_ladders.project_id',$row->project_id)
-                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                    //->groupBy('project_ladders.*','bookings.id')
-                    ->get();
-                    $project_ladder = DB::table('project_ladders')
-                                    ->select('project_ladders.*')
-                                    ->where('project_ladders.s_booking','<=',count($t_bookings))
-                                    ->where('project_ladders.e_booking','>=',count($t_bookings))
-                                    ->where('project_ladders.project_id',$row->project_id)
-                                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                                   // ->orderBy('project_ladders.booking','desc')
-                                    ->first();
-                    $t_agreementv = DB::table('project_ladders')
-                    ->join('bookings', 'bookings.project_id', '=', 'project_ladders.project_id','left')
-                    ->select('project_ladders.*','bookings.id','bookings.agreement_value')
-                    ->where('project_ladders.project_id',$row->project_id)
-                    ->whereDate('project_ladders.project_s_date', '<', $row->booking_date)
-                    ->whereDate('project_ladders.project_e_date', '>', $row->booking_date)
-                    //->groupBy('project_ladders.*','bookings.id')
-                    ->sum('bookings.agreement_value');
-                    
-                    $developer_ladder = DB::table('developer_ladders')
-                    ->select('developer_ladders.*')
-                    ->where('developer_ladders.aop','>=',$t_agreementv)
-                    ->where('developer_ladders.developer_id',$row->developer_id)
-                    ->whereDate('developer_ladders.aop_s_date', '<', $row->booking_date)
-                    ->whereDate('developer_ladders.aop_e_date', '<', $row->booking_date)
-                    ->first();
-                    if(!empty($developer_ladder)){
-                        //yes
-                        $revenue = ((($developer_ladder->ladder+$project_ladder->ladder + $row->brokerage)/100)* $row->agreement_value);
-                    }else{
-                        if(!empty($project_ladder)){
-                            //yes
-                            $revenue = ((($project_ladder->ladder + $row->brokerage)/100)* $row->agreement_value);
-                        }else{
-                            //no
-                            $revenue = (($row->brokerage/100)* $row->agreement_value);
-                        }
-                    }
-                    
-                    $actual_revenue = ($revenue * 0.98) - $row->passback;
-                    return "Rs. ".number_format(($actual_revenue)+$row->additional_kicker);
-                })
-                ->addColumn('sales_person', function ($row) {
-                    $user = DB::table('users')
-                    ->select('users.name','reporting_manager_id ')
-                    ->where('users.id',$row->sales_person)
-                    ->first();
-                    return $user->name;
-                })
-                
-                ->addColumn('team_leader', function ($row) {
-                    $user = DB::table('users')
-                    ->select('users.name','reporting_manager_id ')
-                    ->where('users.id',$row->sales_person)
-                    ->first();
-                    
-                    $ruser = DB::table('users')
-                    ->select('users.name','reporting_manager_id ')
-                    ->where('users.id',$user->reporting_manager_id )
-                    ->first();
-                    if(!empty($ruser)){ $reporting = $ruser->name; }else{ $reporting = "-"; }
-                    return $reporting;
-                })
-                ->addColumn('sr_team_leader', function ($row) {
-                    $user = DB::table('users')
-                    ->select('users.name','reporting_manager_id ')
-                    ->where('users.id',$row->sales_person)
-                    ->first();
-                    
-                    $ruser = DB::table('users')
-                    ->select('users.name','reporting_manager_id ')
-                    ->where('users.id',$user->reporting_manager_id )
-                    ->first();
 
-                    $sruser = DB::table('users')
-                    ->select('users.name','reporting_manager_id ')
-                    ->where('users.id',$ruser->reporting_manager_id )
-                    ->first();
+                ->addColumn('booking_amount', fn($row) => number_format($row->booking_amount ?? 0, 0))
+                ->addColumn('agreement_value', fn($row) => number_format($row->agreement_value ?? 0, 0))
+                ->addColumn('current_effective_amount', fn($row) => number_format($row->current_effective_amount ?? 0, 0))
+                ->addColumn('additional_kicker', fn($row) => number_format($row->additional_kicker ?? 0, 0))
+                ->addColumn('passback', fn($row) => number_format($row->passback ?? 0, 0))
+                ->addColumn('final_revenue', fn($row) => number_format($row->final_revenue ?? 0, 0))
+                ->addColumn('total_paid_amount', fn($row) => number_format($row->total_paid_amount ?? 0, 0))
+                ->addColumn('pending_amount', fn($row) => number_format($row->pending_amount ?? 0, 0))
 
-                    if(!empty($sruser)){ $reporting = $sruser->name; }else{ $reporting = "-"; }
-                    return $reporting;
+                ->addColumn('base_brokerage_percent', function ($row) {
+                    return number_format($row->base_brokerage_percent ?? 0, 2) . '%';
                 })
+
+                ->addColumn('site_increment_percent', function ($row) {
+                    $increment = ($row->site_ladder_percent ?? 0) - ($row->base_brokerage_percent ?? 0);
+                    return number_format($increment, 2) . '%';
+                })
+
+                ->addColumn('aop_ladder_percent', function ($row) {
+                    return number_format($row->aop_ladder_percent ?? 0, 2) . '%';
+                })
+
+                ->addColumn('total_brokerage_percent', function ($row) {
+                    return number_format($row->total_brokerage_percent ?? 0, 2) . '%';
+                })
+
+                ->addColumn('sales_manager', function ($row) {
+                    return optional($row->user)->name ?? '-';
+                })
+
+                ->addColumn('tl', function ($row) {
+                    return optional(optional($row->user)->reportingManager)->name ?? '-';
+                })
+
+                ->addColumn('sr_tl', function ($row) {
+                    return optional(
+                        optional(optional($row->user)->reportingManager)->reportingManager
+                    )->name ?? '-';
+                })
+
                 ->addColumn('cluster_head', function ($row) {
-                    $user = DB::table('users')
-                    ->select('users.name','reporting_manager_id ')
-                    ->where('users.id',$row->sales_person)
-                    ->first();
-                    
-                    $ruser = DB::table('users')
-                    ->select('users.name','reporting_manager_id ')
-                    ->where('users.id',$user->reporting_manager_id )
-                    ->first();
-                    $sruser = DB::table('users')
-                    ->select('users.name','reporting_manager_id ')
-                    ->where('users.id',$ruser->reporting_manager_id )
-                    ->first();
-                    $chuser = DB::table('users')
-                    ->select('users.name','reporting_manager_id ')
-                    ->where('users.id',$sruser->reporting_manager_id )
-                    ->first();
+                    return optional(
+                        optional(
+                            optional(optional($row->user)->reportingManager)
+                                ->reportingManager
+                        )->reportingManager
+                    )->name ?? '-';
+                })
 
-                    if(!empty($chuser)){ $reporting = $chuser->name; }else{ $reporting = "-"; }
-                    return $reporting;
-                })
-                ->addColumn("booking_confirm", function ($row) {
-                    if (($row->reporting_manager_id  == auth()->user()->id || auth()->user()->hasRole('Superadmin'))) {
-                    return '<div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" value="1" id="flexSwitchCheckDefault2" '.(($row->booking_confirm == 1) ? "checked" : "").' onclick="updateBStatus(this, '.$row->id.');">
-                            </div>';
-                    }
-                    return '';
-                })
-                ->addColumn("registration_confirm", function ($row) {
-                    if (($row->reporting_manager_id  == auth()->user()->id || auth()->user()->hasRole('Superadmin'))) {
-                    return '<div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" value="1" id="flexSwitchCheckDefault" '.(($row->registration_confirm == 1) ? "checked" : "").' onclick="updateStatus(this, '.$row->id.');">
-                            </div>';
-                    }
-                    return '';
-                })
-                ->addColumn("invoice_raised", function ($row) {
-                    if (($row->reporting_manager_id  == auth()->user()->id || auth()->user()->hasRole('Superadmin'))) {
-                    return '<div class="form-check form-switch mb-2">
-                                <input class="form-check-input" type="checkbox" value="1" id="flexSwitchCheckDefault1" '.(($row->invoice_raised == 1) ? "checked" : "").' onclick="updateIStatus(this, '.$row->id.');">
-                            </div>';
-                    }
-                    return '';
-                })
-                ->addColumn('created_at', function ($row) {
-                    return date("d-m-Y", strtotime($row->created_at));
-                })
-                ->addColumn('updated_at', function ($row) {
-                    return ($row->updated_at != "") ? date("d-m-Y", strtotime($row->updated_at)) : '-';
-                })
+                // ->addColumn('booking_confirm', function ($row) {
+                //     return '<input type="checkbox"
+                //             onchange="updateBStatus(this,' . $row->id . ')"
+                //             ' . ($row->booking_confirm ? 'checked' : '') . '>';
+                // })
+
+                // ->addColumn('registration_confirm', function ($row) {
+                //     return '<input type="checkbox"
+                //             onchange="updateStatus(this,' . $row->id . ')"
+                //             ' . ($row->registration_confirm ? 'checked' : '') . '>';
+                // })
+
+                // ->addColumn('invoice_raised', function ($row) {
+                //     return '<input type="checkbox"
+                //             onchange="updateIStatus(this,' . $row->id . ')"
+                //             ' . ($row->invoice_raised ? 'checked' : '') . '>';
+                // })
+
                 ->addColumn('action', function ($row) {
-                    $actions = '';
-                    if (auth()->user()->can('booking-edit')) {
-                        $actions .= '<a class="dropdown-item" href="'.route('booking.edit', $row->id).'"
-                                        ><i class="bx bx-edit-alt me-1"></i> Edit</a>';
-                    }
-
-                    if (auth()->user()->can('booking-delete')) {
-                        $actions .= '<button class="dropdown-item" onclick="deleteBooking('.$row->id.')"
-                                        ><i class="bx bx-trash me-1"></i> Delete</button>
-                                    <form id="'.$row->id.'" action="'.route('booking.destroy', $row->id).'" method="POST" class="d-none">
-                                        '.csrf_field().'
-                                        '.method_field('delete').'
-                                    </form>';
-                    }
-                    if (auth()->user()->can('booking-view')) {
-                        $actions .= '<a class="dropdown-item" target=”_blank”  href="'.route('booking.show', $row->id).'"
-                                        ><i class="bx bx-edit-alt me-1"></i> View</a>';
-                    }
-                    // if (auth()->user()->can('booking-view')) {
-                    //     $actions .= '<a class="dropdown-item" target=”_blank”  href="'.url('send_booking_mail/'.$row->id).'"
-                    //                     ><i class="bx bx-edit-alt me-1"></i> Send Email</a>';
-                    // }
-
-                    if (!empty($actions)) {
-                        return '<div class="dropdown">
-                                        <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
-                                        <i class="bx bx-dots-vertical-rounded"></i>
-                                        </button>
-                                        <div class="dropdown-menu">
-                                        '.$actions.'
-                                        </div>
-                                    </div>';
-                    }
-
-                    return '';
+                    return '
+                    <div class="dropdown">
+                        <button class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                            <i class="bx bx-dots-vertical-rounded"></i>
+                        </button>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="' . route('booking.edit', $row->id) . '">
+                                <i class="bx bx-edit-alt me-1"></i> Edit
+                            </a>
+                        </div>
+                    </div>';
                 })
-                ->rawColumns(['action','registration_confirm','invoice_raised','booking_confirm'])
+
+                ->rawColumns([
+                    'booking_confirm',
+                    'registration_confirm',
+                    'invoice_raised',
+                    'action'
+                ])
+
                 ->make(true);
         }
+
         return view('booking.index');
     }
 
     public function create()
     {
-        $project_name = Project::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $developer_name = Developer::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $user_name = User::select(['id', 'name'])->orderBy('name', 'asc')->get();
-       // return view('booking.create');
-        return view('booking.create', compact('project_name','developer_name','user_name'));
-    }
+        $developer_name = Developer::all();
+        $project_name   = Project::all();
 
-    public function store(BookingRequest $request)
+        // Get Business Unit ID where code = KREA
+        $businessUnit = BusinessUnit::where('code', 'KREA')->first();
+
+        // Fetch users belonging to that business unit
+        $salesManagers = User::where('business_unit_id', $businessUnit->id ?? null)
+                            ->get();
+
+        return view('booking.create', compact(
+            'developer_name',
+            'project_name',
+            'salesManagers'
+        ));
+    }
+    public function store(BookingRequest $request, BrokerageCalculationService $service)
     {
-        //create booking
+        // dd($request->project_id);
+        // exit;
+        // echo "ss"; 
+        // print_r($request->all()); exit;
+        $calc = $service->calculate(
+            $request->project_id,
+            $request->developer_id,
+            $request->agreement_value,
+            $request->booking_date
+        );
+
         $booking = new Booking();
-        $booking->project_id = $request->input('project_id');
-        $booking->developer_id = $request->input('developer_id');
-        $booking->brokerage = $request->input('brokerage');
-        $booking->client_name = $request->input('client_name');
-        $booking->booking_date = $request->input('booking_date');
-        $booking->client_contact = $request->input('client_contact');
-        $booking->configuration = $request->input('configuration');
-        $booking->flat_no = $request->input('flat_no');
-        $booking->wing = $request->input('wing');
-        $booking->tower = $request->input('tower');
-        $booking->sales_person = $request->input('sales_person');
-        $booking->lead_source = $request->input('lead_source');
-        $booking->sourcing_manager = $request->input('sourcing_manager');
-        $booking->sourcing_contact = $request->input('sourcing_contact');
-        $booking->booking_amount = $request->input('booking_amount');
-        $booking->agreement_value = $request->input('agreement_value');
-        $booking->passback = $request->input('passback');
-        $booking->additional_kicker = $request->input('additional_kicker');
-        $booking->payment_done = $request->input('payment_done');
-        $booking->remark = $request->input('remark');
-        $booking->registration_date = $request->input('registration_date');
+
+        // Basic Details
+        $booking->booking_date = $request->booking_date;
+        $booking->client_name = $request->client_name;
+        $booking->client_contact = $request->client_contact;
+        $booking->lead_source = $request->lead_source;
+
+        $booking->project_id = $request->project_id;
+        $booking->developer_id = $request->developer_id;
+        $booking->tower = $request->tower;
+        $booking->wing = $request->wing;
+        $booking->flat_no = $request->flat_no;
+        $booking->configuration = $request->configuration;
+
+        // Financial Values
+        $booking->booking_amount = $request->booking_amount;
+        $booking->agreement_value = $request->agreement_value;
+
+        // Brokerage Snapshot
+        $booking->base_brokerage_percent = $calc['base_percent'];
+        $booking->site_ladder_percent = $calc['site_percent'];
+        $booking->aop_ladder_percent = $calc['aop_percent'];
+        $booking->total_brokerage_percent = $calc['total_percent'];
+        $booking->current_effective_amount = $calc['brokerage_amount'];
+
+        $booking->additional_kicker = $request->additional_kicker ?? 0;
+        $booking->passback = $request->passback ?? 0;
+
+        $booking->final_revenue =
+            $booking->current_effective_amount
+            + $booking->additional_kicker
+            - $booking->passback;
+
+        // Registration & Status
+        $booking->registration_date = $request->registration_date;
+        $booking->remark = $request->remark;
+        $booking->sales_user_id = $request->sales_user_id;
+
+        $booking->created_by = auth()->id();
+
         $booking->save();
 
-        return redirect()->route('booking.index')->with('success', 'Booking Added Successfully');
+        return redirect()
+            ->route('booking.index')
+            ->with('success', 'Booking Added Successfully');
     }
 
     public function edit($id)
     {
-        $booking = Booking::find($id);
-        return view('booking.edit', compact('id', 'booking'));
-    }
+        $booking = Booking::findOrFail($id);
 
+        $developer_name = Developer::all();
+        $project_name   = Project::all();
+        $salesManagers  = User::all();   // <-- FIXED
+
+        return view('booking.edit', compact(
+            'booking',
+            'developer_name',
+            'project_name',
+            'salesManagers'
+        ));
+    }
     public function update(BookingRequest $request, $id)
     {
-        $booking = Booking::find($id);
-        $booking->project_id = $request->input('project_id');
-        $booking->developer_id = $request->input('developer_id');
-        $booking->client_name = $request->input('client_name');
-        $booking->booking_date = $request->input('booking_date');
-        $booking->client_contact = $request->input('client_contact');
-        $booking->configuration = $request->input('configuration');
-        $booking->flat_no = $request->input('flat_no');
-        $booking->wing = $request->input('wing');
-        $booking->tower = $request->input('tower');
-        $booking->sales_person = $request->input('sales_person');
-        $booking->lead_source = $request->input('lead_source');
-        $booking->sourcing_manager = $request->input('sourcing_manager');
-        $booking->sourcing_contact = $request->input('sourcing_contact');
-        $booking->booking_amount = $request->input('booking_amount');
-        $booking->agreement_value = $request->input('agreement_value');
-        $booking->passback = $request->input('passback');
-        $booking->additional_kicker = $request->input('additional_kicker');
-        $booking->payment_done = $request->input('payment_done');
-        $booking->remark = $request->input('remark');
-        $booking->registration_date = $request->input('registration_date');
-        $booking->save();
+        $booking = Booking::findOrFail($id);
 
-        return redirect()->route('booking.index')->with('success', 'Booking Updated Successfully');
+        $booking->update([
+            'project_id'        => $request->project_id,
+            'developer_id'      => $request->developer_id,
+            'client_name'       => $request->client_name,
+            'booking_date'      => $request->booking_date,
+            'client_contact'    => $request->client_contact,
+            'lead_source'       => $request->lead_source,
+            'configuration'     => $request->configuration,
+            'flat_no'           => $request->flat_no,
+            'wing'              => $request->wing,
+            'tower'             => $request->tower,
+            'booking_amount'    => $request->booking_amount,
+            'agreement_value'   => $request->agreement_value,
+            'passback'          => $request->passback,
+            'additional_kicker' => $request->additional_kicker,
+            'registration_date' => $request->registration_date,
+            'sales_user_id'     => $request->sales_user_id,
+            'remark'            => $request->remark,
+        ]);
+
+        return redirect()
+            ->route('booking.index')
+            ->with('success', 'Booking Updated Successfully');
     }
 
     public function destroy($id)

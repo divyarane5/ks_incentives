@@ -93,10 +93,49 @@
             @endcan
         </li>
         @endcanany
-
         @php
         $isSAorAdmin = isSuperAdmin() || isAdmin();
         @endphp
+        @if($isSAorAdmin || auth()->user()->businessUnit?->code === 'KREA')
+        @canany(['project-view','developer-view','booking-view'])
+
+        <li class="menu-item {{ in_array(Request::segment(1), ['project','developer']) ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-code-block"></i>
+                <div>CP</div>
+            </a>
+
+            <ul class="menu-sub">
+
+                @can('project-view')
+                <li class="menu-item {{ Request::segment(1) == 'project' ? 'active' : '' }}">
+                    <a href="{{ route('project.index') }}" class="menu-link">
+                        <div>Projects</div>
+                    </a>
+                </li>
+                @endcan
+
+                @can('developer-view')
+                <li class="menu-item {{ Request::segment(1) == 'developer' ? 'active' : '' }}">
+                    <a href="{{ route('developer.index') }}" class="menu-link">
+                        <div>Developers</div>
+                    </a>
+                </li>
+                @endcan
+                @can('booking-view')
+                <li class="menu-item {{ Request::segment(1) == 'booking' ? 'active' : '' }}">
+                    <a href="{{ route('booking.index') }}" class="menu-link">
+                        <div>Bookings</div>
+                    </a>
+                </li>
+                @endcan
+
+            </ul>
+        </li>
+
+        @endcanany
+        @endif
+        
 
         @if($isSAorAdmin || auth()->user()->businessUnit?->code === 'AI')
             <li class="menu-item {{ in_array(Request::segment(1), ['mandate_projects','channel_partners','client-enquiries']) ? 'active open' : '' }}">

@@ -12,18 +12,37 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // 🔹 TOTAL REGISTRATIONS
-        $totalRegistrations = MandateBooking::count();
+        $user = auth()->user();
+        $role = $user->role; // e.g., 'admin', 'manager', 'employee'
+        $businessUnit = $user->business_unit_id ?? null;
 
-        // 🔹 ELIGIBLE FOR BROKERAGE
-        $eligibleBrokerageBookings = MandateBookingBrokerage::where('is_eligible', 1)
+        // Base queries
+        $mandateBookingQuery   = MandateBooking::query();
+        $mandateProjectQuery   = MandateProject::query();
+        $channelPartnerQuery   = ChannelPartner::query();
+        $clientEnquiryQuery    = ClientEnquiry::query();
+        $mandateBookingBrokerageQuery = MandateBookingBrokerage::query();
+
+        // Filter by business unit for non-admin users
+        if ($role !== 'admin' && $businessUnit) {
+            $mandateBookingQuery->where('business_unit_id', $businessUnit);
+            $mandateProjectQuery->where('business_unit_id', $businessUnit);
+            $channelPartnerQuery->where('business_unit_id', $businessUnit);
+            $clientEnquiryQuery->where('business_unit_id', $businessUnit);
+            $mandateBookingBrokerageQuery->whereHas('booking', function($q) use ($businessUnit) {
+                $q->where('business_unit_id', $businessUnit);
+            });
+        }
+
+        // Counts
+        $totalRegistrations         = $mandateBookingQuery->count();
+        $eligibleBrokerageBookings  = $mandateBookingBrokerageQuery->where('is_eligible', 1)
             ->distinct('booking_id')
             ->count('booking_id');
 
-        // 🔹 BOOKING STATUS COUNTS
-        $pendingBookings   = MandateBooking::where('booking_status', 'pending')->count();
-        $completedBookings = MandateBooking::where('booking_status', 'completed')->count();
-        $cancelledBookings = MandateBooking::where('booking_status', 'cancelled')->count();
+        $pendingBookings   = (clone $mandateBookingQuery)->where('booking_status', 'pending')->count();
+        $completedBookings = (clone $mandateBookingQuery)->where('booking_status', 'completed')->count();
+        $cancelledBookings = (clone $mandateBookingQuery)->where('booking_status', 'cancelled')->count();
 
         return view('dashboard', [
             'totalRegistrations'         => $totalRegistrations,
@@ -31,10 +50,12 @@ class DashboardController extends Controller
             'pendingBookings'           => $pendingBookings,
             'completedBookings'         => $completedBookings,
             'cancelledBookings'         => $cancelledBookings,
-            'mandateProjectsCount'      => MandateProject::count(),
-            'channelPartnersCount'      => ChannelPartner::count(),
-            'clientEnquiriesCount'      => ClientEnquiry::count(),
-            'mandateBookingsCount'      => MandateBooking::count(),
+            'mandateProjectsCount'      => $mandateProjectQuery->count(),
+            'channelPartnersCount'      => $channelPartnerQuery->count(),
+            'clientEnquiriesCount'      => $clientEnquiryQuery->count(),
+            'mandateBookingsCount'      => $mandateBookingQuery->count(),
+            'role'                      => $role,
+            'businessUnit'              => $businessUnit,
         ]);
     }
 }

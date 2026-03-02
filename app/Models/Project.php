@@ -13,7 +13,10 @@ class Project extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'name','borkerage',
+        'name',
+        'developer_id',
+         'base_brokerage_percent',
+         'rera_number',
     ];
 
     protected static function boot() { 
@@ -22,5 +25,15 @@ class Project extends Model
         static::creating(function ($model) {
             $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
         });
+    }
+
+    public function developer()
+    {
+        return $this->belongsTo(Developer::class);
+    }
+
+    public function ladders()
+    {
+        return $this->hasMany(ProjectLadder::class);
     }
 }

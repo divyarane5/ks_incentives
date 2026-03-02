@@ -230,5 +230,26 @@ class User extends Authenticatable
                     ->whereNull('effective_to')
                     ->latestOfMany();
     }
+    public function reportingManager()
+    {
+        return $this->belongsTo(User::class, 'reporting_manager_id');
+    }
+    public function subordinates()
+    {
+        return $this->hasMany(User::class, 'reporting_manager_id');
+    }
+    public function getManagerLevel($level = 1)
+    {
+        $manager = $this;
 
+        for ($i = 0; $i < $level; $i++) {
+            if (!$manager || !$manager->reportingManager) {
+                return null;
+            }
+
+            $manager = $manager->reportingManager;
+        }
+
+        return $manager;
+    }
 }

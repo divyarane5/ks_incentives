@@ -6,183 +6,117 @@
         <h4 class="fw-bold py-3 mb-4 col-md-6"><span class="text-muted fw-light">Booking /</span> List</h4>
         <div class="col-md-6">
             @can('booking-create')
-            <a href="{{ route('booking.create') }}" type="button" class="btn btn-primary pull-right my-3 mb-4 ">Add Booking</a>
+            <a href="{{ route('booking.create') }}" type="button" class="btn btn-primary pull-right my-3 mb-4">Add Booking</a>
             @endcan
         </div>
     </div>
 
-    <!-- Striped Rows -->
     <div class="card">
         <h5 class="card-header">Bookings</h5>
         <div class="table-responsive text-nowrap">
             <table id="booking-datatable" class="table table-striped" width="100%">
-            <thead>
-                <tr>
-                    <th>Booking <br>Date</th>
-                    <th>Client<br>Name </th>
-                    <th>Project <br>Name</th>
-                    <th>Developer <br>Name</th>
-                    <th>Agreement<br>Value</th>
-                    <th>Base<br> Brokerage</th>
-                    <th>Site<br> Brokerage</th>
-                    <th>AOP <br>Brokerage</th>
-                    <th>Total <br>Brokerage</th>
-                    <th>Base <br>Revenue</th>
-                    <th>TDS</th>
-                    <th>Net Base <br>Revenue</th>
-                    <th>Passback <br>Given</th>
-                    <th>Actual <br>Revenue</th>
-                    <th>Additional <br>Kicker</th>
-                    <th>Total <br>Revenue</th>
-                    <th>SM Name</th>
-                    <th>TL Name</th>
-                    <th>Sr. TL Name</th>
-                    <th>CH</th>
-                    <th>Booking <br>Confirm</th>
-                    <th>Registration <br>Confirm</th>
-                    <th>Invoice  <br>Raised</th>
-                    <th>Created On</th>
-                    <th>Modified On</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody class="table-border-bottom-0">
-            </tbody>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Booking Date</th>
+                        <th>Client Name</th>
+                        <th>Client Contact</th>
+                        <th>Lead Source</th>
+                        <th>Project Name</th>
+                        <th>Developer Name</th>
+                        <!-- <th>Tower</th>
+                        <th>Wing</th>
+                        <th>Flat No</th>
+                        <th>Configuration</th> -->
+                        <th>Booking Amount</th>
+                        <th>Agreement Value</th>
+                        <th>Base Brokerage %</th>
+                        <th>Site Ladder Increment %</th>
+                        <th>AOP Brokerage %</th>
+                        <th>Total Brokerage %</th>
+                        <th>Revenue</th>
+                        <!-- <th>Total Paid Amount</th>
+                        <th>Pending Amount</th> -->
+                        <th>Additional Kicker</th>
+                        <th>Passback</th>
+                        <th>Final Revenue</th>
+                        <th>Sales Manager</th>
+                        <th>TL</th>
+                        <th>Sr TL</th>
+                        <th>Cluster Head</th>
+                        <!-- <th>Booking Confirm</th>
+                        <th>Registration Confirm</th>
+                        <th>Registration Date</th>
+                        <th>Invoice Raised</th>
+                        <th>Remark</th>
+                        <th>Created By</th>
+                        <th>Created At</th>
+                        <th>Updated At</th>
+                        <th>Deleted At</th> -->
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="table-border-bottom-0"></tbody>
             </table>
         </div>
-        </div>
-        <!--/ Striped Rows -->
     </div>
+</div>
 @endsection
 
 @section('script')
 <script type="text/javascript">
     $(document).ready(function () {
-      var table = $('#booking-datatable').DataTable({
+        var table = $('#booking-datatable').DataTable({
             processing: true,
             serverSide: true,
-            ajax: "{{ route('booking.index') }}",
+            // ajax: {
+            //     url: "{{ route('booking.index') }}",
+            //     type: "POST",
+            //     data: {
+            //         _token: "{{ csrf_token() }}"
+            //     }
+            // },
+             ajax: "{{ route('booking.index') }}",
             columns: [
-                
+                {data: 'id', name: 'id'},
                 {data: 'booking_date', name: 'booking_date'},
                 {data: 'client_name', name: 'client_name'},
-                {data: 'project_name', name: 'project_name'},
-                {data: 'developer_name', name: 'developer_name'},
+                {data: 'client_contact', name: 'client_contact'},
+                {data: 'lead_source', name: 'lead_source'},
+                {data: 'project_name', name: 'project.name', defaultContent: '-'},
+                {data: 'developer_name', name: 'developer.name', defaultContent: '-'},
+                // {data: 'tower', name: 'tower'},
+                // {data: 'wing', name: 'wing'},
+                // {data: 'flat_no', name: 'flat_no'},
+                // {data: 'configuration', name: 'configuration'},
+                {data: 'booking_amount', name: 'booking_amount'},
                 {data: 'agreement_value', name: 'agreement_value'},
-                {data: 'brokerage'},
-                {data: 'project_brokerage'},
-                {data: 'aop_brokerage'},
-                {data: 'total_brokerage'},
-                {data: 'base_revenue'},
-                {data: 'tds'},
-                {data: 'net_base_revenue'},
-                {data: 'passback', name: 'passback'},
-                {data: 'actual_revenue'},
+                {data: 'base_brokerage_percent', name: 'base_brokerage_percent'},
+                {data: 'site_increment_percent', name: 'site_increment_percent'},
+                {data: 'aop_ladder_percent', name: 'aop_ladder_percent'},
+                {data: 'total_brokerage_percent', name: 'total_brokerage_percent'},
+                {data: 'current_effective_amount', name: 'current_effective_amount'}, // Label now "Revenue"
+                // {data: 'total_paid_amount', name: 'total_paid_amount'},
+                // {data: 'pending_amount', name: 'pending_amount'},
                 {data: 'additional_kicker', name: 'additional_kicker'},
-                {data: 'total_revenue'},
-                {data: 'sales_person', name: 'sales_person'},
-                {data: 'team_leader'},
-                {data: 'sr_team_leader'},
-                {data: 'cluster_head'},
-                {data: 'booking_confirm', name: 'booking_confirm'},
-                {data: 'registration_confirm', name: 'registration_confirm'},
-                {data: 'invoice_raised', name: 'invoice_raised'},
-                {data: 'created_at', name: 'created_at'},
-                {data: 'updated_at', name: 'updated_at'},
-                {data: 'action', 'sortable': false},
+                {data: 'passback', name: 'passback'},
+                {data: 'final_revenue', name: 'final_revenue'},
+                {data: 'sales_manager', name: 'sales_manager', defaultContent: '-'},
+                {data: 'tl', name: 'tl', defaultContent: '-'},
+                {data: 'sr_tl', name: 'sr_tl', defaultContent: '-'},
+                {data: 'cluster_head', name: 'cluster_head', defaultContent: '-'},
+                // {data: 'booking_confirm', orderable:false, searchable:false},
+                // {data: 'registration_confirm', orderable:false, searchable:false},
+                // {data: 'registration_date', name: 'registration_date'},
+                // {data: 'invoice_raised', orderable:false, searchable:false},
+                // {data: 'remark', name: 'remark'},
+                // {data: 'created_by', name: 'created_by'},
+                // {data: 'created_at', name: 'created_at'},
+                // {data: 'updated_at', name: 'updated_at'},
+                // {data: 'deleted_at', name: 'deleted_at'},
+                {data: 'action', orderable:false, searchable:false},
             ]
-      });
-
+        });
     });
-
-    function deleteBooking(id)
-    {
-        $.confirm({
-            title: 'Delete Booking',
-            content: 'Are you sure you want to delete Booking?',
-            type: 'red',
-            typeAnimated: true,
-            buttons: {
-                tryAgain: {
-                    text: 'Yes',
-                    btnClass: 'btn-red',
-                    action: function(){
-                        event.preventDefault();
-                        document.getElementById(id).submit()
-                    }
-                },
-                close: function () {
-                }
-            }
-        });
-    }
-
-    function updateStatus(element, bookingId)
-    {
-        var registration_confirm = $(element).is(':checked') ? 1 : 0;
-        $.ajax({
-            type: 'POST',
-            url: "{{ route('booking.update_status') }}",
-            headers: {
-                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
-                        "content"
-                    ),
-            },
-            data: {registration_confirm: registration_confirm, id: bookingId},
-            success: function (res) {
-                $.alert({
-                    title: 'Success!',
-                    content: 'Registration status updated successfully',
-                    type: 'green',
-                    typeAnimated: true,
-                });
-            }
-        });
-    }
-    function updateIStatus(element, bookingId)
-    {
-        var invoice_raised = $(element).is(':checked') ? 1 : 0;
-        $.ajax({
-            type: 'POST',
-            url: "{{ route('booking.update_istatus') }}",
-            headers: {
-                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
-                        "content"
-                    ),
-            },
-            data: {invoice_raised: invoice_raised, id: bookingId},
-            success: function (res) {
-                $.alert({
-                    title: 'Success!',
-                    content: 'Invoice status updated successfully',
-                    type: 'green',
-                    typeAnimated: true,
-                });
-            }
-        });
-    }
-    function updateBStatus(element, bookingId)
-    {
-        var booking_confirm = $(element).is(':checked') ? 1 : 0;
-        $.ajax({
-            type: 'POST',
-            url: "{{ route('booking.update_bstatus') }}",
-            headers: {
-                    "X-CSRF-TOKEN": $('meta[name="csrf-token"]').attr(
-                        "content"
-                    ),
-            },
-            data: {booking_confirm: booking_confirm, id: bookingId},
-            success: function (res) {
-                $.alert({
-                    title: 'Success!',
-                    content: 'Booking status updated successfully',
-                    type: 'green',
-                    typeAnimated: true,
-                });
-            }
-        });
-    }
-    
 </script>
 @endsection

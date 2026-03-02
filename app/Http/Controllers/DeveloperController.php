@@ -26,6 +26,41 @@ class DeveloperController extends Controller
                 ->addColumn('name', function ($row) {
                     return $row->name;
                 })
+                ->addColumn('view_ladders', function ($row) {
+
+                    if ($row->ladders->isEmpty()) {
+                        return '-';
+                    }
+
+                    $html = '
+                        <button class="btn btn-sm btn-warning" type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#ladders-'.$row->id.'">
+                            View Ladders
+                        </button>
+
+                        <div class="collapse mt-2" id="ladders-'.$row->id.'">
+                            <ul class="list-group">';
+
+                    foreach ($row->ladders as $ladder) {
+
+                        $html .= '
+                            <li class="list-group-item">
+                                <strong>'.date('d M Y', strtotime($ladder->aop_s_date)).'</strong>
+                                →
+                                <strong>'.date('d M Y', strtotime($ladder->aop_e_date)).'</strong>
+                                <br>
+                                AOP: '.$ladder->min_aop.' Cr - '.$ladder->max_aop.' Cr
+                                | Brokerage: '.$ladder->ladder.'%
+                            </li>';
+                    }
+
+                    $html .= '
+                            </ul>
+                        </div>';
+
+                    return $html;
+                })
                 ->addColumn('status', function ($row) {
                     return $row->status;
                 })
@@ -62,7 +97,7 @@ class DeveloperController extends Controller
                     }
                     return '';
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['action','view_ladders'])
                 ->make(true);
         }
         return view('developer.index');
@@ -73,31 +108,89 @@ class DeveloperController extends Controller
         return view('developer.create');
     }
 
-    public function store(DeveloperRequest $request)
+    public function store(Request $request)
     {
-        //create developer
-        $developer = new Developer();
-        $developer->name = $request->input('name');
-        $developer->save();
+        // echo "<pre>"; 
+        // print_r($request->all()); exit;
+        $request->validate([
+            'name' => 'required|string|max:255',
 
-        return redirect()->route('developer.index')->with('success', 'Developer Added Successfully');
+            'min_aop.*' => 'required|numeric',
+            'max_aop.*' => 'required|numeric|gte:min_aop.*',
+            'ladder.*'  => 'required|numeric',
+
+            'aop_s_date.*' => 'required|date',
+            'aop_e_date.*' => 'required|date|after_or_equal:aop_s_date.*',
+        ]);
+
+        $developer = Developer::create([
+            'name' => $request->name,
+        ]);
+
+        foreach ($request->min_aop as $key => $minAop) {
+
+            $developer->ladders()->create([
+                'aop' => $minAop." - ".$request->max_aop[$key],
+                'min_aop'    => $minAop,
+                'max_aop'    => $request->max_aop[$key],
+                'ladder'     => $request->ladder[$key],
+                'aop_s_date' => $request->aop_s_date[$key],
+                'aop_e_date' => $request->aop_e_date[$key],
+                'ladder_type'=> 'flat', // default (if needed)
+                'created_by' => auth()->id(),
+            ]);
+        }
+
+        return redirect()->route('developer.index')
+            ->with('success', 'Developer created successfully.');
     }
-
+    
     public function edit($id)
     {
-        $developer = Developer::find($id);
-        return view('developer.edit', compact('id', 'developer'));
+        $developer = Developer::with('ladders')->findOrFail($id);
+
+        return view('developer.edit', compact('developer'));
     }
 
-    public function update(DeveloperRequest $request, $id)
+    public function update(Request $request, $id)
     {
-        $developer = Developer::find($id);
-        $developer->name = $request->input('name');
-        $developer->save();
+        $request->validate([
+            'name' => 'required|string|max:255',
 
-        return redirect()->route('developer.index')->with('success', 'Developer Updated Successfully');
+            'min_aop.*' => 'required|numeric',
+            'max_aop.*' => 'required|numeric',
+            'ladder.*'  => 'required|numeric',
+
+            'aop_s_date.*' => 'required|date',
+            'aop_e_date.*' => 'required|date',
+        ]);
+
+        $developer = Developer::findOrFail($id);
+
+        $developer->update([
+            'name' => $request->name,
+        ]);
+
+        // 🔥 Delete old ladders
+        $developer->ladders()->delete();
+
+        // 🔥 Recreate ladders
+        foreach ($request->min_aop as $key => $minAop) {
+
+            $developer->ladders()->create([
+                'aop'        => $minAop.' - '.$request->max_aop[$key],
+                'min_aop'    => $minAop,
+                'max_aop'    => $request->max_aop[$key],
+                'ladder'     => $request->ladder[$key],
+                'aop_s_date' => $request->aop_s_date[$key],
+                'aop_e_date' => $request->aop_e_date[$key],
+                'created_by' => auth()->id(),
+            ]);
+        }
+
+        return redirect()->route('developer.index')
+            ->with('success', 'Developer updated successfully.');
     }
-
     public function destroy($id)
     {
         Developer::where('id', $id)->delete();
