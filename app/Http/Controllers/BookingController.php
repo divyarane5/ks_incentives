@@ -13,7 +13,7 @@ use Illuminate\Http\Request;
 use App\Mail\BookingMail;
 use Illuminate\Support\Facades\Mail;
 use DB;
-use App\Services\BookingRevenueService;
+//use App\Services\BookingRevenueService;
 use App\Services\BrokerageCalculationService;
 
 class BookingController extends Controller
@@ -27,8 +27,8 @@ class BookingController extends Controller
 
     }
     
-
-
+    
+    
     public function index(Request $request)
     {
         if ($request->ajax()) {
@@ -59,7 +59,38 @@ class BookingController extends Controller
                 ->addColumn('final_revenue', fn($row) => number_format($row->final_revenue ?? 0, 0))
                 ->addColumn('total_paid_amount', fn($row) => number_format($row->total_paid_amount ?? 0, 0))
                 ->addColumn('pending_amount', fn($row) => number_format($row->pending_amount ?? 0, 0))
+                ->addColumn('total_invoice_percent', function ($row) {
+                    return number_format($row->total_invoice_percent ?? 0, 2) . '%';
+                })
 
+                ->addColumn('total_invoice_amount', function ($row) {
+                    return number_format($row->total_invoice_amount ?? 0, 0);
+                })
+
+                ->addColumn('total_received_amount', function ($row) {
+                    return number_format($row->total_received_amount ?? 0, 0);
+                })
+
+                ->addColumn('pending_brokerage_percent', function ($row) {
+                    return number_format($row->pending_brokerage_percent ?? 0, 2) . '%';
+                })
+
+                ->addColumn('pending_brokerage_amount', function ($row) {
+                    return number_format($row->pending_brokerage_amount ?? 0, 0);
+                })
+
+                ->addColumn('payment_status', function ($row) {
+
+                    if($row->payment_status == 'completed'){
+                        return '<span class="badge bg-success">Completed</span>';
+                    }
+
+                    if($row->payment_status == 'partial'){
+                        return '<span class="badge bg-warning">Partial</span>';
+                    }
+
+                    return '<span class="badge bg-danger">Pending</span>';
+                })
                 ->addColumn('base_brokerage_percent', function ($row) {
                     return number_format($row->base_brokerage_percent ?? 0, 2) . '%';
                 })
@@ -74,37 +105,82 @@ class BookingController extends Controller
                 })
 
                 ->addColumn('total_brokerage_percent', function ($row) {
-                    return number_format($row->total_brokerage_percent ?? 0, 2) . '%';
-                })
 
-                ->addColumn('sales_manager', function ($row) {
-                    return optional($row->user)->name ?? '-';
-                })
+                    $base = $row->base_brokerage_percent ?? 0;
 
-                ->addColumn('tl', function ($row) {
-                    return optional(optional($row->user)->reportingManager)->name ?? '-';
-                })
+                    $site_increment = ($row->site_ladder_percent ?? 0) - $base;
 
-                ->addColumn('sr_tl', function ($row) {
-                    return optional(
-                        optional(optional($row->user)->reportingManager)->reportingManager
-                    )->name ?? '-';
-                })
+                    $aop = $row->aop_ladder_percent ?? 0;
 
-                ->addColumn('cluster_head', function ($row) {
-                    return optional(
+                    $total = $row->total_brokerage_percent ?? 0;
+
+                    $tooltip = "
+                        Base: ".number_format($base,2)." %<br>
+                        Site Increment: ".number_format($site_increment,2)." %<br>
+                        AOP: ".number_format($aop,2)." %
+                    ";
+
+                    return '<span data-bs-toggle="tooltip" title="'.$tooltip.'">
+                                '.number_format($total,2).' %
+                            </span>';
+                })
+                //->rawColumns(['total_brokerage_percent'])
+                // ->addColumn('sales_manager', function ($row) {
+                //     return optional($row->user)->name ?? '-';
+                // })
+
+                // ->addColumn('tl', function ($row) {
+                //     return optional(optional($row->user)->reportingManager)->name ?? '-';
+                // })
+
+                // ->addColumn('sr_tl', function ($row) {
+                //     return optional(
+                //         optional(optional($row->user)->reportingManager)->reportingManager
+                //     )->name ?? '-';
+                // })
+
+                // ->addColumn('cluster_head', function ($row) {
+                //     return optional(
+                //         optional(
+                //             optional(optional($row->user)->reportingManager)
+                //                 ->reportingManager
+                //         )->reportingManager
+                //     )->name ?? '-';
+                // })
+                ->addColumn('team_hierarchy', function ($row) {
+
+                    $salesManager = optional($row->user)->name ?? '-';
+                    $tl = optional(optional($row->user)->reportingManager)->name ?? '-';
+                    $srTl = optional(optional(optional($row->user)->reportingManager)->reportingManager)->name ?? '-';
+                    $clusterHead = optional(
                         optional(
                             optional(optional($row->user)->reportingManager)
-                                ->reportingManager
+                            ->reportingManager
                         )->reportingManager
                     )->name ?? '-';
-                })
 
-                // ->addColumn('booking_confirm', function ($row) {
-                //     return '<input type="checkbox"
-                //             onchange="updateBStatus(this,' . $row->id . ')"
-                //             ' . ($row->booking_confirm ? 'checked' : '') . '>';
-                // })
+                    $fullHierarchy = "
+                    <strong>SM:</strong> {$salesManager}<br>
+                    <strong>TL:</strong> {$tl}<br>
+                    <strong>Sr TL:</strong> {$srTl}<br>
+                    <strong>CH:</strong> {$clusterHead}
+                    ";
+
+                    return '
+                    <span 
+                        class="badge bg-label-primary team-hover"
+                        data-bs-toggle="tooltip"
+                        data-bs-html="true"
+                        title="'.$fullHierarchy.'"
+                    >
+                        '.$salesManager.' <i class="bx bx-group"></i>
+                    </span>';
+                })
+                ->addColumn('booking_confirm', function ($row) {
+                    return '<input type="checkbox"
+                            onchange="updateBStatus(this,' . $row->id . ')"
+                            ' . ($row->booking_confirm ? 'checked' : '') . '>';
+                })
 
                 // ->addColumn('registration_confirm', function ($row) {
                 //     return '<input type="checkbox"
@@ -119,24 +195,42 @@ class BookingController extends Controller
                 // })
 
                 ->addColumn('action', function ($row) {
+
                     return '
                     <div class="dropdown">
                         <button class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                             <i class="bx bx-dots-vertical-rounded"></i>
                         </button>
+
                         <div class="dropdown-menu">
+
                             <a class="dropdown-item" href="' . route('booking.edit', $row->id) . '">
                                 <i class="bx bx-edit-alt me-1"></i> Edit
                             </a>
+
+                            <a class="dropdown-item add-payment"
+                                data-id="'.$row->id.'"
+                                data-agreement="'.$row->agreement_value.'"
+                                data-percent="'.$row->total_brokerage_percent.'"
+                                data-brokerage="'.$row->current_effective_amount.'"
+                                data-status="'.$row->payment_status.'"
+                                data-bs-toggle="modal"
+                                data-bs-target="#addPaymentModal">
+
+                                <i class="bx bx-money me-1"></i> Add Payment
+                            </a>
+
                         </div>
                     </div>';
                 })
-
                 ->rawColumns([
-                    'booking_confirm',
-                    'registration_confirm',
-                    'invoice_raised',
-                    'action'
+                     'team_hierarchy',
+                        'payment_status',
+                        'booking_confirm',
+                        'registration_confirm',
+                        'invoice_raised',
+                        'total_brokerage_percent',
+                        'action'
                 ])
 
                 ->make(true);
@@ -165,17 +259,6 @@ class BookingController extends Controller
     }
     public function store(BookingRequest $request, BrokerageCalculationService $service)
     {
-        // dd($request->project_id);
-        // exit;
-        // echo "ss"; 
-        // print_r($request->all()); exit;
-        $calc = $service->calculate(
-            $request->project_id,
-            $request->developer_id,
-            $request->agreement_value,
-            $request->booking_date
-        );
-
         $booking = new Booking();
 
         // Basic Details
@@ -191,26 +274,14 @@ class BookingController extends Controller
         $booking->flat_no = $request->flat_no;
         $booking->configuration = $request->configuration;
 
-        // Financial Values
+        // Financial
         $booking->booking_amount = $request->booking_amount;
         $booking->agreement_value = $request->agreement_value;
-
-        // Brokerage Snapshot
-        $booking->base_brokerage_percent = $calc['base_percent'];
-        $booking->site_ladder_percent = $calc['site_percent'];
-        $booking->aop_ladder_percent = $calc['aop_percent'];
-        $booking->total_brokerage_percent = $calc['total_percent'];
-        $booking->current_effective_amount = $calc['brokerage_amount'];
 
         $booking->additional_kicker = $request->additional_kicker ?? 0;
         $booking->passback = $request->passback ?? 0;
 
-        $booking->final_revenue =
-            $booking->current_effective_amount
-            + $booking->additional_kicker
-            - $booking->passback;
-
-        // Registration & Status
+        // Registration
         $booking->registration_date = $request->registration_date;
         $booking->remark = $request->remark;
         $booking->sales_user_id = $request->sales_user_id;
@@ -218,6 +289,9 @@ class BookingController extends Controller
         $booking->created_by = auth()->id();
 
         $booking->save();
+
+        // Recalculate ladders
+        $service->recalculateAll($booking->project_id);
 
         return redirect()
             ->route('booking.index')
@@ -239,7 +313,7 @@ class BookingController extends Controller
             'salesManagers'
         ));
     }
-    public function update(BookingRequest $request, $id)
+    public function update(BookingRequest $request, $id, BrokerageCalculationService $service)
     {
         $booking = Booking::findOrFail($id);
 
@@ -262,7 +336,11 @@ class BookingController extends Controller
             'sales_user_id'     => $request->sales_user_id,
             'remark'            => $request->remark,
         ]);
-
+        $service = new BrokerageCalculationService();
+        $service->recalculateAll($booking->project_id);
+        //dd($booking->project_id);
+       // dd(Booking::where('project_id',$booking->project_id)->count());
+       
         return redirect()
             ->route('booking.index')
             ->with('success', 'Booking Updated Successfully');

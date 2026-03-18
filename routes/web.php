@@ -112,6 +112,8 @@ Route::group(['middleware' => 'auth'], function () {
     // Dashboard
     Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
         ->name('dashboard');
+    Route::match(['get','post'],'/dashboard-two',[App\Http\Controllers\DashboardController::class,'dashboardTwo']);
+    Route::get('/dashboard-two-reset',[App\Http\Controllers\DashboardController::class,'resetDashboard']);
 
     Route::get('/account', [App\Http\Controllers\DashboardController::class, 'account'])
         ->name('account');
@@ -268,7 +270,17 @@ Route::group(['middleware' => 'auth'], function () {
         App\Http\Controllers\BookingController::class,
         'sendBookingMail'
     ]);
+    Route::post('/booking-brokerage-payment/store',
+    [App\Http\Controllers\BookingBrokeragePaymentController::class,'store'])
+    ->name('booking.brokerage.payment.store');
 
+    Route::get('booking/payment-history/{id}',
+    [App\Http\Controllers\BookingBrokeragePaymentController::class,'history'])
+    ->name('booking.payment.history');
+
+    Route::post('booking/payment-update/{id}',
+    [App\Http\Controllers\BookingBrokeragePaymentController::class,'update'])
+    ->name('booking.payment.update');
     /*
     |--------------------------------------------------------------------------
     | Invoice

@@ -37,6 +37,21 @@ class Booking extends Model
         'registration_date',
         'sales_user_id',
         'remark',
+        'base_brokerage_percent',
+        'site_ladder_percent',
+        'aop_ladder_percent',
+        'total_brokerage_percent',
+        'current_effective_amount',
+        'final_revenue',
+        'amount_receivable',
+        'tds_amount',
+        'invoice_raised',
+        'total_invoice_percent',
+        'total_invoice_amount',
+        'total_received_amount',
+        'pending_brokerage_percent',
+        'pending_brokerage_amount',
+        'payment_status'
     ];
     public function project()
     {
@@ -51,5 +66,9 @@ class Booking extends Model
     public function user()
     {
         return $this->belongsTo(User::class, 'sales_user_id');
+    }
+    public function brokeragePayments()
+    {
+        return $this->hasMany(BookingBrokeragePayment::class);
     }
 }
