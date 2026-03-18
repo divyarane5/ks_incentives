@@ -29,15 +29,15 @@ class DashboardController extends Controller
         $mandateBookingBrokerageQuery = MandateBookingBrokerage::query();
 
         // Filter by business unit for non-admin users
-        if ($role !== 'admin' && $businessUnit) {
-            $mandateBookingQuery->where('business_unit_id', $businessUnit);
-            $mandateProjectQuery->where('business_unit_id', $businessUnit);
-            $channelPartnerQuery->where('business_unit_id', $businessUnit);
-            $clientEnquiryQuery->where('business_unit_id', $businessUnit);
-            $mandateBookingBrokerageQuery->whereHas('booking', function($q) use ($businessUnit) {
-                $q->where('business_unit_id', $businessUnit);
-            });
-        }
+        // if ($role !== 'admin' && $businessUnit) {
+        //     $mandateBookingQuery->where('business_unit_id', $businessUnit);
+        //     $mandateProjectQuery->where('business_unit_id', $businessUnit);
+        //     $channelPartnerQuery->where('business_unit_id', $businessUnit);
+        //     $clientEnquiryQuery->where('business_unit_id', $businessUnit);
+        //     $mandateBookingBrokerageQuery->whereHas('booking', function($q) use ($businessUnit) {
+        //         $q->where('business_unit_id', $businessUnit);
+        //     });
+        // }
 
         // Counts
         $totalRegistrations         = $mandateBookingQuery->count();
