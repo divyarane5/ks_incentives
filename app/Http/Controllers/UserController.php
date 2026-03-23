@@ -589,46 +589,50 @@ class UserController extends Controller
         return redirect()->route('account')->with('success', 'Profile Updated Successfully');
     }
 
-    // public function importUser()
-    // {
-    //   //  echo "dd"; exit;
-    //     Excel::import(new ImportUser, storage_path('app/employees.xlsx'));
-    //     Excel::import(new UpdateUserReporting, storage_path('app/employees.xlsx'));
-    // }
-    public function importUser()
+    public function showImportForm()
     {
-        
+        return view('import_users'); // the blade above
+    }
+    public function importUser(Request $request)
+    {
         try {
+            // ✅ Validate file
+            $request->validate([
+                'file' => 'required|mimes:xlsx,xls|max:2048'
+            ]);
+
+            $file = $request->file('file');
 
             $import = new ImportUser();
 
-            Excel::import($import, storage_path('app/employees.xlsx'));
+            \DB::beginTransaction();
 
-            // Reporting manager import
-            Excel::import(new UpdateUserReporting, storage_path('app/employees.xlsx'));
+            Excel::import($import, $file);
+            Excel::import(new UpdateUserReporting, $file);
 
-            // Partial success
-            if (!empty($import->errors)) {
+            \DB::commit();
+
+            $errors = $import->getErrors();      // getter method in ImportUser
+            $successCount = $import->getSuccessCount(); // getter method
+
+            if (!empty($errors)) {
                 return redirect()->back()->with([
-                    'warning' => 'Import completed with errors',
-                    'import_errors' => $import->errors,
-                    'success_count' => $import->successCount
+                    'warning' => 'Import completed with some errors',
+                    'import_errors' => $errors,
+                    'success_count' => $successCount
                 ]);
             }
 
-            // Full success
-            // return redirect()->back()->with(
-            //     'success',
-            //     "Import successful. {$import->successCount} users imported."
-            // );
-            return response('Users imported successfully.');
-
+            return redirect()->back()->with(
+                'success',
+                "Import successful. {$successCount} users imported."
+            );
 
         } catch (\Throwable $e) {
 
-            \Log::error('User Import Failed', [
-                'error' => $e->getMessage()
-            ]);
+            \DB::rollBack();
+
+            \Log::error('User Import Failed', ['error' => $e->getMessage()]);
 
             return redirect()->back()->with(
                 'error',
@@ -636,7 +640,6 @@ class UserController extends Controller
             );
         }
     }
-
    public function show($id)
     {
         $user = User::with([

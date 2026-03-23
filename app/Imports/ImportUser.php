@@ -27,18 +27,32 @@ class ImportUser implements ToCollection, WithHeadingRow
         foreach ($rows as $index => $row) {
             try {
 
-                // Force expected keys (you already did this correctly)
-                $row = collect([
-                    'exit_status' => null,
-                    'reason_for_leaving' => null,
-                    'fnf_status' => null,
-                ])->merge($row);
-
                 if (empty($row['employee_code'])) {
                     continue;
                 }
 
-                User::updateOrCreate(
+                // ✅ Department
+                $department = Department::firstOrCreate([
+                    'name' => $row['department']
+                ]);
+
+                // ✅ Designation
+                $designation = Designation::firstOrCreate([
+                    'name' => $row['designation']
+                ]);
+
+                // ✅ Location
+                $location = Location::firstOrCreate([
+                    'name' => $row['work_location']
+                ]);
+
+                // ✅ Business Unit
+                $businessUnit = BusinessUnit::firstOrCreate([
+                    'name' => $row['business_unit']
+                ]);
+
+                // ✅ Create / Update User
+                $user = User::updateOrCreate(
                     ['employee_code' => $row['employee_code']],
                     [
                         'entity' => $row['entity'],
@@ -46,19 +60,53 @@ class ImportUser implements ToCollection, WithHeadingRow
                         'first_name' => $row['first_name'],
                         'middle_name' => $row['middle_name'] ?? null,
                         'last_name' => $row['last_name'] ?? null,
+                        'gender' => $row['gender'],
+                        'status' => $row['status'],
+
+                        'official_email' => $row['official_email'],
+                        'personal_email' => $row['personal_email'],
+                        'official_contact' => $row['official_contact'],
+                        'personal_contact' => $row['personal_contact'],
+
+                        'department_id' => $department->id,
+                        'designation_id' => $designation->id,
+                        'location_id' => $location->id,
+                        'business_unit_id' => $businessUnit->id,
+
+                        'joining_date' => $this->parseExcelDate($row['joining_date']),
+                        'confirm_date' => $this->parseExcelDate($row['confirm_date']),
+                        'leaving_date' => $this->parseExcelDate($row['leaving_date']),
+                        'dob' => $this->parseExcelDate($row['dob']),
 
                         'exit_status' => $row['exit_status'],
                         'reason_for_leaving' => $row['reason_for_leaving'],
                         'fnf_status' => $row['fnf_status'],
+
+                        'password' => Hash::make('123456'), // default password
                     ]
                 );
 
-                // ✅ COUNT SUCCESS
+                // ✅ Assign Role (Spatie)
+                if (!empty($row['role'])) {
+                    $role = Role::firstOrCreate(['name' => $row['role']]);
+                    $user->syncRoles([$role]);
+                }
+
+                // ✅ Store for manager mapping (we’ll update later)
+                if (!empty($row['reporting_manager'])) {
+                    $this->managerMap[] = [
+                        'user_id' => $user->id,
+                        'manager_name' => $row['reporting_manager']
+                    ];
+                }
+
+                // ✅ Store mapping for lookup
+                $this->userMap[$row['first_name'] . ' ' . $row['last_name']] = $user->id;
+
                 $this->successCount++;
 
             } catch (\Throwable $e) {
 
-                // ✅ COLLECT ERRORS (DON'T STOP IMPORT)
                 $this->errors[] = "Row " . ($index + 2) . ": " . $e->getMessage();
 
                 \Log::error('Import row failed', [
@@ -67,6 +115,9 @@ class ImportUser implements ToCollection, WithHeadingRow
                 ]);
             }
         }
+
+        // ✅ SECOND PASS → Update Reporting Manager
+        $this->assignManagers();
     }
 
 
