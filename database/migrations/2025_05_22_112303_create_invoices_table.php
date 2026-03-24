@@ -15,8 +15,7 @@ class CreateInvoicesTable extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('booking_id')->index();
-            $table->foreign('booking_id')->references('id')->on('bookings');
+            $table->foreignId('booking_id')->constrained('bookings')->onDelete('cascade');
             $table->date('invoice_date');
             $table->string('invoice_percent');
             $table->string('invoice_amount');

@@ -589,57 +589,7 @@ class UserController extends Controller
         return redirect()->route('account')->with('success', 'Profile Updated Successfully');
     }
 
-    public function showImportForm()
-    {
-        return view('import_users'); // the blade above
-    }
-    public function importUser(Request $request)
-    {
-        try {
-            // ✅ Validate file
-            $request->validate([
-                'file' => 'required|mimes:xlsx,xls|max:2048'
-            ]);
-
-            $file = $request->file('file');
-
-            $import = new ImportUser();
-
-            \DB::beginTransaction();
-
-            Excel::import($import, $file);
-            Excel::import(new UpdateUserReporting, $file);
-
-            \DB::commit();
-
-            $errors = $import->getErrors();      // getter method in ImportUser
-            $successCount = $import->getSuccessCount(); // getter method
-
-            if (!empty($errors)) {
-                return redirect()->back()->with([
-                    'warning' => 'Import completed with some errors',
-                    'import_errors' => $errors,
-                    'success_count' => $successCount
-                ]);
-            }
-
-            return redirect()->back()->with(
-                'success',
-                "Import successful. {$successCount} users imported."
-            );
-
-        } catch (\Throwable $e) {
-
-            \DB::rollBack();
-
-            \Log::error('User Import Failed', ['error' => $e->getMessage()]);
-
-            return redirect()->back()->with(
-                'error',
-                'Import failed: ' . $e->getMessage()
-            );
-        }
-    }
+    
    public function show($id)
     {
         $user = User::with([
@@ -778,6 +728,61 @@ class UserController extends Controller
 
     //     return response()->download($filePath, 'user_import_template.csv');
     // }
+    
+    public function showImportForm()
+    {
+        return view('users.import'); // the blade above
+    }
+    public function importUser(Request $request)
+    {
+        try {
+            $request->validate([
+                'file' => 'required|mimes:xlsx,xls|max:10240'
+            ]);
 
+            $file = $request->file('file');
+
+            if (!$file->isValid()) {
+                return redirect()->back()->with('error', 'Invalid file upload.');
+            }
+
+            $import = new ImportUser();
+
+            \DB::beginTransaction();
+
+            Excel::import($import, $file);
+
+            \DB::commit();
+
+            $errors = $import->getErrors();
+            $successCount = $import->getSuccessCount();
+
+            if (!empty($errors)) {
+                return redirect()->back()->with([
+                    'warning' => 'Import completed with some errors',
+                    'import_errors' => $errors,
+                    'success_count' => $successCount
+                ]);
+            }
+
+            return redirect()->back()->with(
+                'success',
+                "Import successful. {$successCount} users processed."
+            );
+
+        } catch (\Throwable $e) {
+
+            \DB::rollBack();
+
+            \Log::error('User Import Failed', [
+                'error' => $e->getMessage()
+            ]);
+
+            return redirect()->back()->with(
+                'error',
+                'Import failed: ' . $e->getMessage()
+            );
+        }
+    }
 
 }
