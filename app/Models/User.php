@@ -238,6 +238,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(User::class, 'reporting_manager_id');
     }
+    public function subordinatesRecursive()
+    {
+        return $this->subordinates()->with('subordinatesRecursive');
+    }
     public function getManagerLevel($level = 1)
     {
         $manager = $this;

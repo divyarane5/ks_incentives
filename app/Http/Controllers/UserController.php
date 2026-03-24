@@ -728,6 +728,25 @@ class UserController extends Controller
 
     //     return response()->download($filePath, 'user_import_template.csv');
     // }
+    public function orgTree()
+    {
+        $users = User::with('designation')->get();
+
+        $nodes = [];
+
+        foreach ($users as $user) {
+            $nodes[] = [
+                'id' => $user->id,
+                'pid' => $user->reporting_manager_id,
+                'name' => $user->name,
+                'title' => optional($user->designation)->name,
+                'emp_id' => $user->employee_code,
+                'count' => $user->subordinates()->count()
+            ];
+        }
+
+        return view('users.org-tree', compact('nodes'));
+    }
     
     public function showImportForm()
     {

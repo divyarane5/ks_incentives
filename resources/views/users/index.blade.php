@@ -79,7 +79,7 @@
                 <select id="status" name="status" class="form-select">
                     <option value="">Select Status</option>
                     <option value="Active">Active</option>
-                    <option value="Exited">Exited</option>
+                    <option value="Inactive">Inactive</option>
                 </select>
             </div>
             <div class="mb-3 col-md-3">
