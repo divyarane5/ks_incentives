@@ -133,7 +133,7 @@ class ImportUser implements ToCollection
                         'offer_letter_acknowledged' => 1,
                         'joining_letter_sent' => $this->yesNo($row['joining_letter_sent'] ?? null),
                         'joining_letter_acknowledged' => $this->yesNo($row['joining_letter_acknowledged'] ?? null),
-                        'password' => Hash::make('123456'),
+                        'password' => Hash::make('Welcome@123'),
                     ]
                 );
 
