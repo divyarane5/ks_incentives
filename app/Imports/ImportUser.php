@@ -64,8 +64,12 @@ class ImportUser implements ToCollection
 
                 // ✅ Create / Update User
                 $user = User::updateOrCreate(
-                    ['employee_code' => $row['employee_code']],
                     [
+                        'employee_code' => $row['employee_code'], // ✅ CHANGE HERE
+                    ],
+                    [
+                        'email' => $this->nullIfNA($row['official_email'] ?? null),
+                        'employee_code' => $row['employee_code'],
                         'entity' => 'Keystone Real Estate Advisory Pvt. Ltd.',
                         'name' => $this->nullIfNA($row['name'] ?? null),
                         'title' => $this->nullIfNA($row['title'] ?? null),
