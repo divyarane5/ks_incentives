@@ -61,7 +61,16 @@ class ImportUser implements ToCollection
                 $probationDays = ($joiningDate && $confirmDate)
                     ? (strtotime($confirmDate) - strtotime($joiningDate)) / (60 * 60 * 24)
                     : null;
+                $email = $this->nullIfNA($row['official_email'] ?? null);
 
+                if ($email) {
+                    $existingUser = User::where('email', $email)->first();
+
+                    if ($existingUser && $existingUser->employee_code != $row['employee_code']) {
+                        $this->errors[] = "Duplicate email found: " . $email;
+                        continue; // skip row
+                    }
+                }
                 // ✅ Create / Update User
                 $user = User::updateOrCreate(
                     [
