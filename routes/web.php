@@ -125,8 +125,8 @@ Route::group(['middleware' => 'auth'], function () {
     */
 
     Route::resource('users', App\Http\Controllers\UserController::class);
-    Route::get('org_tree', [App\Http\Controllers\UserController::class, 'orgTree'])->name('user.orgtree');
-
+    //Route::get('/org_tree', [App\Http\Controllers\UserController::class, 'orgTree'])->name('user.orgtree');
+    Route::get('/org_tree', [App\Http\Controllers\UserController::class, 'orgTree'])->middleware('permission:user-org-tree-view');
     //Route::get('/import_users', [App\Http\Controllers\UserController::class, 'importUser'])->name('user.import');
     Route::get('/import_users', [App\Http\Controllers\UserController::class, 'showImportForm'])->name('user.import.form');
     Route::post('/import_users', [App\Http\Controllers\UserController::class, 'importUser'])->name('user.import');

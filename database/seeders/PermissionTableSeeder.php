@@ -21,6 +21,8 @@ class PermissionTableSeeder extends Seeder
             'user-salary-view',
             'user-salary-create',
             'user-salary-edit',
+            'user-org-tree-view',
+            'user-import',
             'department-view',
             'department-create',
             'department-edit',
@@ -57,7 +59,8 @@ class PermissionTableSeeder extends Seeder
             'booking-edit',
             'booking-create',
             'booking-delete',
-
+            'booking-status-update',
+            'booking-send-mail',
             // 'expense-view',
             // 'expense-create',
             // 'expense-edit',
@@ -124,7 +127,14 @@ class PermissionTableSeeder extends Seeder
             'mandate-booking-create',
             'mandate-booking-edit',
             'mandate-booking-approve',
-            'brokerage-ledgers-pay'
+            'brokerage-ledgers-pay',
+            'brokerage-ledgers-view',
+
+            // Mandate ledger
+            'mandate-booking-ledger-view',
+            'mandate-booking-ledger-create',
+            'mandate-booking-ledger-delete',
+            
         ];
 
         foreach ($permissions as $permission) {

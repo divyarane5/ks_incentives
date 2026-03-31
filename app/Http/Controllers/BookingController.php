@@ -24,6 +24,9 @@ class BookingController extends Controller
         $this->middleware('permission:booking-create', ['only' => ['create','store']]);
         $this->middleware('permission:booking-edit', ['only' => ['edit','update']]);
         $this->middleware('permission:booking-delete', ['only' => ['destroy']]);
+        $this->middleware('permission:booking-status-update')->only([
+            'updateStatus','updateIStatus','updateBStatus'
+        ]);
 
     }
     

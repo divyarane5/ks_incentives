@@ -33,7 +33,8 @@ class UserController extends Controller
         $this->middleware('permission:user-create', ['only' => ['create','store']]);
         $this->middleware('permission:user-edit', ['only' => ['edit','update']]);
         $this->middleware('permission:user-delete', ['only' => ['destroy']]);
-
+        $this->middleware('permission:user-org-tree-view')->only(['orgTree']);
+        $this->middleware('permission:user-import')->only(['importUser','showImportForm']);
         $this->userRepository = $userRepository;
     }
 
