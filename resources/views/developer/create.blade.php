@@ -38,31 +38,31 @@
                             {{-- Start Date --}}
                             <div class="mb-3 col-md-2">
                                 <label>Start Date<span class="text-danger">*</span></label>
-                                <input type="date" name="aop_s_date[]" class="form-control" required>
+                                <input type="date" name="aop_s_date[]" class="form-control">
                             </div>
 
                             {{-- End Date --}}
                             <div class="mb-3 col-md-2">
                                 <label>End Date<span class="text-danger">*</span></label>
-                                <input type="date" name="aop_e_date[]" class="form-control" required>
+                                <input type="date" name="aop_e_date[]" class="form-control">
                             </div>
 
                             {{-- Min AOP --}}
                             <div class="mb-3 col-md-2">
                                 <label>Min AOP (Cr)<span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="min_aop[]" class="form-control" required>
+                                <input type="number" step="0.01" name="min_aop[]" class="form-control">
                             </div>
 
                             {{-- Max AOP --}}
                             <div class="mb-3 col-md-2">
                                 <label>Max AOP (Cr)<span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="max_aop[]" class="form-control" required>
+                                <input type="number" step="0.01" name="max_aop[]" class="form-control">
                             </div>
 
                             {{-- Ladder --}}
                             <div class="mb-3 col-md-2">
                                 <label>Brokerage (%)<span class="text-danger">*</span></label>
-                                <input type="number" step="0.01" name="ladder[]" class="form-control" required>
+                                <input type="number" step="0.01" name="ladder[]" class="form-control">
                             </div>
 
                             {{-- Remove --}}
@@ -103,6 +103,7 @@ document.getElementById('add-ladder').addEventListener('click', function () {
     wrapper.appendChild(row);
 });
 
+// Remove row
 document.addEventListener('click', function (e) {
     if (e.target.classList.contains('remove-ladder')) {
         let rows = document.querySelectorAll('.ladder-row');
@@ -111,6 +112,26 @@ document.addEventListener('click', function (e) {
         }
     }
 });
-</script>
 
+// ✅ NEW: Prevent empty ladder rows from submitting
+document.querySelector('form').addEventListener('submit', function () {
+    let rows = document.querySelectorAll('.ladder-row');
+
+    rows.forEach(row => {
+        let inputs = row.querySelectorAll('input');
+        let isEmpty = true;
+
+        inputs.forEach(input => {
+            if (input.value.trim() !== '') {
+                isEmpty = false;
+            }
+        });
+
+        // Disable empty rows
+        if (isEmpty) {
+            inputs.forEach(input => input.disabled = true);
+        }
+    });
+});
+</script>
 @endsection

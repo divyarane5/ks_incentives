@@ -115,30 +115,43 @@ class DeveloperController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
 
-            'min_aop.*' => 'required|numeric',
-            'max_aop.*' => 'required|numeric|gte:min_aop.*',
-            'ladder.*'  => 'required|numeric',
-
-            'aop_s_date.*' => 'required|date',
-            'aop_e_date.*' => 'required|date|after_or_equal:aop_s_date.*',
+            'min_aop.*' => 'nullable|numeric',
+            'max_aop.*' => 'nullable|numeric',
+            'ladder.*'  => 'nullable|numeric',
+            'aop_s_date.*' => 'nullable|date',
+            'aop_e_date.*' => 'nullable|date',
         ]);
 
         $developer = Developer::create([
             'name' => $request->name,
         ]);
 
+        if ($request->min_aop) {
+
         foreach ($request->min_aop as $key => $minAop) {
 
-            $developer->ladders()->create([
-                'aop' => $minAop." - ".$request->max_aop[$key],
-                'min_aop'    => $minAop,
-                'max_aop'    => $request->max_aop[$key],
-                'ladder'     => $request->ladder[$key],
-                'aop_s_date' => $request->aop_s_date[$key],
-                'aop_e_date' => $request->aop_e_date[$key],
-                'ladder_type'=> 'flat', // default (if needed)
-                'created_by' => auth()->id(),
-            ]);
+                // ✅ Skip completely empty rows
+                if (
+                    empty($request->min_aop[$key]) &&
+                    empty($request->max_aop[$key]) &&
+                    empty($request->ladder[$key]) &&
+                    empty($request->aop_s_date[$key]) &&
+                    empty($request->aop_e_date[$key])
+                ) {
+                    continue;
+                }
+
+                $developer->ladders()->create([
+                    'aop' => $minAop." - ".$request->max_aop[$key],
+                    'min_aop'    => $minAop,
+                    'max_aop'    => $request->max_aop[$key],
+                    'ladder'     => $request->ladder[$key],
+                    'aop_s_date' => $request->aop_s_date[$key],
+                    'aop_e_date' => $request->aop_e_date[$key],
+                    'ladder_type'=> 'flat',
+                    'created_by' => auth()->id(),
+                ]);
+            }
         }
 
         return redirect()->route('developer.index')
@@ -157,12 +170,11 @@ class DeveloperController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
 
-            'min_aop.*' => 'required|numeric',
-            'max_aop.*' => 'required|numeric',
-            'ladder.*'  => 'required|numeric',
-
-            'aop_s_date.*' => 'required|date',
-            'aop_e_date.*' => 'required|date',
+            'min_aop.*' => 'nullable|numeric',
+            'max_aop.*' => 'nullable|numeric',
+            'ladder.*'  => 'nullable|numeric',
+            'aop_s_date.*' => 'nullable|date',
+            'aop_e_date.*' => 'nullable|date',
         ]);
 
         $developer = Developer::findOrFail($id);
@@ -175,17 +187,32 @@ class DeveloperController extends Controller
         $developer->ladders()->delete();
 
         // 🔥 Recreate ladders
-        foreach ($request->min_aop as $key => $minAop) {
+        if ($request->min_aop) {
 
-            $developer->ladders()->create([
-                'aop'        => $minAop.' - '.$request->max_aop[$key],
-                'min_aop'    => $minAop,
-                'max_aop'    => $request->max_aop[$key],
-                'ladder'     => $request->ladder[$key],
-                'aop_s_date' => $request->aop_s_date[$key],
-                'aop_e_date' => $request->aop_e_date[$key],
-                'created_by' => auth()->id(),
-            ]);
+            foreach ($request->min_aop as $key => $minAop) {
+
+                // ✅ Skip completely empty rows
+                if (
+                    empty($request->min_aop[$key]) &&
+                    empty($request->max_aop[$key]) &&
+                    empty($request->ladder[$key]) &&
+                    empty($request->aop_s_date[$key]) &&
+                    empty($request->aop_e_date[$key])
+                ) {
+                    continue;
+                }
+
+                $developer->ladders()->create([
+                    'aop' => $minAop." - ".$request->max_aop[$key],
+                    'min_aop'    => $minAop,
+                    'max_aop'    => $request->max_aop[$key],
+                    'ladder'     => $request->ladder[$key],
+                    'aop_s_date' => $request->aop_s_date[$key],
+                    'aop_e_date' => $request->aop_e_date[$key],
+                    'ladder_type'=> 'flat',
+                    'created_by' => auth()->id(),
+                ]);
+            }
         }
 
         return redirect()->route('developer.index')
