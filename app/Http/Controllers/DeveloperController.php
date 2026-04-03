@@ -17,7 +17,16 @@ class DeveloperController extends Controller
         $this->middleware('permission:developer-delete', ['only' => ['destroy']]);
 
     }
-
+    public static function formatIndianAmount($amount)
+    {
+        if ($amount >= 10000000) {
+            return rtrim(rtrim(number_format($amount / 10000000, 2), '0'), '.') . ' Cr';
+        } elseif ($amount >= 100000) {
+            return rtrim(rtrim(number_format($amount / 100000, 2), '0'), '.') . ' L';
+        } else {
+            return number_format($amount, 2);
+        }
+    }
     public function index(Request $request)
     {
         if ($request->ajax()) {
@@ -50,7 +59,7 @@ class DeveloperController extends Controller
                                 →
                                 <strong>'.date('d M Y', strtotime($ladder->aop_e_date)).'</strong>
                                 <br>
-                                AOP: '.$ladder->min_aop.' Cr - '.$ladder->max_aop.' Cr
+                                AOP: '.self::formatIndianAmount($ladder->min_aop).' - '.self::formatIndianAmount($ladder->max_aop).'
                                 | Brokerage: '.$ladder->ladder.'%
                             </li>';
                     }
