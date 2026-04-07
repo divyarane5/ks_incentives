@@ -1,147 +1,116 @@
 @extends('layouts.app')
 
 @section('content')
-<!-- Content -->
+
 <div class="container-xxl flex-grow-1 container-p-y">
-    <h4 class="fw-bold py-3 mb-4"><span class="text-muted fw-light">Account Settings /</span> Account</h4>
+
+    <h4 class="fw-bold py-3 mb-4">
+        <span class="text-muted fw-light">Account Settings /</span> Account
+    </h4>
 
     <div class="row">
-    <div class="col-md-12">
-        <div class="card mb-4">
-            <form id="formAccountSettings" method="POST" action="{{ route('update_profile') }}" enctype="multipart/form-data">
-                @csrf
-                <h5 class="card-header">Profile Details - {{ $user->employee_code }}</h5>
-                <!-- Account -->
-                <div class="card-body">
-                    <div class="d-flex align-items-start align-items-sm-center gap-4">
-                    <img
-                        src="{{ ($user->photo != "") ? url('storage/app/'.$user->photo) : asset("assets/img/avatars/profile.png") }}"
-                        alt="user-avatar"
-                        class="d-block rounded"
-                        height="100"
-                        width="100"
-                        id="uploadedAvatar"
-                    />
-                    <div class="button-wrapper">
-                        <label for="upload" class="btn btn-primary me-2 mb-4" tabindex="0">
-                        <span class="d-none d-sm-block">Upload new photo</span>
-                        <i class="bx bx-upload d-block d-sm-none"></i>
-                        <input type="file" name="photo" id="upload" class="account-file-input" hidden accept="image/png, image/jpeg, image/jpg" />
-                        </label>
-                        <button type="button" class="btn btn-outline-secondary account-image-reset mb-4">
-                        <i class="bx bx-reset d-block d-sm-none"></i>
-                        <span class="d-none d-sm-block">Reset</span>
-                        </button>
 
-                        <p class="text-muted mb-0">Allowed JPG, JPEG or PNG. Max size of 800K</p>
-                    </div>
-                    </div>
-                    @error('photo')
-                        <span class="invalid-feedback" role="alert">
-                            <strong>{{ $message }}</strong>
-                        </span>
-                    @enderror
-                </div>
-                <hr class="my-0" />
-                <div class="card-body">
+        <!-- ================= PROFILE CARD ================= -->
+        <div class="col-md-12">
+            <div class="card mb-4">
+
+                <form method="POST" action="{{ route('update_profile') }}" enctype="multipart/form-data">
+                    @csrf
+
+                    <h5 class="card-header">
+                        Profile Details - {{ $user->employee_code }}
+                    </h5>
+
+                    <div class="card-body">
+
+                        <div class="d-flex align-items-center gap-4 mb-4">
+                            <img
+                                src="{{ ($user->photo != "") ? url('storage/app/'.$user->photo) : asset("assets/img/avatars/profile.png") }}"
+                                class="rounded"
+                                height="100"
+                                width="100"
+                            />
+
+                            <div>
+                                <input type="file" name="photo" class="form-control mb-2">
+                                <small class="text-muted">JPG, JPEG, PNG (Max 800KB)</small>
+                            </div>
+                        </div>
 
                         <div class="row">
                             <div class="mb-3 col-md-6">
-                                <label for="name" class="form-label">Name</label>
-                                <input class="form-control" type="text" id="name" name="name" value="{{ (old('name') != "") ? old('name') : $user->name }}" @error('name') autofocus @enderror />
-                                @error('name')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                                <label>Name</label>
+                                <input type="text" name="name" class="form-control"
+                                    value="{{ old('name', $user->name) }}">
                             </div>
+
                             <div class="mb-3 col-md-6">
-                                <label for="email" class="form-label">E-mail</label>
-                                <input class="form-control" type="text" id="email" value="{{ (old('email') != "") ? old('email') : $user->email }}" placeholder="john.doe@example.com" @error('email') autofocus @enderror readonly />
-                                @error('email')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                                <label>Email</label>
+                                <input type="text" class="form-control"
+                                    value="{{ $user->email }}" readonly>
                             </div>
+
                             <div class="mb-3 col-md-6">
-                                <label for="gender" class="form-label">Gender</label>
-                                <select id="gender" name="gender" class="select2 " @error('gender') autofocus @enderror>
-                                    @php
-                                        $genders = config('constants.GENDER_OPTIONS');
-                                    @endphp
-                                    <option value="">Select Gender</option>
-                                    @foreach ($genders as $key => $gender)
-                                        <option value="{{ $key }}" {{ ($key == ((old('gender') != "") ? old('gender') : $user->gender ) ? 'selected' : '') }}>{{ $gender }}</option>
+                                <label>Gender</label>
+                                <select name="gender" class="form-control">
+                                    <option value="">Select</option>
+                                    @foreach(config('constants.GENDER_OPTIONS') as $key => $gender)
+                                        <option value="{{ $key }}"
+                                            {{ $key == old('gender', $user->gender) ? 'selected' : '' }}>
+                                            {{ $gender }}
+                                        </option>
                                     @endforeach
                                 </select>
-                                @error('gender')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
                             </div>
+
                             <div class="mb-3 col-md-6">
-                                <label for="dob" class="form-label">Date Of Birth</label>
-                                <input class="form-control" type="date" value="{{ (old('dob') != "") ? old('dob') : $user->dob }}" id="dob" name="dob" @error('dob') autofocus @enderror />
-                                @error('dob')
-                                    <span class="invalid-feedback" role="alert">
-                                        <strong>{{ $message }}</strong>
-                                    </span>
-                                @enderror
+                                <label>Date of Birth</label>
+                                <input type="date" name="dob" class="form-control"
+                                    value="{{ old('dob', $user->dob) }}">
                             </div>
                         </div>
-                        <div class="mt-2">
-                            <button type="submit" class="btn btn-primary me-2">Save changes</button>
-                            <button type="reset" class="btn btn-outline-secondary">Cancel</button>
-                        </div>
-                </div>
-            </form>
-            <!-- /Account -->
-        </div>
-        <div class="card mb-4">
-            <h5 class="card-header">Work Information</h5>
-            <div class="card-body">
-                <div class="row">
-                    <div class="col-md-6 border-right">
-                        <table class="table table-borderless col-md-6">
-                            <tr>
-                                <th>Company: </th>
-                                <td>{{ (!empty($user->entity) ? $user->entity : '') }}</td>
-                            </tr>
-                            <tr>
-                                <th>Reporting To: </th>
-                                <td>    {{ $user->latestReportingManagerHistory->manager->name ?? '-' }}</td>
-                            </tr>
-                        </table>
+
+                        <button class="btn btn-primary">Save Changes</button>
+
                     </div>
-                    <div class="col-md-6">
-                        <table class="table table-borderless col-md-6">
-                            <tr>
-                                <th>Location: </th>
-                                <td>{{ (isset($user->location->name) ? $user->location->name : '-') }}</td>
-                            </tr>
-                            <tr>
-                                <th>Department: </th>
-                                <td>{{ (isset($user->department->name) ? $user->department->name : '-') }}</td>
-                            </tr>
-                            <tr>
-                                <th>Designation: </th>
-                                <td>{{ (isset($user->designation->name) ? $user->designation->name : '-') }}</td>
-                            </tr>
-                        </table>
-                    </div>
-                </div>
+                </form>
             </div>
         </div>
-    </div>
+
+
+        <!-- ================= PASSWORD CARD ================= -->
+        <div class="col-md-6">
+            <div class="card">
+
+                <h5 class="card-header">Change Password</h5>
+
+                <div class="card-body">
+                    <form method="POST" action="{{ route('update_password') }}">
+                        @csrf
+
+                        <div class="mb-3">
+                            <label>Current Password</label>
+                            <input type="password" name="current_password" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>New Password</label>
+                            <input type="password" name="new_password" class="form-control" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Confirm Password</label>
+                            <input type="password" name="new_password_confirmation" class="form-control" required>
+                        </div>
+
+                        <button class="btn btn-primary">Update Password</button>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+
     </div>
 </div>
-<!-- / Content -->
-@endsection
-
-@section('script')
-<!-- Page JS -->
-<script src="{{ asset("assets/js/pages-account-settings-account.js") }}"></script>
 
 @endsection

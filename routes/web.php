@@ -136,6 +136,10 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::post('users/{user}/salary', [App\Http\Controllers\UserSalaryController::class, 'store'])
         ->name('users.salary.store');
+    
+    Route::post('/update-password', [App\Http\Controllers\UserController::class, 'updatePassword'])
+    ->name('update_password')
+    ->middleware('auth');
     /*
     |--------------------------------------------------------------------------
     | Masters
