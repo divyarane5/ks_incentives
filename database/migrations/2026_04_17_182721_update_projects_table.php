@@ -26,12 +26,19 @@ class UpdateProjectsTable extends Migration
             if (!Schema::hasColumn('projects', 'rera_number')) {
                 $table->string('rera_number')->nullable();
             }
-    
-            // Optional: fix created_by type
-            // (only if mismatch exists)
-            // $table->unsignedBigInteger('created_by')->change();
-
         });
+
+        // 👉 Add FK separately with try-catch safety
+        try {
+            Schema::table('projects', function (Blueprint $table) {
+                $table->foreign('developer_id')
+                    ->references('id')
+                    ->on('developers')
+                    ->onDelete('cascade');
+            });
+        } catch (\Exception $e) {
+            // Ignore if already exists
+        }
     }
 
     /**
