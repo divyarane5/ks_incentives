@@ -64,31 +64,31 @@
                                 <input type="date"
                                     name="ladders[{{ $index }}][project_s_date]"
                                     value="{{ old('ladders.'.$index.'.project_s_date', $ladder->project_s_date ? $ladder->project_s_date->format('Y-m-d') : '') }}"
-                                    class="form-control" required>
+                                    class="form-control">
                             </td>
                             <td>
                                 <input type="date"
                                     name="ladders[{{ $index }}][project_e_date]"
                                     value="{{ old('ladders.'.$index.'.project_e_date', $ladder->project_e_date ? $ladder->project_e_date->format('Y-m-d') : '') }}"
-                                    class="form-control" required>
+                                    class="form-control">
                             </td>
                             <td>
                                 <input type="number"
                                        name="ladders[{{ $index }}][s_booking]"
                                        value="{{ old('ladders.'.$index.'.s_booking', $ladder->s_booking) }}"
-                                       class="form-control" required>
+                                       class="form-control">
                             </td>
                             <td>
                                 <input type="number"
                                        name="ladders[{{ $index }}][e_booking]"
                                        value="{{ old('ladders.'.$index.'.e_booking', $ladder->e_booking) }}"
-                                       class="form-control" required>
+                                       class="form-control">
                             </td>
                             <td>
                                 <input type="text"
                                        name="ladders[{{ $index }}][ladder]"
                                        value="{{ old('ladders.'.$index.'.ladder', $ladder->ladder) }}"
-                                       class="form-control" required>
+                                       class="form-control">
                             </td>
                             <td>
                                 <button type="button" class="btn btn-danger removeRow">-</button>

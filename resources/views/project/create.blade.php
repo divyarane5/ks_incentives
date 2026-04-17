@@ -52,11 +52,11 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td><input type="date" name="ladders[0][project_s_date]" class="form-control" required></td>
-                            <td><input type="date" name="ladders[0][project_e_date]" class="form-control" required></td>
-                            <td><input type="number" name="ladders[0][s_booking]" class="form-control" required></td>
-                            <td><input type="number" name="ladders[0][e_booking]" class="form-control" required></td>
-                            <td><input type="text" name="ladders[0][ladder]" class="form-control" required></td>
+                            <td><input type="date" name="ladders[0][project_s_date]" class="form-control"></td>
+                            <td><input type="date" name="ladders[0][project_e_date]" class="form-control"></td>
+                            <td><input type="number" name="ladders[0][s_booking]" class="form-control"></td>
+                            <td><input type="number" name="ladders[0][e_booking]" class="form-control"></td>
+                            <td><input type="text" name="ladders[0][ladder]" class="form-control"></td>
                             <td>
                                 <button type="button" class="btn btn-success addRow">+</button>
                             </td>
