@@ -10,18 +10,33 @@ class UpdateBookingBrokerageDefaults extends Migration
     {
         Schema::table('bookings', function (Blueprint $table) {
 
-            $table->decimal('base_brokerage_percent',5,2)->default(0)->change();
-            $table->decimal('site_ladder_percent',5,2)->default(0)->change();
-            $table->decimal('aop_ladder_percent',5,2)->default(0)->change();
-            $table->decimal('total_brokerage_percent',5,2)->default(0)->change();
+            // ADD if missing
+            if (!Schema::hasColumn('bookings', 'base_brokerage_percent')) {
+                $table->decimal('base_brokerage_percent',5,2)->default(0);
+            }
 
-            $table->decimal('current_effective_amount',15,2)->default(0)->change();
-            $table->decimal('final_revenue',15,2)->default(0)->change();
+            if (!Schema::hasColumn('bookings', 'site_ladder_percent')) {
+                $table->decimal('site_ladder_percent',5,2)->default(0);
+            }
+
+            if (!Schema::hasColumn('bookings', 'aop_ladder_percent')) {
+                $table->decimal('aop_ladder_percent',5,2)->default(0);
+            }
+
+            if (!Schema::hasColumn('bookings', 'total_brokerage_percent')) {
+                $table->decimal('total_brokerage_percent',5,2)->default(0);
+            }
+
+            if (!Schema::hasColumn('bookings', 'current_effective_amount')) {
+                $table->decimal('current_effective_amount',15,2)->default(0);
+            }
+
+            if (!Schema::hasColumn('bookings', 'final_revenue')) {
+                $table->decimal('final_revenue',15,2)->default(0);
+            }
+
         });
     }
 
-    public function down()
-    {
-        //
-    }
+    public function down(){}
 }
