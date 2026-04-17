@@ -13,9 +13,24 @@ class UpdateDeveloperLaddersAddMinMaxAop extends Migration
      */
     public function up()
     {
+        // ⛔ Prevent duplicate execution
+        if (
+            Schema::hasColumn('developer_ladders', 'min_aop') &&
+            Schema::hasColumn('developer_ladders', 'max_aop')
+        ) {
+            return;
+        }
+
         Schema::table('developer_ladders', function (Blueprint $table) {
-            $table->decimal('min_aop', 15, 2)->nullable()->after('developer_id');
-            $table->decimal('max_aop', 15, 2)->nullable()->after('min_aop');
+
+            if (!Schema::hasColumn('developer_ladders', 'min_aop')) {
+                $table->decimal('min_aop', 15, 2)->nullable()->after('developer_id');
+            }
+
+            if (!Schema::hasColumn('developer_ladders', 'max_aop')) {
+                $table->decimal('max_aop', 15, 2)->nullable()->after('min_aop');
+            }
+
         });
     }
 
