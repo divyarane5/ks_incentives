@@ -28,6 +28,8 @@
                     <tr>
                         <th>Project Name</th>
                         <th>Developer</th>
+                        <th>Base Brokerage %</th>   {{-- ✅ NEW --}}
+                        <th>RERA Number</th>        {{-- ✅ NEW --}}
                         <th>Ladders</th>
                         <th width="100">Actions</th>
                     </tr>
@@ -53,6 +55,10 @@ $(document).ready(function () {
         columns: [
             {data: 'name', name: 'name'},
             {data: 'developer', name: 'developer', orderable: false},
+
+            {data: 'base_brokerage_percent', name: 'base_brokerage_percent'}, // ✅ NEW
+            {data: 'rera_number', name: 'rera_number'}, // ✅ NEW
+
             {data: 'ladders', name: 'ladders', orderable: false, searchable: false},
             {data: 'action', name: 'action', orderable: false, searchable: false},
         ]
@@ -71,7 +77,7 @@ function deleteProject(id)
                 text: 'Yes',
                 btnClass: 'btn-red',
                 action: function(){
-                    document.getElementById('delete-' + id).submit();
+                    document.getElementById(id).submit(); // ✅ fixed ID issue
                 }
             },
             cancel: function () {}

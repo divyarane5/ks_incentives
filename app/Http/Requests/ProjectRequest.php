@@ -6,36 +6,31 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class ProjectRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     *
-     * @return bool
-     */
     public function authorize()
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array
-     */
     public function rules()
     {
         return [
             'name' => 'required|string|max:255',
             'developer_id' => 'required|exists:developers,id',
 
-            // Ladders required
-            'ladders' => 'required|array|min:1',
+            // ✅ Optional fields
+            'base_brokerage_percent' => 'nullable|numeric|min:0',
+            'rera_number' => 'nullable|string|max:255',
 
-            'ladders.*.s_booking' => 'required|integer|min:0',
-            'ladders.*.e_booking' => 'required|integer|gte:ladders.*.s_booking',
-            'ladders.*.ladder' => 'required|numeric|min:0',
+            // ✅ Ladders OPTIONAL
+            'ladders' => 'nullable|array',
 
-            'ladders.*.project_s_date' => 'required|date',
-            'ladders.*.project_e_date' => 'required|date|after_or_equal:ladders.*.project_s_date',
+            // ✅ Validate only if present (not mandatory)
+            'ladders.*.s_booking' => 'nullable|integer|min:0',
+            'ladders.*.e_booking' => 'nullable|integer|gte:ladders.*.s_booking',
+            'ladders.*.ladder' => 'nullable|numeric|min:0',
+
+            'ladders.*.project_s_date' => 'nullable|date',
+            'ladders.*.project_e_date' => 'nullable|date|after_or_equal:ladders.*.project_s_date',
         ];
     }
 }

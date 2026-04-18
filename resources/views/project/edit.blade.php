@@ -22,6 +22,7 @@
 
                 {{-- Project Basic Info --}}
                 <div class="row">
+
                     <div class="mb-3 col-md-6">
                         <label class="form-label">Project Name *</label>
                         <input name="name" class="form-control"
@@ -39,6 +40,23 @@
                             @endforeach
                         </select>
                     </div>
+
+                    {{-- ✅ NEW FIELD --}}
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label">Base Brokerage (%)</label>
+                        <input type="number" step="0.01" name="base_brokerage_percent"
+                               class="form-control"
+                               value="{{ old('base_brokerage_percent', $project->base_brokerage_percent) }}">
+                    </div>
+
+                    {{-- ✅ NEW FIELD --}}
+                    <div class="mb-3 col-md-6">
+                        <label class="form-label">RERA Number</label>
+                        <input type="text" name="rera_number"
+                               class="form-control"
+                               value="{{ old('rera_number', $project->rera_number) }}">
+                    </div>
+
                 </div>
 
                 <hr>
@@ -115,11 +133,11 @@ document.addEventListener('click', function(e) {
         let table = document.querySelector('#ladderTable tbody');
         let newRow = `
             <tr>
-                <td><input type="date" name="ladders[${rowIndex}][project_s_date]" class="form-control" required></td>
-                <td><input type="date" name="ladders[${rowIndex}][project_e_date]" class="form-control" required></td>
-                <td><input type="number" name="ladders[${rowIndex}][s_booking]" class="form-control" required></td>
-                <td><input type="number" name="ladders[${rowIndex}][e_booking]" class="form-control" required></td>
-                <td><input type="text" name="ladders[${rowIndex}][ladder]" class="form-control" required></td>
+                <td><input type="date" name="ladders[${rowIndex}][project_s_date]" class="form-control"></td>
+                <td><input type="date" name="ladders[${rowIndex}][project_e_date]" class="form-control"></td>
+                <td><input type="number" name="ladders[${rowIndex}][s_booking]" class="form-control"></td>
+                <td><input type="number" name="ladders[${rowIndex}][e_booking]" class="form-control"></td>
+                <td><input type="text" name="ladders[${rowIndex}][ladder]" class="form-control"></td>
                 <td><button type="button" class="btn btn-danger removeRow">-</button></td>
             </tr>
         `;

@@ -18,7 +18,6 @@ class ProjectController extends Controller
         $this->middleware('permission:project-create', ['only' => ['create','store']]);
         $this->middleware('permission:project-edit', ['only' => ['edit','update']]);
         $this->middleware('permission:project-delete', ['only' => ['destroy']]);
-
     }
 
     public function index(Request $request)
@@ -33,34 +32,39 @@ class ProjectController extends Controller
                     return $row->developer->name ?? '-';
                 })
 
+                ->addColumn('base_brokerage_percent', function ($row) {
+                    return $row->base_brokerage_percent
+                        ? $row->base_brokerage_percent . '%'
+                        : '0%';
+                })
+
+                ->addColumn('rera_number', function ($row) {
+                    return $row->rera_number ?? '-';
+                })
+
                 ->addColumn('ladders', function ($row) {
 
-                    if ($row->ladders->isEmpty()) {
+                    if (!$row->ladders || $row->ladders->isEmpty()) {
                         return '-';
                     }
 
                     $html = '';
 
-                    // 🔹 BUTTON (ONLY ONCE)
                     $html .= '
                         <button class="btn btn-sm btn-warning mb-2" 
                             type="button"
                             data-bs-toggle="collapse"
-                            data-bs-target="#ladders-'.$row->id.'"
-                            aria-expanded="false"
-                            aria-controls="ladders-'.$row->id.'">
+                            data-bs-target="#ladders-'.$row->id.'">
                             View Ladders
                         </button>
                     ';
 
-                    // 🔹 COLLAPSE START (ONLY ONCE)
                     $html .= '<div class="collapse" id="ladders-'.$row->id.'">';
                     $html .= '<ul class="list-group">';
 
-                    // 🔹 GROUP BY DATE
                     $grouped = $row->ladders->groupBy(function ($ladder) {
-                        return $ladder->project_s_date->format('Y-m-d') . '_' .
-                            $ladder->project_e_date->format('Y-m-d');
+                        return optional($ladder->project_s_date)->format('Y-m-d') . '_' .
+                               optional($ladder->project_e_date)->format('Y-m-d');
                     });
 
                     foreach ($grouped as $ladders) {
@@ -68,28 +72,32 @@ class ProjectController extends Controller
                         $first = $ladders->first();
 
                         $html .= '<li class="list-group-item">';
-                        $html .= '<strong>Start:</strong> ' .
+
+                        if ($first->project_s_date && $first->project_e_date) {
+                            $html .= '<strong>Start:</strong> ' .
                                 $first->project_s_date->format('d M Y') .
                                 ' → <strong>End:</strong> ' .
                                 $first->project_e_date->format('d M Y') . '<br>';
+                        }
 
                         foreach ($ladders as $ladder) {
                             $html .= '
-                                Min Deals: '.$ladder->s_booking.'
-                                | Max Deals: '.$ladder->e_booking.'
-                                | Ladder %: '.$ladder->ladder.'<br>
+                                Min Deals: '.($ladder->s_booking ?? '-') .'
+                                | Max Deals: '.($ladder->e_booking ?? '-') .'
+                                | Ladder %: '.($ladder->ladder ?? '-') .'<br>
                             ';
                         }
 
                         $html .= '</li>';
                     }
 
-                    $html .= '</ul>';
-                    $html .= '</div>'; // collapse end
+                    $html .= '</ul></div>';
 
                     return $html;
                 })
-                 ->addColumn('action', function ($row) {
+
+                ->addColumn('action', function ($row) {
+
                     $actions = '';
 
                     if (auth()->user()->can('project-edit')) {
@@ -100,7 +108,7 @@ class ProjectController extends Controller
                     if (auth()->user()->can('project-delete')) {
                         $actions .= '<button class="dropdown-item" onclick="deleteProject('.$row->id.')">
                                         <i class="bx bx-trash me-1"></i> Delete</button>
-                                    <form id="'.$row->id.'" action="'.route('project.destroy', $row->id).'" method="POST" class="d-none">
+                                    <form id="delete-'.$row->id.'" action="'.route('project.destroy', $row->id).'" method="POST" class="d-none">
                                         '.csrf_field().method_field('delete').'
                                     </form>';
                     }
@@ -112,7 +120,7 @@ class ProjectController extends Controller
                                         <div class="dropdown-menu">'.$actions.'</div>
                                     </div>' : '';
                 })
-             
+
                 ->rawColumns(['ladders','action'])
                 ->make(true);
         }
@@ -123,91 +131,102 @@ class ProjectController extends Controller
     public function create()
     {
         $developers = Developer::all();
-
         return view('project.create', compact('developers'));
     }
 
     public function store(ProjectRequest $request)
     {
-    //    echo "<pre>";
-    //     print_r($request->all()); exit; 
         DB::transaction(function () use ($request) {
 
-            // 1️⃣ Create Project
+            // ✅ Create Project
             $project = Project::create([
-                'name'         => $request->name,
-                'developer_id' => $request->developer_id,
+                'name'                   => $request->name,
+                'developer_id'           => $request->developer_id,
+                'base_brokerage_percent' => $request->base_brokerage_percent ?? 0,
+                'rera_number'            => $request->rera_number,
             ]);
 
-            // 2️⃣ Save Ladder Rows
-            foreach ($request->ladders as $ladder) {
+            // ✅ Ladders OPTIONAL
+            if (!empty($request->ladders)) {
+                foreach ($request->ladders as $ladder) {
 
-                // Skip empty rows (extra safety)
-                if (!empty($ladder['s_booking']) && 
-                    !empty($ladder['e_booking']) && 
-                    !empty($ladder['ladder']) &&
-                    !empty($ladder['project_s_date']) &&
-                    !empty($ladder['project_e_date'])
-                ) {
-
-                    ProjectLadder::create([
-                        'project_id'     => $project->id,
-                        's_booking'      => $ladder['s_booking'],
-                        'e_booking'      => $ladder['e_booking'],
-                        'ladder'         => $ladder['ladder'],
-                        'project_s_date' => $ladder['project_s_date'],
-                        'project_e_date' => $ladder['project_e_date'],
-                    ]);
+                    if (
+                        !empty($ladder['s_booking']) ||
+                        !empty($ladder['e_booking']) ||
+                        !empty($ladder['ladder']) ||
+                        !empty($ladder['project_s_date']) ||
+                        !empty($ladder['project_e_date'])
+                    ) {
+                        ProjectLadder::create([
+                            'project_id'     => $project->id,
+                            's_booking'      => $ladder['s_booking'] ?? null,
+                            'e_booking'      => $ladder['e_booking'] ?? null,
+                            'ladder'         => $ladder['ladder'] ?? null,
+                            'project_s_date' => $ladder['project_s_date'] ?? null,
+                            'project_e_date' => $ladder['project_e_date'] ?? null,
+                        ]);
+                    }
                 }
             }
-
         });
 
-        return redirect()
-            ->route('project.index')
+        return redirect()->route('project.index')
             ->with('success', 'Project Added Successfully');
     }
 
     public function edit($id)
     {
-         $developers = Developer::all();
-        $project = Project::find($id);
-        return view('project.edit', compact('id', 'project','developers'));
+        $developers = Developer::all();
+        $project = Project::findOrFail($id);
+
+        return view('project.edit', compact('project','developers'));
     }
 
     public function update(Request $request, $id)
     {
         $project = Project::findOrFail($id);
 
-        // Update project basic info
+        // ✅ Update Project
         $project->update([
-            'name' => $request->name,
-            'developer_id' => $request->developer_id,
+            'name'                   => $request->name,
+            'developer_id'           => $request->developer_id,
+            'base_brokerage_percent' => $request->base_brokerage_percent ?? 0,
+            'rera_number'            => $request->rera_number,
         ]);
 
-        // Delete old ladders
+        // ✅ Refresh ladders (optional)
         $project->ladders()->delete();
 
-        // Insert new ladders
-        if ($request->ladders) {
+        if (!empty($request->ladders)) {
             foreach ($request->ladders as $ladder) {
-                $project->ladders()->create([
-                    's_booking'      => $ladder['s_booking'],
-                    'e_booking'      => $ladder['e_booking'],
-                    'ladder'         => $ladder['ladder'],
-                    'project_s_date' => $ladder['project_s_date'], // per ladder
-                    'project_e_date' => $ladder['project_e_date'], // per ladder
-                ]);
+
+                if (
+                    !empty($ladder['s_booking']) ||
+                    !empty($ladder['e_booking']) ||
+                    !empty($ladder['ladder']) ||
+                    !empty($ladder['project_s_date']) ||
+                    !empty($ladder['project_e_date'])
+                ) {
+                    $project->ladders()->create([
+                        's_booking'      => $ladder['s_booking'] ?? null,
+                        'e_booking'      => $ladder['e_booking'] ?? null,
+                        'ladder'         => $ladder['ladder'] ?? null,
+                        'project_s_date' => $ladder['project_s_date'] ?? null,
+                        'project_e_date' => $ladder['project_e_date'] ?? null,
+                    ]);
+                }
             }
         }
 
         return redirect()->route('project.index')
-                        ->with('success','Project updated successfully.');
+            ->with('success','Project updated successfully.');
     }
 
     public function destroy($id)
     {
         Project::where('id', $id)->delete();
-        return redirect()->route('project.index')->with('success', 'Project Deleted Successfully');
+
+        return redirect()->route('project.index')
+            ->with('success', 'Project Deleted Successfully');
     }
 }
