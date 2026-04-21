@@ -11,11 +11,41 @@ class Booking extends Model
 {
     use HasFactory, SoftDeletes;
 
-    protected static function boot() {
+    protected static function boot()
+    {
         parent::boot();
 
         static::creating(function ($model) {
             $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
+        });
+
+        // ✅ AFTER CREATE
+        static::created(function ($booking) {
+            app(\App\Services\BrokerageCalculationService::class)
+                ->recalculateAll($booking->project_id);
+        });
+
+        // ✅ AFTER UPDATE (only important fields)
+        static::updated(function ($booking) {
+
+            if (
+                $booking->isDirty([
+                    'agreement_value',
+                    'developer_id',
+                    'booking_date',
+                    'project_id',
+                    'booking_confirm'
+                ])
+            ) {
+                app(\App\Services\BrokerageCalculationService::class)
+                    ->recalculateAll($booking->project_id);
+            }
+        });
+
+        // ✅ AFTER DELETE
+        static::deleted(function ($booking) {
+            app(\App\Services\BrokerageCalculationService::class)
+                ->recalculateAll($booking->project_id);
         });
     }
 

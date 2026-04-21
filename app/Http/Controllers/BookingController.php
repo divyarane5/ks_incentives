@@ -111,7 +111,8 @@ class BookingController extends Controller
 
                     $base = $row->base_brokerage_percent ?? 0;
 
-                    $site_increment = ($row->site_ladder_percent ?? 0) - $base;
+                    // ✅ FIXED
+                    $site_increment = $row->site_ladder_percent ?? 0;
 
                     $aop = $row->aop_ladder_percent ?? 0;
 
@@ -180,9 +181,13 @@ class BookingController extends Controller
                     </span>';
                 })
                 ->addColumn('booking_confirm', function ($row) {
-                    return '<input type="checkbox"
-                            onchange="updateBStatus(this,' . $row->id . ')"
-                            ' . ($row->booking_confirm ? 'checked' : '') . '>';
+
+                    return '<select onchange="updateBStatus(this, ' . $row->id . ')">
+                        <option value="pending" ' . ($row->booking_confirm == 'pending' ? 'selected' : '') . '>Pending</option>
+                        <option value="approved" ' . ($row->booking_confirm == 'approved' ? 'selected' : '') . '>Approved</option>
+                        <option value="cancelled" ' . ($row->booking_confirm == 'cancelled' ? 'selected' : '') . '>Cancelled</option>
+                    </select>';
+
                 })
 
                 // ->addColumn('registration_confirm', function ($row) {
@@ -407,11 +412,39 @@ class BookingController extends Controller
     }
     public function updateBStatus(Request $request)
     {
-        $bookingId = $request->id;
-        $booking_confirm = $request->booking_confirm;
+        $booking = Booking::findOrFail($request->id);
 
-        Booking::where('id', $bookingId)->update(['booking_confirm' => $booking_confirm]);
+        $booking->booking_confirm = $request->booking_confirm;
+        $booking->save();
 
-        return response()->json(['message' => 'The booking status updated successfully']);
+        if ($request->booking_confirm === 'approved') {
+
+            app(\App\Services\BrokerageCalculationService::class)
+                ->recalculateAll($booking->project_id);
+
+        } else {
+
+            $this->resetBrokerage($booking);
+
+            app(\App\Services\BrokerageCalculationService::class)
+                ->recalculateAll($booking->project_id);
+        }
+
+        return response()->json([
+            'message' => 'Booking status updated successfully'
+        ]);
+    }
+    private function resetBrokerage($booking)
+    {
+        $booking->base_brokerage_percent = 0;
+        $booking->site_ladder_percent = 0;
+        $booking->aop_ladder_percent = 0;
+        $booking->total_brokerage_percent = 0;
+        $booking->current_effective_amount = 0;
+        $booking->final_revenue = 0;
+        $booking->amount_receivable = 0;
+        $booking->tds_amount = 0;
+
+        $booking->save();
     }
 } 

@@ -7,8 +7,11 @@
     cursor:pointer;
     text-decoration: underline dotted;
 }
+#booking-datatable select {
+    width: 115px;
+}
 </style>
-
+<div id="statusMsg" style="position:fixed; top:20px; right:20px; z-index:9999;"></div>
 <div class="container-xxl flex-grow-1 container-p-y">
 
 <div class="row">
@@ -455,5 +458,39 @@ $('[data-bs-toggle="tooltip"]').tooltip({html:true});
 });
 
 </script>
+<script>
+function updateBStatus(el, bookingId) {
 
+    let status = el.value;
+
+    fetch("{{ route('booking.update_bstatus') }}", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": "{{ csrf_token() }}"
+        },
+        body: JSON.stringify({
+            id: bookingId,
+            booking_confirm: status
+        })
+    })
+    .then(res => res.json())
+        .then(data => {
+
+        $('#statusMsg').html(`
+            <div class="alert alert-success alert-dismissible fade show">
+                ${data.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        `);
+
+        setTimeout(() => {
+            $('#statusMsg').html('');
+        }, 3000);
+
+    })
+    .catch(err => console.error(err));
+}
+
+</script>
 @endsection

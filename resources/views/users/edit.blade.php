@@ -749,7 +749,7 @@ document.addEventListener('DOMContentLoaded', function () {
 <script>
 
     // Annual → Monthly CTC
-    document.getElementById('annual_ctc')?.addEventListener('input', function () {
+    document.getElementById('')?.addEventListener('input', function () {
         const annual = parseFloat(this.value || 0);
         if (annual <= 0) return;
         const monthly = annual / 12;
