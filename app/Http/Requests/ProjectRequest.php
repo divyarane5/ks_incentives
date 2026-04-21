@@ -14,7 +14,7 @@ class ProjectRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|max:255',
+            'name' => 'required|unique:projects,name,' . $this->route('project'),
             'developer_id' => 'required|exists:developers,id',
 
             // ✅ Optional fields

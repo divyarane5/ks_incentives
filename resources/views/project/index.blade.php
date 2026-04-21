@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+
 <div class="container-xxl flex-grow-1 container-p-y">
 
     <div class="row">
@@ -77,7 +78,7 @@ function deleteProject(id)
                 text: 'Yes',
                 btnClass: 'btn-red',
                 action: function(){
-                    document.getElementById(id).submit(); // ✅ fixed ID issue
+                    document.getElementById('delete-' + id).submit(); // ✅ FIXED
                 }
             },
             cancel: function () {}
