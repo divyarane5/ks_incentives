@@ -70,25 +70,22 @@ class DashboardController extends Controller
 
     public function dashboardTwo(Request $request)
     {
+        $user = auth()->user();
 
-        /* STORE FILTERS IN SESSION */
-
-        if($request->isMethod('post')){
-
-        session([
-        'cluster_head'=>$request->cluster_head,
-        'sr_tl'=>$request->sr_tl,
-        'tl'=>$request->tl,
-        'sales_manager'=>$request->sales_manager,
-        'developer'=>$request->developer,
-        'from_date'=>$request->from_date,
-        'to_date'=>$request->to_date
-        ]);
-
+        /* STORE FILTERS */
+        if ($request->isMethod('post')) {
+            session([
+                'cluster_head' => $request->cluster_head,
+                'sr_tl' => $request->sr_tl,
+                'tl' => $request->tl,
+                'sales_manager' => $request->sales_manager,
+                'developer' => $request->developer,
+                'from_date' => $request->from_date,
+                'to_date' => $request->to_date
+            ]);
         }
 
-        /* GET SESSION FILTERS */
-
+        /* GET FILTER VALUES */
         $cluster_head = session('cluster_head');
         $sr_tl = session('sr_tl');
         $tl = session('tl');
@@ -97,109 +94,116 @@ class DashboardController extends Controller
         $from_date = session('from_date');
         $to_date = session('to_date');
 
-
         /* BASE QUERY */
-
         $query = Booking::query();
-
 
         /* APPLY FILTERS */
 
-        if($developer){
-        $query->where('developer_id',$developer);
+        if ($developer) {
+            $query->where('bookings.developer_id', $developer);
         }
 
-        if($sales_manager){
-        $query->where('sales_user_id',$sales_manager);
+        if ($sales_manager) {
+            $query->where('sales_user_id', $sales_manager);
         }
 
-        if($from_date){
-        $query->whereDate('booking_date','>=',$from_date);
+        if ($from_date) {
+            $query->whereDate('booking_date', '>=', $from_date);
         }
 
-        if($to_date){
-        $query->whereDate('booking_date','<=',$to_date);
+        if ($to_date) {
+            $query->whereDate('booking_date', '<=', $to_date);
         }
 
+        /* ✅ HIERARCHY LOGIC */
 
-        /* KPI CALCULATIONS */
+        if ($cluster_head) {
+            // Cluster Head → Sr TL
+            $srTlIds = User::where('reporting_manager_id', $cluster_head)->pluck('id');
 
+            // Sr TL → TL
+            $tlIds = User::whereIn('reporting_manager_id', $srTlIds)->pluck('id');
+
+            // TL → Sales
+            $salesIds = User::whereIn('reporting_manager_id', $tlIds)->pluck('id');
+
+            $query->whereIn('sales_user_id', $salesIds);
+        }
+
+        if ($sr_tl) {
+            // Sr TL → TL
+            $tlIds = User::where('reporting_manager_id', $sr_tl)->pluck('id');
+
+            // TL → Sales
+            $salesIds = User::whereIn('reporting_manager_id', $tlIds)->pluck('id');
+
+            $query->whereIn('sales_user_id', $salesIds);
+        }
+
+        if ($tl) {
+            // TL → Sales
+            $salesIds = User::where('reporting_manager_id', $tl)->pluck('id');
+
+            $query->whereIn('sales_user_id', $salesIds);
+        }
+
+        /* KPI */
         $totalBookings = (clone $query)->count();
-
         $totalAgreementValue = (clone $query)->sum('agreement_value');
-
         $totalBrokerage = (clone $query)->sum('current_effective_amount');
-
         $totalInvoice = (clone $query)->sum('total_invoice_amount');
-
         $totalReceived = (clone $query)->sum('total_received_amount');
-
         $pendingBrokerage = (clone $query)->sum('pending_brokerage_amount');
 
-
-        /* PAYMENT STATUS */
-
+        /* PAYMENT */
         $pendingPayments = (clone $query)->where('payment_status','pending')->count();
-
         $partialPayments = (clone $query)->where('payment_status','partial')->count();
-
         $completedPayments = (clone $query)->where('payment_status','completed')->count();
 
-
-        /* LEAD SOURCES */
-
+        /* LEAD SOURCE */
         $leadSources = (clone $query)
-        ->selectRaw('lead_source, COUNT(*) as total')
-        ->groupBy('lead_source')
-        ->pluck('total','lead_source');
+            ->selectRaw('lead_source, COUNT(*) as total')
+            ->groupBy('lead_source')
+            ->pluck('total','lead_source');
 
-
-        /* MONTHLY REVENUE */
-
+        /* MONTHLY */
         $monthlyRevenue = (clone $query)
-        ->selectRaw('MONTH(booking_date) as month, SUM(current_effective_amount) as revenue')
-        ->groupBy('month')
-        ->pluck('revenue','month');
-
+            ->selectRaw('MONTH(booking_date) as month, SUM(current_effective_amount) as revenue')
+            ->groupBy('month')
+            ->pluck('revenue','month');
 
         /* TOP PROJECTS */
-
         $topProjects = (clone $query)
-        ->join('projects','bookings.project_id','=','projects.id')
-        ->selectRaw('projects.name,SUM(current_effective_amount) as brokerage')
-        ->groupBy('projects.name')
-        ->orderByDesc('brokerage')
-        ->limit(5)
-        ->get();
-
+            ->join('projects','bookings.project_id','=','projects.id')
+            ->selectRaw('projects.name, SUM(bookings.current_effective_amount) as brokerage')
+            ->groupBy('projects.name')
+            ->orderByDesc('brokerage')
+            ->limit(5)
+            ->get();
 
         /* TOP SALES */
-
         $topSales = (clone $query)
-        ->join('users','bookings.sales_user_id','=','users.id')
-        ->selectRaw('users.name,SUM(current_effective_amount) as revenue')
-        ->groupBy('users.name')
-        ->orderByDesc('revenue')
-        ->limit(5)
-        ->get();
+            ->join('users','bookings.sales_user_id','=','users.id')
+            ->selectRaw('users.name, SUM(bookings.current_effective_amount) as revenue')
+            ->groupBy('users.name')
+            ->orderByDesc('revenue')
+            ->limit(5)
+            ->get();
 
-
-        /* PENDING RECOVERY */
-
+        /* PENDING */
         $pendingRecovery = (clone $query)
-        ->where('pending_brokerage_amount','>',0)
-        ->with('project')
-        ->orderByDesc('pending_brokerage_amount')
-        ->limit(10)
-        ->get();
+            ->where('pending_brokerage_amount','>',0)
+            ->with('project')
+            ->orderByDesc('pending_brokerage_amount')
+            ->limit(10)
+            ->get();
 
-
-        /* FILTER DATA */
+        /* ✅ DROPDOWNS (CORRECT - USING ROLES TABLE) */
 
         $clusterHeads = User::join('roles','users.role_id','=','roles.id')
-        ->where('roles.name','Cluster Head')
-        ->select('users.id','users.name')
-        ->get();
+            ->where('roles.name','CH')
+            ->select('users.id','users.name')
+            ->get();
 
         $srTls = User::join('roles','users.role_id','=','roles.id')
             ->where('roles.name','Sr. TL')
@@ -218,38 +222,16 @@ class DashboardController extends Controller
 
         $developers = Developer::select('id','name')->get();
 
-
-        return view('dashboard-two',compact(
-
-        'clusterHeads',
-        'srTls',
-        'tls',
-        'salesManagers',
-        'developers',
-
-        'totalBookings',
-        'totalAgreementValue',
-        'totalBrokerage',
-        'totalInvoice',
-        'totalReceived',
-        'pendingBrokerage',
-
-        'pendingPayments',
-        'partialPayments',
-        'completedPayments',
-
-        'leadSources',
-        'monthlyRevenue',
-
-        'topProjects',
-        'topSales',
-
-        'pendingRecovery'
-
+        return view('dashboard-two', compact(
+            'clusterHeads','srTls','tls','salesManagers','developers',
+            'totalBookings','totalAgreementValue','totalBrokerage',
+            'totalInvoice','totalReceived','pendingBrokerage',
+            'pendingPayments','partialPayments','completedPayments',
+            'leadSources','monthlyRevenue',
+            'topProjects','topSales','pendingRecovery',
+            'cluster_head','sr_tl','tl','sales_manager','developer','from_date','to_date'
         ));
-
     }
-
 
 
     /* RESET FILTERS */
