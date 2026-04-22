@@ -2,7 +2,6 @@
     <div class="app-brand demo">
         <a href="{{ url('/') }}" class="app-brand-link">
             @php
-                // Example: active business unit logo path
                 $logoPath = isset($activeBusinessUnit) && $activeBusinessUnit->logo_path
                     ? asset('storage/' . str_replace('public/', '', $activeBusinessUnit->logo_path))
                     : asset('assets/img/logo/ks-logos.webp');
@@ -15,305 +14,184 @@
         </a>
     </div>
 
-
     <div class="menu-inner-shadow"></div>
 
     <ul class="menu-inner py-1">
-    <!-- Dashboard -->
-    <li class="menu-item {{ ((Request::segment(1) == 'dashboard')||(Request::segment(1) == '')) ? 'active': '' }}">
-        <a href="{{ route('dashboard') }}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-home-circle"></i>
-            <div data-i18n="Analytics">Dashboard</div>
-        </a>
-    </li>
-    @canany(['role-view','location-view','department-view','designation-view','expense-view','vendor-view','business_unit-view','payment_method-view'])
+        <!-- Dashboard -->
+        <li class="menu-item {{ ((Request::segment(1) == 'dashboard')||(Request::segment(1) == '')) ? 'active': '' }}">
+            <a href="{{ route('dashboard') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-home-circle"></i>
+                <div data-i18n="Analytics">Dashboard</div>
+            </a>
+        </li>
+
+        @can('user-view')
+        <li class="menu-item {{ (Request::segment(1) == 'users') ? 'active': '' }}">
+            <a href="{{ route('users.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-user"></i>
+                <div data-i18n="Analytics">User</div>
+            </a>
+        </li>
+        @endcan
+
+        <!-- Masters -->
+        @canany(['role-view','location-view','department-view','designation-view','expense-view','vendor-view','business_unit-view','payment_method-view'])
         <li class="menu-item {{ in_array(Request::segment(1), ['role','location','department','designation','expense','vendor','business_unit','payment_method']) ? 'active open': '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle ">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-layout"></i>
                 <div data-i18n="Layouts">Masters</div>
             </a>
-            <ul class="menu-sub ">
-                @can('role-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'role')) ? 'active': '' }}">
-                        <a href="{{ route('role.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Role</div>
-                        </a>
-                    </li>
-                @endcan
-            </ul>
-            <ul class="menu-sub ">
-                @can('location-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'location')) ? 'active': '' }}">
-                        <a href="{{ route('location.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Location</div>
-                        </a>
-                    </li>
-                @endcan
-            </ul>
-            <ul class="menu-sub ">
-                @can('department-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'department')) ? 'active': '' }}">
-                        <a href="{{ route('department.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Department</div>
-                        </a>
-                    </li>
-                @endcan
-            </ul>
-            <ul class="menu-sub ">
-                @can('designation-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'designation')) ? 'active': '' }}">
-                        <a href="{{ route('designation.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Designation</div>
-                        </a>
-                    </li>
-                @endcan
-            </ul>
-            
-            <!-- <ul class="menu-sub ">
-                @can('vendor-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'vendor')) ? 'active': '' }}">
-                        <a href="{{ route('vendor.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Vendor</div>
-                        </a>
-                    </li>
-                @endcan
-            </ul>
-            <ul class="menu-sub ">
-                @can('expense-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'expense')) ? 'active': '' }}">
-                        <a href="{{ route('expense.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Expense</div>
-                        </a>
-                    </li>
-                @endcan
-            </ul> -->
-            <ul class="menu-sub ">
-                @can('business_unit-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'business_unit')) ? 'active': '' }}">
-                        <a href="{{ route('business_unit.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Business Unit</div>
-                        </a>
-                    </li>
-                @endcan
-            </ul>
-            <!-- <ul class="menu-sub ">
-                @can('project-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'project')) ? 'active': '' }}">
-                        <a href="{{ route('project.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Project</div>
-                        </a>
-                    </li>
-                @endcan
-            </ul>
-            <ul class="menu-sub ">
-                @can('developer-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'developer')) ? 'active': '' }}">
-                        <a href="{{ route('developer.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Developer</div>
-                        </a>
-                    </li>
-                @endcan
-            </ul> -->
-            <!-- <ul class="menu-sub ">
-                @can('payment_method-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'payment_method')) ? 'active': '' }}">
-                        <a href="{{ route('payment_method.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Payment Method</div>
-                        </a>
-                    </li>
-                @endcan
-            </ul> -->
 
-        </li>
-    @endcanany
-    @can('user-view')
-    <li class="menu-item {{ (Request::segment(1) == 'users') ? 'active': '' }}">
-        <a href="{{ route('users.index') }}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-user"></i>
-            <div data-i18n="Analytics">User</div>
-        </a>
-    </li>
-    @endcan
-
-    @canany(['developer-view','project-view','developer_ladder-view'])
-        <li class="menu-item {{ in_array(Request::segment(1), ['role','location','department','designation','expense','vendor','business_unit','payment_method']) ? 'active open': '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle ">
-                <i class="menu-icon tf-icons bx bx-layout"></i>
-                <div data-i18n="Layouts">Ladders</div>
-            </a>
-            
-            
-            <ul class="menu-sub ">
-                @can('developer-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'developer')) ? 'active': '' }}">
-                        <a href="{{ route('developer.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Developer</div>
-                        </a>
-                    </li>
-                @endcan
-            </ul>
-            <ul class="menu-sub ">
-                @can('develop_ladder-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'developer_ladder')) ? 'active': '' }}">
-                        <a href="{{ route('developer_ladder.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">AOP Ladder</div>
-                        </a>
-                    </li>
-                @endcan
-            </ul>
-            <ul class="menu-sub ">
-                @can('project-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'project')) ? 'active': '' }}">
-                        <a href="{{ route('project.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Project</div>
-                        </a>
-                    </li>
-                @endcan
-            </ul>
-           
-           
-
-        </li>
-    @endcanany
-
-    @canany(['configuration-view', 'indent-view-all', 'indent-view-own', 'indent-approval', 'indent-payment-conclude'])
-        <!-- <li class="menu-item {{ in_array(Request::segment(1), ['indent_configuration', 'indent', 'indent-approval', 'indent-closure']) ? 'active open': '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle ">
-                <i class="menu-icon tf-icons bx bx-dollar-circle"></i>
-                <div data-i18n="Layouts">Indent</div>
-            </a>
+            @can('role-view')
             <ul class="menu-sub">
-                @can('configuration-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'indent_configuration')) ? 'active': '' }}">
-                        <a href="{{ route('indent_configuration.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Indent Configuration</div>
-                        </a>
-                    </li>
-                @endcan
-                @canany(['indent-view-all', 'indent-view-own'])
-                    <li class="menu-item {{ ((Request::segment(1) == 'indent')) ? 'active': '' }}">
-                        <a href="{{ route('indent.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Indents</div>
-                        </a>
-                    </li>
-                @endcan
-                @can('indent-approval')
-                <li class="menu-item {{ ((Request::segment(1) == 'indent-approval')) ? 'active': '' }}">
-                    <a href="{{ route('indent.approval') }}" class="menu-link">
-                        <div data-i18n="Without menu">Indent Approval</div>
+                <li class="menu-item {{ ((Request::segment(1) == 'role')) ? 'active': '' }}">
+                    <a href="{{ route('role.index') }}" class="menu-link">
+                        <div data-i18n="Without menu">Role</div>
                     </a>
                 </li>
-                @endcan
-                @can('indent-payment-conclude')
-                <li class="menu-item {{ ((Request::segment(1) == 'indent-closure')) ? 'active': '' }}">
-                    <a href="{{ route('indent.closure') }}" class="menu-link">
-                        <div data-i18n="Without menu">Indent Closure</div>
-                    </a>
-                </li>
-                @endcan
             </ul>
-        </li> -->
-    @endcanany
+            @endcan
 
-    @canany(['reimbursement-view-all', 'reimbursement-view-own', 'reimbursement-approval'])
-        <!-- <li class="menu-item {{ in_array(Request::segment(1), ['reimbursement']) ? 'active open': '' }}">
-            <a href="{{ route('reimbursement.index') }}" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-dollar-circle"></i>
-                <div data-i18n="Layouts">Reimbursement</div>
-            </a>
-        </li> -->
-    @endcanany
-    @canany('booking-view')
+            @can('location-view')
+            <ul class="menu-sub">
+                <li class="menu-item {{ ((Request::segment(1) == 'location')) ? 'active': '' }}">
+                    <a href="{{ route('location.index') }}" class="menu-link">
+                        <div data-i18n="Without menu">Location</div>
+                    </a>
+                </li>
+            </ul>
+            @endcan
 
-    <li class="menu-item {{ (Request::segment(1) == 'booking') ? 'active': '' }}">
-        <a href="{{ route('booking.index') }}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-layout"></i>
-            <div data-i18n="Analytics">Booking</div>
-        </a>
-    </li>
-    @endcan
-    @canany(['template-view','referral-client-view','booking-view'])
-        <!-- <li class="menu-item {{ in_array(Request::segment(1), ['template', 'client', 'client_response', 'client_response_service', 'booking']) ? 'active open': '' }}">
-            <a href="javascript:void(0);" class="menu-link menu-toggle ">
-                <i class="menu-icon tf-icons bx bx-layout"></i>
-                <div data-i18n="Layouts">After Sales</div>
+            @can('department-view')
+            <ul class="menu-sub">
+                <li class="menu-item {{ ((Request::segment(1) == 'department')) ? 'active': '' }}">
+                    <a href="{{ route('department.index') }}" class="menu-link">
+                        <div data-i18n="Without menu">Department</div>
+                    </a>
+                </li>
+            </ul>
+            @endcan
+
+            @can('designation-view')
+            <ul class="menu-sub">
+                <li class="menu-item {{ ((Request::segment(1) == 'designation')) ? 'active': '' }}">
+                    <a href="{{ route('designation.index') }}" class="menu-link">
+                        <div data-i18n="Without menu">Designation</div>
+                    </a>
+                </li>
+            </ul>
+            @endcan
+
+            @can('business_unit-view')
+            <ul class="menu-sub">
+                <li class="menu-item {{ ((Request::segment(1) == 'business_unit')) ? 'active': '' }}">
+                    <a href="{{ route('business_unit.index') }}" class="menu-link">
+                        <div data-i18n="Without menu">Business Unit</div>
+                    </a>
+                </li>
+            </ul>
+            @endcan
+        </li>
+        @endcanany
+        @php
+        $isSAorAdmin = isSuperAdmin() || isAdmin();
+        @endphp
+        @if($isSAorAdmin || auth()->user()->businessUnit?->code === 'KREA')
+        @canany(['project-view','developer-view','booking-view'])
+
+        <li class="menu-item {{ in_array(Request::segment(1), ['project','developer']) ? 'active open' : '' }}">
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-code-block"></i>
+                <div>CP</div>
             </a>
-            <ul class="menu-sub ">
-                @can('referral-template-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'template')) ? 'active': '' }}">
-                        <a href="{{ route('template.index') }}" class="menu-link">
-                            <div data-i18n="Without menu">Templates</div>
-                        </a>
-                    </li>
+
+            <ul class="menu-sub">
+
+                @can('project-view')
+                <li class="menu-item {{ Request::segment(1) == 'project' ? 'active' : '' }}">
+                    <a href="{{ route('project.index') }}" class="menu-link">
+                        <div>Projects</div>
+                    </a>
+                </li>
                 @endcan
-                @can('referral-client-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'client')) ? 'active': '' }}">
-                        <a href="{{ route('client.index') }}" class="menu-link">
-                            <div data-i18n="Without menu"> Referral Clients</div>
-                        </a>
-                    </li>
-                @endcan
-                @can('response-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'client_response')) ? 'active': '' }}">
-                        <a href="{{ route('client_response.index') }}" class="menu-link">
-                            <div data-i18n="Without menu"> Referral Response</div>
-                        </a>
-                    </li>
-                @endcan
-                @can('response-view')
-                    <li class="menu-item {{ ((Request::segment(1) == 'client_response_service')) ? 'active': '' }}">
-                        <a href="{{ url('/client_response_service') }}" class="menu-link">
-                            <div data-i18n="Without menu"> Service Response</div>
-                        </a>
-                    </li>
+
+                @can('developer-view')
+                <li class="menu-item {{ Request::segment(1) == 'developer' ? 'active' : '' }}">
+                    <a href="{{ route('developer.index') }}" class="menu-link">
+                        <div>Developers</div>
+                    </a>
+                </li>
                 @endcan
                 @can('booking-view')
-                <li class="menu-item {{ (Request::segment(1) == 'booking') ? 'active': '' }}">
+                <li class="menu-item {{ Request::segment(1) == 'booking' ? 'active' : '' }}">
                     <a href="{{ route('booking.index') }}" class="menu-link">
-                        
-                        <div data-i18n="Analytics">Booking</div>
+                        <div>Bookings</div>
                     </a>
                 </li>
                 @endcan
 
             </ul>
+        </li>
 
-        </li> -->
-    @endcanany
-  
-    
-    @canany(['indent-view-all', 'indent-view-own', 'indent-approval', 'indent-payment-conclude', 'reimbursement-view-all', 'reimbursement-view-own', 'reimbursement-approval'])
-    <!-- <li class="menu-item {{ in_array(Request::segment(1), ['indent_payments', 'reimbursement_payments']) ? 'active open': '' }}">
-        <a href="javascript:void(0);" class="menu-link menu-toggle ">
-            <i class="menu-icon tf-icons bx bxs-report"></i>
-            <div data-i18n="Layouts">Reports</div>
-        </a>
-        <ul class="menu-sub ">
-            @canany(['indent-view-all', 'indent-view-own', 'indent-approval', 'indent-payment-conclude'])
-            <li class="menu-item {{ ((Request::segment(1) == 'indent_payments')) ? 'active': '' }}">
-                <a href="{{ route('reports.indent_payments') }}" class="menu-link">
-                    <div data-i18n="Without menu">Indent Payments</div>
-                </a>
-            </li>
-            @endcanany
-            @canany(['reimbursement-view-all', 'reimbursement-view-own', 'reimbursement-approval'])
-            <li class="menu-item {{ ((Request::segment(1) == 'reimbursement_payments')) ? 'active': '' }}">
-                <a href="{{ route('reports.reimbursement_payments') }}" class="menu-link">
-                    <div data-i18n="Without menu">Reimbursement Payments</div>
-                </a>
-            </li>
-            @endcanany
-        </ul>
-    </li> -->
-    @endcanany
+        @endcanany
+        @endif
+        
 
-    @can('candidate-view')
-    <!-- <li class="menu-item {{ (Request::segment(1) == 'candidate') ? 'active': '' }}">
-        <a href="{{ route('candidate.index') }}" class="menu-link">
-            <i class="menu-icon tf-icons bx bx-user"></i>
-            <div data-i18n="Analytics">Candidate</div>
-        </a>
-    </li> -->
-    @endcan
+        @if($isSAorAdmin || auth()->user()->businessUnit?->code === 'AI')
+            <li class="menu-item {{ in_array(Request::segment(1), ['mandate_projects','channel_partners','client-enquiries']) ? 'active open' : '' }}">
+                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                    <i class="menu-icon tf-icons bx bx-briefcase"></i>
+                    <div>Mandate</div>
+                </a>
+
+                <ul class="menu-sub">
+
+                    {{-- Mandate Projects --}}
+                    @if($isSAorAdmin || canAccessModule('mandate_project-view', ['AI']))
+                        <li class="menu-item {{ Request::segment(1) == 'mandate_projects' ? 'active' : '' }}">
+                            <a href="{{ route('mandate_projects.index') }}" class="menu-link">
+                                <div>Mandate Projects</div>
+                            </a>
+                        </li>
+                    @endif
+
+                    {{-- Channel Partner --}}
+                    @if($isSAorAdmin || canAccessModule('channel-partner-view', ['AI']))
+                        <li class="menu-item {{ Request::segment(1) == 'channel_partners' ? 'active' : '' }}">
+                            <a href="{{ route('channel_partners.index') }}" class="menu-link">
+                                <div>Channel Partner</div>
+                            </a>
+                        </li>
+                    @endif
+
+                    {{-- Client Enquiries --}}
+                    @if($isSAorAdmin || canAccessModule('client-enquiry-view', ['AI']))
+                        <li class="menu-item {{ Request::segment(1) == 'client-enquiries' ? 'active' : '' }}">
+                            <a href="{{ route('client-enquiries.index') }}" class="menu-link">
+                                <div>Client Enquiries</div>
+                            </a>
+                        </li>
+                    @endif
+                    @if(canAccessModule('mandate-booking-view', ['AI']))
+                    <li class="menu-item {{ Request::segment(1) == 'mandate_bookings' ? 'active' : '' }}">
+                        <a href="{{ route('mandate_bookings.index') }}" class="menu-link">
+                            <div>Mandate Bookings</div>
+                        </a>
+                    </li>
+                    @endif
+                    {{-- Brokerage Ledgers --}}
+                    @can('mandate-booking-view')
+                    <li class="menu-item {{ Request::segment(1) == 'brokerage-ledgers' ? 'active' : '' }}">
+                        <a href="{{ url('/brokerage-ledgers') }}" class="menu-link">
+                            <div>Brokerage Ledgers</div>
+                        </a>
+                    </li>
+                    @endcan
+
+                </ul>
+            </li>
+        @endif
+
+
     </ul>
 </aside>

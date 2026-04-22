@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Developer;
 use App\Models\BusinessUnit;
+use App\Traits\UserHierarchyTrait;
 use App\Http\Requests\BookingRequest;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ use App\Services\BrokerageCalculationService;
 
 class BookingController extends Controller
 {
+    use UserHierarchyTrait; // ✅ MUST ADD THIS
     function __construct()
     {
         $this->middleware('permission:booking-view', ['only' => ['index']]);
@@ -35,13 +37,15 @@ class BookingController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-
+            $user = auth()->user(); 
+            $accessibleUserIds = $this->getAccessibleUserIds($user);
             $data = Booking::withTrashed()
                 ->with([
                     'project',
                     'developer',
                     'user.reportingManager.reportingManager.reportingManager'
                 ])
+                ->whereIn('sales_user_id', $accessibleUserIds) // ✅ IMPORTANT LINE
                 ->select('bookings.*');
 
             return DataTables::of($data)
@@ -277,14 +281,14 @@ class BookingController extends Controller
 
         $booking->project_id = $request->project_id;
         $booking->developer_id = $request->developer_id;
-        $booking->tower = $request->tower;
-        $booking->wing = $request->wing;
-        $booking->flat_no = $request->flat_no;
-        $booking->configuration = $request->configuration;
+        $booking->tower = $request->tower ?? '';
+        $booking->wing = $request->wing ?? '';
+        $booking->flat_no = $request->flat_no ?? '';
+        $booking->configuration = $request->configuration ?? '';
 
         // Financial
-        $booking->booking_amount = $request->booking_amount;
-        $booking->agreement_value = $request->agreement_value;
+        $booking->booking_amount = $request->booking_amount ?? 0;   
+        $booking->agreement_value = $request->agreement_value ?? 0;
 
         $booking->additional_kicker = $request->additional_kicker ?? 0;
         $booking->passback = $request->passback ?? 0;
@@ -332,10 +336,10 @@ class BookingController extends Controller
             'booking_date'      => $request->booking_date,
             'client_contact'    => $request->client_contact,
             'lead_source'       => $request->lead_source,
-            'configuration'     => $request->configuration,
-            'flat_no'           => $request->flat_no,
-            'wing'              => $request->wing,
-            'tower'             => $request->tower,
+            'tower' => $request->tower ?? '',
+            'wing' => $request->wing ?? '',
+            'flat_no' => $request->flat_no ?? '',
+            'configuration' => $request->configuration ?? '',
             'booking_amount'    => $request->booking_amount,
             'agreement_value'   => $request->agreement_value,
             'passback'          => $request->passback,
