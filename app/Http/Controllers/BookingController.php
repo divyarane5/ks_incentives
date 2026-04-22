@@ -37,16 +37,25 @@ class BookingController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $user = auth()->user(); 
-            $accessibleUserIds = $this->getAccessibleUserIds($user);
-            $data = Booking::withTrashed()
+            $user = auth()->user();
+
+            $query = Booking::withTrashed()
                 ->with([
                     'project',
                     'developer',
                     'user.reportingManager.reportingManager.reportingManager'
                 ])
-                ->whereIn('sales_user_id', $accessibleUserIds) // ✅ IMPORTANT LINE
                 ->select('bookings.*');
+
+            // ✅ FULL ACCESS ROLES
+            if (!$user->hasAnyRole(['Super Admin', 'Admin', 'CRM', 'Accounts'])) {
+
+                $accessibleUserIds = $this->getAccessibleUserIds($user);
+
+                $query->whereIn('sales_user_id', $accessibleUserIds);
+            }
+
+            $data = $query;
 
             return DataTables::of($data)
 
