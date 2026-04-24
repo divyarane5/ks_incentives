@@ -168,16 +168,10 @@ class DashboardController extends Controller
 
         /* MONTHLY */
         $monthlyRevenue = (clone $query)
-            ->selectRaw('YEAR(booking_date) as year, MONTH(booking_date) as month, SUM(current_effective_amount) as revenue')
-            ->groupBy('year','month')
-            ->orderBy('year')
-            ->orderBy('month')
-            ->get();
-        $labels = $monthlyRevenue->map(function($row){
-            return date("M Y", mktime(0,0,0,$row->month,1,$row->year));
-        });
+            ->selectRaw('MONTH(booking_date) as month, SUM(current_effective_amount) as revenue')
+            ->groupBy('month')
+            ->pluck('revenue','month');
 
-        $data = $monthlyRevenue->pluck('revenue');
         /* TOP PROJECTS */
         $topProjects = (clone $query)
             ->join('projects','bookings.project_id','=','projects.id')
@@ -235,8 +229,7 @@ class DashboardController extends Controller
             'pendingPayments','partialPayments','completedPayments',
             'leadSources','monthlyRevenue',
             'topProjects','topSales','pendingRecovery',
-            'cluster_head','sr_tl','tl','sales_manager','developer','from_date','to_date', 'labels',
-    'data'
+            'cluster_head','sr_tl','tl','sales_manager','developer','from_date','to_date'
         ));
     }
 
