@@ -27,7 +27,33 @@ class ProjectController extends Controller
             $data = Project::with(['developer', 'ladders'])->select('projects.*');
 
             return DataTables::of($data)
+                ->filter(function ($query) use ($request) {
 
+                    if ($search = $request->input('search.value')) {
+
+                        $query->where(function ($q) use ($search) {
+
+                            $q->where('projects.id', 'like', "%{$search}%")
+                            ->orWhere('projects.name', 'like', "%{$search}%")
+                            ->orWhere('projects.rera_number', 'like', "%{$search}%")
+                            ->orWhere('projects.base_brokerage_percent', 'like', "%{$search}%")
+
+                            // 🔥 developer search
+                            ->orWhereHas('developer', function ($q2) use ($search) {
+                                $q2->where('name', 'like', "%{$search}%");
+                            })
+
+                            // 🔥 ladder search (important)
+                            ->orWhereHas('ladders', function ($q3) use ($search) {
+                                $q3->where('s_booking', 'like', "%{$search}%")
+                                    ->orWhere('e_booking', 'like', "%{$search}%")
+                                    ->orWhere('ladder', 'like', "%{$search}%");
+                            });
+
+                        });
+                    }
+
+                })
                 ->addColumn('developer', function ($row) {
                     return $row->developer->name ?? '-';
                 })

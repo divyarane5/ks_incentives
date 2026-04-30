@@ -58,7 +58,33 @@ class BookingController extends Controller
             $data = $query;
 
             return DataTables::of($data)
+                ->filter(function ($query) use ($request) {
 
+                    if ($search = $request->input('search.value')) {
+
+                        $query->where(function ($q) use ($search) {
+
+                            $q->where('bookings.id', 'like', "%{$search}%")
+                            ->orWhere('bookings.client_name', 'like', "%{$search}%")
+                            ->orWhere('bookings.client_contact', 'like', "%{$search}%")
+                            ->orWhere('bookings.lead_source', 'like', "%{$search}%")
+                            ->orWhere('bookings.booking_amount', 'like', "%{$search}%")
+                            ->orWhere('bookings.agreement_value', 'like', "%{$search}%")
+                            ->orWhere('bookings.total_brokerage_percent', 'like', "%{$search}%")
+
+                            // 🔥 IMPORTANT: relationships search
+                            ->orWhereHas('project', function ($q2) use ($search) {
+                                $q2->where('name', 'like', "%{$search}%");
+                            })
+
+                            ->orWhereHas('developer', function ($q3) use ($search) {
+                                $q3->where('name', 'like', "%{$search}%");
+                            });
+
+                        });
+                    }
+
+                })
                 ->addColumn('project_name', function ($row) {
                     return optional($row->project)->name ?? '-';
                 })
@@ -214,7 +240,7 @@ class BookingController extends Controller
                 //             onchange="updateIStatus(this,' . $row->id . ')"
                 //             ' . ($row->invoice_raised ? 'checked' : '') . '>';
                 // })
-
+ 
                 ->addColumn('action', function ($row) {
 
                     return '
@@ -222,9 +248,9 @@ class BookingController extends Controller
                         <button class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
                             <i class="bx bx-dots-vertical-rounded"></i>
                         </button>
-
+                    
                         <div class="dropdown-menu">
-
+                            
                             <a class="dropdown-item" href="' . route('booking.edit', $row->id) . '">
                                 <i class="bx bx-edit-alt me-1"></i> Edit
                             </a>

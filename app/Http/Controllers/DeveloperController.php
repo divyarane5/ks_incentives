@@ -32,6 +32,30 @@ class DeveloperController extends Controller
         if ($request->ajax()) {
             $data = Developer::query();
             return DataTables::of($data)
+            ->filter(function ($query) use ($request) {
+
+                if ($search = $request->input('search.value')) {
+
+                    $query->where(function ($q) use ($search) {
+
+                        $q->where('developers.id', 'like', "%{$search}%")
+                        ->orWhere('developers.name', 'like', "%{$search}%")
+                        ->orWhere('developers.status', 'like', "%{$search}%")
+                        ->orWhere('developers.created_at', 'like', "%{$search}%");
+
+                        // 🔥 ladder search
+                        $q->orWhereHas('ladders', function ($q2) use ($search) {
+                            $q2->where('min_aop', 'like', "%{$search}%")
+                            ->orWhere('max_aop', 'like', "%{$search}%")
+                            ->orWhere('ladder', 'like', "%{$search}%")
+                            ->orWhere('aop_s_date', 'like', "%{$search}%")
+                            ->orWhere('aop_e_date', 'like', "%{$search}%");
+                        });
+
+                    });
+                }
+
+            })
                 ->addColumn('name', function ($row) {
                     return $row->name;
                 })
