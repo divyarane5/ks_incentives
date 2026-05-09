@@ -44,6 +44,7 @@ class UserSalaryController extends Controller
                 'month'            => $monthNumber,
                 'year'             => $cursor->year,
                 'enabled'          => $cursor >= $salaryStart,
+                'gross_salary'     => $record->gross_salary ?? null,
                 'salary_credited'  => $record->salary_credited ?? 0,
                 'tds' => $record->tds ?? 0, 
                 'remarks'          => $record->remarks ?? null,
