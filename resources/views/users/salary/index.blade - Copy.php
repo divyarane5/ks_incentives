@@ -59,53 +59,18 @@
                         <tr>
                             <td>{{ $m['label'] }}</td>
 
-                            <td>
-                                @if($m['month'] == 4 && $m['year'] == 2025)
-
-                                    <input type="number"
-                                        step="0.01"
-                                        class="form-control gross-input"
-                                        name="salary[{{ $m['year'] }}][{{ $m['month'] }}][gross]"
-                                        value="{{ $gross }}">
-
-                                @else
-
-                                    ₹ {{ number_format($gross,2) }}
-
-                                    <input type="hidden"
-                                        name="salary[{{ $m['year'] }}][{{ $m['month'] }}][gross]"
-                                        value="{{ $gross }}">
-
-                                @endif
-                            </td>
+                            <td>₹ {{ number_format($gross,2) }}</td>
 
                             <td>
+                                ₹ <span class="lop-display">
+                                    {{ number_format($lop,2) }}
+                                </span>
 
-                                @if($m['month'] == 4 && $m['year'] == 2025)
-
-                                     <span class="lop-display" style="display:none">
-                                      ₹  {{ number_format($lop,2) }}
-                                    </span>
-
-                                    <input type="number"
-                                        step="0.01"
-                                        class="form-control mt-1"
-                                        name="salary[{{ $m['year'] }}][{{ $m['month'] }}][extra_deduction]"
-                                        value="{{ $lop }}">
-
-                                @else
-
-                                    ₹ <span class="lop-display">
-                                        {{ number_format($lop,2) }}
-                                    </span>
-
-                                    <input type="hidden"
-                                        name="salary[{{ $m['year'] }}][{{ $m['month'] }}][extra_deduction]"
-                                        value="{{ $lop }}">
-
-                                @endif
-
+                                <input type="hidden"
+                                    name="salary[{{ $m['year'] }}][{{ $m['month'] }}][extra_deduction]"
+                                    value="{{ $lop }}">
                             </td>
+
                             <td>
                                 <input type="number"
                                     step="0.01"
@@ -189,41 +154,20 @@ function calculateSalary() {
             tdsInput.value = tds;
         }
 
-        let lopInput = row.querySelector('input[name*="[extra_deduction]"]');
+        let lop = standard - credited - tds;
+        if (lop < 0) lop = 0;
 
-        let lop = 0;
+        row.querySelector('.lop-display').innerText =
+            lop.toLocaleString('en-IN',{minimumFractionDigits:2});
 
-        // Editable April row
-        if (lopInput && lopInput.type === 'number') {
-
-            lop = parseFloat(lopInput.value) || 0;
-
-        } else {
-
-            lop = standard - credited - tds;
-
-            if (lop < 0) lop = 0;
-
-            row.querySelector('.lop-display').innerText =
-                lop.toLocaleString('en-IN', {
-                    minimumFractionDigits: 2
-                });
-
-            lopInput.value = lop;
-        }
+        row.querySelector('input[name*="[extra_deduction]"]').value = lop;
 
         let totalCost = credited + tds + pt + pf;
 
         row.querySelector('.row-total').innerText =
             totalCost.toLocaleString('en-IN',{minimumFractionDigits:2});
 
-        let grossInput = row.querySelector('.gross-input');
-
-        let gross = grossInput
-            ? parseFloat(grossInput.value || 0)
-            : (standard + pt + pf);
-
-        grossTotal += gross;
+        grossTotal += standard + pt + pf;
         lopTotal += lop;
         tdsTotal += tds;
         netTotal += credited;

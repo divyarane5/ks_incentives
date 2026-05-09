@@ -13,7 +13,7 @@ class UserSalaryController extends Controller
     // 1️⃣ SHOW SALARY PAGE
     public function index(User $user, Request $request)
     {
-        $fy = $request->get('fy', $this->currentFY()); // Example: 2025-26
+        $fy = $request->get('fy', $this->previousFY()); // Example: 2025-26
         [$startYear, $shortEndYear] = explode('-', $fy);
 
         $startYear = (int) $startYear;
@@ -45,7 +45,7 @@ class UserSalaryController extends Controller
                 'year'             => $cursor->year,
                 'enabled'          => $cursor >= $salaryStart,
                 'salary_credited'  => $record->salary_credited ?? 0,
-                'tds' => $record->tds ?? 0,
+                'tds' => $record->tds ?? 0, 
                 'remarks'          => $record->remarks ?? null,
                 'status'           => $record->status ?? 'Pending',
                 'extra_deduction'  => $record->extra_deduction ?? 0,
@@ -74,7 +74,17 @@ class UserSalaryController extends Controller
 
         return ($today->year - 1) . '-' . substr($today->year, 2);
     }
+    private function previousFY()
+    {
+        $currentFY = $this->currentFY();
 
+        [$startYear, $endYear] = explode('-', $currentFY);
+
+        $previousStartYear = $startYear - 1;
+        $previousEndYear = substr($startYear, 2);
+
+        return $previousStartYear . '-' . $previousEndYear;
+    }
     public function store(Request $request, $userId)
     {
         $user = User::findOrFail($userId);
@@ -85,7 +95,11 @@ class UserSalaryController extends Controller
 
                 $credited = $data['salary_credited'] ?? 0;
 
-                if ($credited <= 0) {
+                if (
+                    $credited <= 0 &&
+                    empty($data['gross']) &&
+                    empty($data['extra_deduction'])
+                ) {
                     continue;
                 }
 
@@ -113,11 +127,16 @@ class UserSalaryController extends Controller
                     $pt = $user->professional_tax ?? 0;
                 }
 
+                // $standardNet = $user->net_salary ?? 0;
+
+                // $deduction = max($standardNet - $credited, 0);
+
+                // $gross = $credited + $pt + $pf;
                 $standardNet = $user->net_salary ?? 0;
 
-                $deduction = max($standardNet - $credited, 0);
+                $deduction = $data['extra_deduction'] ?? 0;
 
-                $gross = $credited + $pt + $pf;
+                $gross = $data['gross'] ?? ($credited + $pt + $pf);
 
                 UserSalary::updateOrCreate(
                     [
