@@ -44,11 +44,25 @@
                                 ? ($user->pf_employee ?? 0) + ($user->pf_employer ?? 0)
                                 : 0;
 
-                            $pt = ($user->gender === 'female' && $user->current_ctc < 25000)
-                                ? 0
-                                : ($user->professional_tax ?? 0);
+                            // PT Logic
+                                if ($user->gender === 'female' && $user->current_ctc < 25000) {
 
-                            $gross = $m['gross_salary'] ?? ($netSalary + $pt + $pf);
+                                    $pt = 0;
+
+                                } else {
+
+                                    // February PT = 300
+                                    if ($monthDate->month == 2) {
+
+                                        $pt = 300;
+
+                                    } else {
+
+                                        $pt = $user->professional_tax ?? 0;
+                                    }
+                                }
+
+                            $gross = $netSalary + $pt + $pf;
 
                             $credited = $m['salary_credited'] ?? 0;
                             $tds = $m['tds'] ?? 0;
@@ -213,7 +227,7 @@ function calculateSalary() {
 
             lop = standard - credited - tds;
 
-            if (lop < 0) lop = 0;
+            if (lop < 0) lop = lop;
 
             row.querySelector('.lop-display').innerText =
                 lop.toLocaleString('en-IN', {

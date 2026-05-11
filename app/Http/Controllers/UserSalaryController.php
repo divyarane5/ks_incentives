@@ -122,10 +122,19 @@ class UserSalaryController extends Controller
                 }
 
                 // PT Logic
+                // PT Logic
                 if ($user->gender === 'female' && $user->current_ctc < 25000) {
+
                     $pt = 0;
+
                 } else {
-                    $pt = $user->professional_tax ?? 0;
+
+                    // February PT = 300
+                    if ($monthDate->month == 2) {
+                        $pt = 300;
+                    } else {
+                        $pt = $user->professional_tax ?? 0;
+                    }
                 }
 
                 // $standardNet = $user->net_salary ?? 0;
