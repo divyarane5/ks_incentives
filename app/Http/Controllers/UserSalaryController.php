@@ -144,9 +144,15 @@ class UserSalaryController extends Controller
                 // $gross = $credited + $pt + $pf;
                 $standardNet = $user->net_salary ?? 0;
 
-                $deduction = $data['extra_deduction'] ?? 0;
+                $credited = (float) ($data['salary_credited'] ?? 0);
 
-                $gross = $data['gross'] ?? ($credited + $pt + $pf);
+                $tds = (float) ($data['tds'] ?? 0);
+
+                $lop = (float) ($data['extra_deduction'] ?? 0);
+
+                $totalCost = $credited + $tds + $pt + $pf;
+
+                $gross = $totalCost + $lop;
 
                 UserSalary::updateOrCreate(
                     [
@@ -158,11 +164,11 @@ class UserSalaryController extends Controller
                         'gross_salary' => $gross,
                         'professional_tax' => $pt,
                         'pf_amount' => $pf,
-                        'extra_deduction' => $deduction,
+                        'extra_deduction' => $lop,
                         'tds' => $data['tds'] ?? 0,   // ✅ IMPORTANT
                         'system_net_salary' => $standardNet,
                         'salary_credited' => $credited,
-                        'total_employee_cost' => $gross,
+                        'total_employee_cost' => $totalCost,
                         'status' => 'Credited',
                         'remarks' => $data['remarks'] ?? null,
                     ]
@@ -172,10 +178,5 @@ class UserSalaryController extends Controller
 
         return back()->with('success', 'Salary saved successfully.');
     }
-
-
-
-
-
 
 }

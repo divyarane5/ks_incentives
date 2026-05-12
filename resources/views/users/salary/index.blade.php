@@ -45,42 +45,45 @@
                                 : 0;
 
                             // PT Logic
-                                if ($user->gender === 'female' && $user->current_ctc < 25000) {
+                        if ($user->gender === 'female' && $user->current_ctc < 25000) {
 
-                                    $pt = 0;
+                            $pt = 0;
 
-                                } else {
+                        } else {
 
-                                    // February PT = 300
-                                    if ($monthDate->month == 2) {
+                            // February PT = 300
+                            if ($monthDate->month == 2) {
 
-                                        $pt = 300;
+                                $pt = 300;
 
-                                    } else {
+                            } else {
 
-                                        $pt = $user->professional_tax ?? 0;
-                                    }
-                                }
-
-                            $gross = $netSalary + $pt + $pf;
+                                $pt = $user->professional_tax ?? 0;
+                            }
+                        }
 
                             $credited = $m['salary_credited'] ?? 0;
+
                             $tds = $m['tds'] ?? 0;
-                            $lop = $m['extra_deduction'] ?? max($netSalary - $credited - $tds, 0);
+
+                            $lop = $m['extra_deduction'] ?? 0;
+
                             $totalCost = $credited + $tds + $pt + $pf;
+
+                            $gross = $totalCost + $lop;
                         @endphp
 
                         <tr>
                             <td>{{ $m['label'] }}</td>
 
                             <td>
-                                @if($m['month'] == 4 && $m['year'] == 2025)
-
+                                
                                     <input type="number"
                                         step="0.01"
                                         class="form-control gross-input"
                                         name="salary[{{ $m['year'] }}][{{ $m['month'] }}][gross]"
                                         value="{{ $gross }}">
+                                <!-- @if($m['month'] == 4 && $m['year'] == 2025)
 
                                 @else
 
@@ -90,12 +93,12 @@
                                         name="salary[{{ $m['year'] }}][{{ $m['month'] }}][gross]"
                                         value="{{ $gross }}">
 
-                                @endif
+                                @endif -->
                             </td>
 
                             <td>
 
-                                @if($m['month'] == 4 && $m['year'] == 2025)
+                                
 
                                      <span class="lop-display" style="display:none">
                                       ₹  {{ number_format($lop,2) }}
@@ -106,7 +109,7 @@
                                         class="form-control mt-1"
                                         name="salary[{{ $m['year'] }}][{{ $m['month'] }}][extra_deduction]"
                                         value="{{ $lop }}">
-
+                                <!-- @if($m['month'] == 4 && $m['year'] == 2025)
                                 @else
 
                                     ₹ <span class="lop-display">
@@ -117,7 +120,7 @@
                                         name="salary[{{ $m['year'] }}][{{ $m['month'] }}][extra_deduction]"
                                         value="{{ $lop }}">
 
-                                @endif
+                                @endif -->
 
                             </td>
                             <td>
@@ -200,57 +203,36 @@ function calculateSalary() {
         let credited = parseFloat(salaryInput.value) || 0;
         let tds = parseFloat(tdsInput.value) || 0;
 
-        // -------------------------
-        // GROSS
-        // -------------------------
-
-        let grossInput = row.querySelector('.gross-input');
-
-        let gross = grossInput
-            ? parseFloat(grossInput.value) || 0
-            : (standard + pt + pf);
-
-        // -------------------------
-        // LOP
-        // -------------------------
-
         let lopInput = row.querySelector('input[name*="[extra_deduction]"]');
 
-        let lop;
-
-        // Editable April row
-        if (lopInput.type === 'number') {
-
-            lop = parseFloat(lopInput.value) || 0;
-
-        } else {
-
-            lop = standard - credited - tds;
-
-            if (lop < 0) lop = lop;
-
-            row.querySelector('.lop-display').innerText =
-                lop.toLocaleString('en-IN', {
-                    minimumFractionDigits: 2
-                });
-
-            lopInput.value = lop;
-        }
-
-        // -------------------------
-        // TOTAL COST
-        // -------------------------
+        let lop = parseFloat(lopInput.value) || 0;
 
         let totalCost = credited + tds + pt + pf;
 
+        let gross = totalCost + lop;
+
+        // Update gross field
+        let grossInput = row.querySelector('.gross-input');
+
+        if (grossInput) {
+            grossInput.value = gross.toFixed(2);
+        }
+
+        // Update total cost
         row.querySelector('.row-total').innerText =
             totalCost.toLocaleString('en-IN', {
                 minimumFractionDigits: 2
             });
 
-        // -------------------------
-        // FOOTER TOTALS
-        // -------------------------
+        // Update lop display
+        let lopDisplay = row.querySelector('.lop-display');
+
+        if (lopDisplay) {
+            lopDisplay.innerText =
+                lop.toLocaleString('en-IN', {
+                    minimumFractionDigits: 2
+                });
+        }
 
         grossTotal += gross;
         lopTotal += lop;
@@ -275,7 +257,8 @@ document.addEventListener('input', e => {
     if (
         e.target.classList.contains('salary-input') ||
         e.target.classList.contains('tds-input') ||
-        e.target.classList.contains('gross-input')
+        e.target.classList.contains('gross-input') ||
+        e.target.name.includes('[extra_deduction]')
     ) {
         calculateSalary();
     }
