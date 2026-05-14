@@ -271,8 +271,15 @@
                                 <div class="col-md-6">
                                     <label class="form-label">Employment Status</label>
                                     <select name="employment_status" class="form-select">
-                                        <option value="Probation" {{ old('employment_status', $user->employment_status) == 'Probation' ? 'selected' : '' }}>Probation</option>
-                                        <option value="Confirmed" {{ old('employment_status', $user->employment_status) == 'Confirmed' ? 'selected' : '' }}>Confirmed</option>
+                                        <option value="probation"
+                                            {{ strtolower(old('employment_status', $user->employment_status)) === 'probation' ? 'selected' : '' }}>
+                                            Probation
+                                        </option>
+
+                                        <option value="confirmed"
+                                            {{ strtolower(old('employment_status', $user->employment_status)) === 'confirmed' ? 'selected' : '' }}>
+                                            Confirmed
+                                        </option>
                                     </select>
                                 </div>
 
@@ -433,9 +440,19 @@
                                     <label class="form-label">PF Status</label>
                                     <select name="pf_status" id="pf_status"
                                             class="form-select @error('pf_status') is-invalid @enderror">
+
                                         <option value="">Select Status</option>
-                                        <option value="1" {{ old('pf_status', $user->pf_status) == 1 ? 'selected' : '' }}>Active</option>
-                                        <option value="0" {{ old('pf_status', $user->pf_status) == 0 ? 'selected' : '' }}>Inactive</option>
+
+                                        <option value="1"
+                                            {{ (string) old('pf_status', $user->pf_status) === '1' ? 'selected' : '' }}>
+                                            Active
+                                        </option>
+
+                                        <option value="0"
+                                            {{ (string) old('pf_status', $user->pf_status) === '0' ? 'selected' : '' }}>
+                                            Inactive
+                                        </option>
+
                                     </select>
                                     @error('pf_status') <div class="invalid-feedback">{{ $message }}</div> @enderror
                                 </div>

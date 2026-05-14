@@ -253,7 +253,7 @@ class UserController extends Controller
             $user->net_salary = $net_salary;
 
             // Statutory & Banking
-            $user->pf_status = $request->pf_status == 'Active' ? 1 : 0;
+            $user->pf_status = $request->pf_status == 1 ? 1 : 0;
             $user->pf_joining_date = $request->pf_joining_date;
             $user->uan_number = $request->uan_number;
             $user->bank_name = $request->bank_name;
@@ -444,20 +444,20 @@ class UserController extends Controller
 
             // Normalize employment status
             if ($request->filled('employment_status')) {
-                $user->employment_status = ucfirst(strtolower($request->employment_status));
+                $user->employment_status = strtolower($request->employment_status);
             }
 
             // Confirmation date
             if (
-                $user->wasChanged('probation_period_days') ||
-                $user->wasChanged('joining_date')
+                $user->isDirty('probation_period_days') ||
+                $user->isDirty('joining_date')
             ) {
                 $user->confirm_date = \Carbon\Carbon::parse($user->joining_date)
                     ->addDays((int) $user->probation_period_days);
             }
 
             // PF status
-            $user->pf_status = $request->pf_status === 'Active' ? 1 : 0;
+            $user->pf_status = (int) $request->pf_status;
 
             // 🔐 SAVE FIRST (important for wasChanged)
             $user->save();
