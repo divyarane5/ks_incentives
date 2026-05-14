@@ -97,16 +97,12 @@
                             </td>
 
                             <td>
-
-                                
-
-                                     <span class="lop-display" style="display:none">
-                                      ₹  {{ number_format($lop,2) }}
+                                ₹ <span class="lop-display">
+                                        {{ number_format($lop,2) }}
                                     </span>
 
-                                    <input type="number"
-                                        step="0.01"
-                                        class="form-control mt-1"
+                                    <input type="hidden"
+                                        class="lop-input"
                                         name="salary[{{ $m['year'] }}][{{ $m['month'] }}][extra_deduction]"
                                         value="{{ $lop }}">
                                 <!-- @if($m['month'] == 4 && $m['year'] == 2025)
@@ -184,55 +180,95 @@
 @endsection
 @section('script')
 <script>
+
 function calculateSalary() {
 
-    let grossTotal=0, lopTotal=0, tdsTotal=0,
-        netTotal=0, ptTotal=0, pfTotal=0, costTotal=0;
+    let grossTotal = 0,
+        lopTotal = 0,
+        tdsTotal = 0,
+        netTotal = 0,
+        ptTotal = 0,
+        pfTotal = 0,
+        costTotal = 0;
 
     document.querySelectorAll('tbody tr').forEach(row => {
 
         let salaryInput = row.querySelector('.salary-input');
         let tdsInput = row.querySelector('.tds-input');
+        let grossInput = row.querySelector('.gross-input');
+        let lopInput = row.querySelector('.lop-input');
 
         if (!salaryInput || salaryInput.disabled) return;
 
-        let standard = parseFloat(salaryInput.dataset.standard) || 0;
         let pt = parseFloat(salaryInput.dataset.pt) || 0;
         let pf = parseFloat(salaryInput.dataset.pf) || 0;
 
         let credited = parseFloat(salaryInput.value) || 0;
         let tds = parseFloat(tdsInput.value) || 0;
+        let gross = parseFloat(grossInput.value) || 0;
 
-        let lopInput = row.querySelector('input[name*="[extra_deduction]"]');
-
-        let lop = parseFloat(lopInput.value) || 0;
+        /*
+        |--------------------------------------------------------------------------
+        | TOTAL COST
+        |--------------------------------------------------------------------------
+        */
 
         let totalCost = credited + tds + pt + pf;
 
-        let gross = totalCost + lop;
+        /*
+        |--------------------------------------------------------------------------
+        | LOP CALCULATION
+        |--------------------------------------------------------------------------
+        */
 
-        // Update gross field
-        let grossInput = row.querySelector('.gross-input');
+        let lop = gross - totalCost;
 
-        if (grossInput) {
-            grossInput.value = gross.toFixed(2);
+        if (lop < 0) {
+            lop = 0;
         }
 
-        // Update total cost
-        row.querySelector('.row-total').innerText =
-            totalCost.toLocaleString('en-IN', {
-                minimumFractionDigits: 2
-            });
+        /*
+        |--------------------------------------------------------------------------
+        | UPDATE HIDDEN LOP FIELD
+        |--------------------------------------------------------------------------
+        */
 
-        // Update lop display
+        if (lopInput) {
+            lopInput.value = lop.toFixed(2);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPDATE LOP DISPLAY
+        |--------------------------------------------------------------------------
+        */
+
         let lopDisplay = row.querySelector('.lop-display');
 
         if (lopDisplay) {
+
             lopDisplay.innerText =
                 lop.toLocaleString('en-IN', {
                     minimumFractionDigits: 2
                 });
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | UPDATE TOTAL COST DISPLAY
+        |--------------------------------------------------------------------------
+        */
+
+        row.querySelector('.row-total').innerText =
+            totalCost.toLocaleString('en-IN', {
+                minimumFractionDigits: 2
+            });
+
+        /*
+        |--------------------------------------------------------------------------
+        | FOOTER TOTALS
+        |--------------------------------------------------------------------------
+        */
 
         grossTotal += gross;
         lopTotal += lop;
@@ -243,28 +279,73 @@ function calculateSalary() {
         costTotal += totalCost;
     });
 
-    document.getElementById('gross-total').innerText = grossTotal.toFixed(2);
-    document.getElementById('lop-total').innerText = lopTotal.toFixed(2);
-    document.getElementById('tds-total').innerText = tdsTotal.toFixed(2);
-    document.getElementById('net-total').innerText = netTotal.toFixed(2);
-    document.getElementById('pt-total').innerText = ptTotal.toFixed(2);
-    document.getElementById('pf-total').innerText = pfTotal.toFixed(2);
-    document.getElementById('cost-total').innerText = costTotal.toFixed(2);
+    /*
+    |--------------------------------------------------------------------------
+    | FOOTER UPDATE
+    |--------------------------------------------------------------------------
+    */
+
+    document.getElementById('gross-total').innerText =
+        grossTotal.toLocaleString('en-IN', {
+            minimumFractionDigits: 2
+        });
+
+    document.getElementById('lop-total').innerText =
+        lopTotal.toLocaleString('en-IN', {
+            minimumFractionDigits: 2
+        });
+
+    document.getElementById('tds-total').innerText =
+        tdsTotal.toLocaleString('en-IN', {
+            minimumFractionDigits: 2
+        });
+
+    document.getElementById('net-total').innerText =
+        netTotal.toLocaleString('en-IN', {
+            minimumFractionDigits: 2
+        });
+
+    document.getElementById('pt-total').innerText =
+        ptTotal.toLocaleString('en-IN', {
+            minimumFractionDigits: 2
+        });
+
+    document.getElementById('pf-total').innerText =
+        pfTotal.toLocaleString('en-IN', {
+            minimumFractionDigits: 2
+        });
+
+    document.getElementById('cost-total').innerText =
+        costTotal.toLocaleString('en-IN', {
+            minimumFractionDigits: 2
+        });
 }
+
+/*
+|--------------------------------------------------------------------------
+| EVENTS
+|--------------------------------------------------------------------------
+*/
 
 document.addEventListener('input', e => {
 
     if (
         e.target.classList.contains('salary-input') ||
         e.target.classList.contains('tds-input') ||
-        e.target.classList.contains('gross-input') ||
-        e.target.name.includes('[extra_deduction]')
+        e.target.classList.contains('gross-input')
     ) {
         calculateSalary();
     }
 
 });
 
+/*
+|--------------------------------------------------------------------------
+| INITIAL LOAD
+|--------------------------------------------------------------------------
+*/
+
 document.addEventListener('DOMContentLoaded', calculateSalary);
+
 </script>
 @endsection

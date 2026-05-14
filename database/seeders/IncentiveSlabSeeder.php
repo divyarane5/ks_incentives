@@ -1,7 +1,7 @@
 <?php
 
 namespace Database\Seeders;
-
+use App\Models\IncentiveSlab;
 use Illuminate\Database\Seeder;
 
 class IncentiveSlabSeeder extends Seeder

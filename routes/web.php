@@ -295,6 +295,18 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::resource('invoice', App\Http\Controllers\InvoiceController::class);
 
+    Route::prefix('incentives')->group(function () {
+
+        Route::get('/preview', [App\Http\Controllers\IncentiveController::class, 'preview'])
+            ->name('incentives.preview');
+
+        Route::post('/preview-data', [App\Http\Controllers\IncentiveController::class, 'previewData'])
+            ->name('incentives.preview.data');
+
+    });
+    Route::get('/incentives/{user}',[App\Http\Controllers\IncentiveController::class, 'show'])->name('incentives.show');
+    Route::post('/incentives/save',[App\Http\Controllers\IncentiveController::class, 'save'])->name('incentives.save');
+
     /*
     |--------------------------------------------------------------------------
     | Profile
