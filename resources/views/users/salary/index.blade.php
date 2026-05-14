@@ -4,8 +4,9 @@
 <div class="container-xxl container-p-y">
 
     <h4 class="fw-bold mb-3">
-        Salary – {{ $user->name }} (FY {{ $fy }})
+        Salary – {{ $user->name }} (FY {{ $fy }}) 
     </h4>
+    <p>Joining Date: {{ $user->joining_date }} | Confirmation Date: {{ $user->confirm_date }} </p>
 
     <form method="POST" action="{{ route('users.salary.store', $user->id) }}">
         @csrf
@@ -34,6 +35,15 @@
 
                         @php
                             $monthDate = \Carbon\Carbon::create($m['year'], $m['month'], 1);
+
+                            $joiningDate = $user->joining_date
+                                ? \Carbon\Carbon::parse($user->joining_date)->startOfMonth()
+                                : null;
+
+                            // Hide months before joining
+                            if ($joiningDate && $monthDate->lt($joiningDate)) {
+                                continue;
+                            }
                             $confirmationDate = $user->confirm_date
                                 ? \Carbon\Carbon::parse($user->confirm_date)
                                 : null;
