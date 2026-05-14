@@ -182,8 +182,8 @@ class UserController extends Controller
             $conveyance_allowance = $monthlyCtc * 0.1;
             $medical_reimbursement = $monthlyCtc * 0.05;
 
-            $pfEmployer = 1800;
-            $pfEmployee = 1800;
+            $pfEmployer = $request->pf_status == 1 ? 1800 : 0;
+            $pfEmployee = $request->pf_status == 1 ? 1800 : 0;
             $profTax = 200;
 
             $deductions = $pfEmployer + $pfEmployee + $profTax;
@@ -253,7 +253,19 @@ class UserController extends Controller
             $user->net_salary = $net_salary;
 
             // Statutory & Banking
-            $user->pf_status = $request->pf_status == 1 ? 1 : 0;
+            // Statutory & Banking
+            $user->pf_status = (int) $request->pf_status;
+
+            if ($user->pf_status == 1) {
+
+                $user->pf_employee = 1800;
+                $user->pf_employer = 1800;
+
+            } else {
+
+                $user->pf_employee = 0;
+                $user->pf_employer = 0;
+            }
             $user->pf_joining_date = $request->pf_joining_date;
             $user->uan_number = $request->uan_number;
             $user->bank_name = $request->bank_name;
@@ -457,7 +469,19 @@ class UserController extends Controller
             }
 
             // PF status
+            // PF status
             $user->pf_status = (int) $request->pf_status;
+
+            if ($user->pf_status == 1) {
+
+                $user->pf_employee = 1800;
+                $user->pf_employer = 1800;
+
+            } else {
+
+                $user->pf_employee = 0;
+                $user->pf_employer = 0;
+            }
 
             // 🔐 SAVE FIRST (important for wasChanged)
             $user->save();
@@ -591,7 +615,7 @@ class UserController extends Controller
     }
 
     
-   public function show($id)
+    public function show($id)
     {
         $user = User::with([
             'department',
