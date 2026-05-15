@@ -44,6 +44,14 @@
                             if ($joiningDate && $monthDate->lt($joiningDate)) {
                                 continue;
                             }
+                            $leavingDate = $user->leaving_date
+                                ? \Carbon\Carbon::parse($user->leaving_date)->startOfMonth()
+                                : null;
+
+                            // Hide months after leaving
+                            if ($leavingDate && $monthDate->gt($leavingDate)) {
+                                continue;
+                            }
                             $confirmationDate = $user->confirm_date
                                 ? \Carbon\Carbon::parse($user->confirm_date)
                                 : null;

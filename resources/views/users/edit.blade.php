@@ -102,7 +102,7 @@
                                 </div>
                                 <div class="mb-3 col-md-6">
                                     <label class="form-label">Gender</label>
-                                    <select name="gender" class="form-select @error('gender') is-invalid @enderror">
+                                    <select id="gender" name="gender" class="form-select @error('gender') is-invalid @enderror">
                                         <option value="">Select Gender</option>
                                         @foreach(config('constants.GENDER_OPTIONS') as $key => $gender)
                                             <option value="{{ $key }}" {{ old('gender', $user->gender) == $key ? 'selected' : '' }}>{{ $gender }}</option>
@@ -764,11 +764,11 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 <script>
-
     // Annual → Monthly CTC
     document.getElementById('annual_ctc')?.addEventListener('input', function () {
         const annual = parseFloat(this.value || 0);
         if (annual <= 0) return;
+
         const monthly = annual / 12;
         document.getElementById('current_ctc').value = monthly.toFixed(2);
 
@@ -780,7 +780,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const pfEmployer = 1800;
         const pfEmployee = 1800;
-        const profTax = 200;
+
+        // Get gender value
+        const gender = document.getElementById('gender')?.value;
+
+        // PT condition:
+        // If monthly salary < 25000 AND user is female → PT = 0
+        // otherwise PT = 200
+        let profTax = 200;
+
+        if (monthly < 25000 && gender === 'Female') {
+            profTax = 0;
+        }
 
         const deductions = (pfEmployee + pfEmployer) + profTax;
         const net = monthly - deductions;

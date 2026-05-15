@@ -75,7 +75,7 @@
                                 </div>
                                 <div class="mb-3 col-md-6">
                                     <label class="form-label">Gender</label>
-                                    <select name="gender" class="form-select">
+                                    <select id="gender" name="gender" class="form-select">
                                         <option value="">Select Gender</option>
                                         @foreach(config('constants.GENDER_OPTIONS') as $key => $gender)
                                             <option value="{{ $key }}">{{ $gender }}</option>
@@ -494,7 +494,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
         const pfEmployer = 1800;
         const pfEmployee = 1800;
-        const profTax = 200;
+        // Get gender value
+        const gender = document.getElementById('gender')?.value;
+
+        // PT condition:
+        // If monthly salary < 25000 AND user is female → PT = 0
+        // otherwise PT = 200
+        let profTax = 200;
+
+        if (monthly < 25000 && gender === 'Female') {
+            profTax = 0;
+        }
 
         const deductions = (pfEmployee + pfEmployer) + profTax;
         const net = monthly - deductions;
