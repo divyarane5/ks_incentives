@@ -111,31 +111,8 @@ class UserSalaryController extends Controller
                     : null;
 
                 // PF Logic
-                if (
-                    $confirmationDate &&
-                    $monthDate->gte($confirmationDate) &&
-                    $user->employment_status === 'confirmed'
-                ) {
-                    $pf = ($user->pf_employee ?? 0) + ($user->pf_employer ?? 0);
-                } else {
-                    $pf = 0;
-                }
-
-                // PT Logic
-                // PT Logic
-                if ($user->gender === 'female' && $user->current_ctc < 25000) {
-
-                    $pt = 0;
-
-                } else {
-
-                    // February PT = 300
-                    if ($monthDate->month == 2) {
-                        $pt = 300;
-                    } else {
-                        $pt = $user->professional_tax ?? 0;
-                    }
-                }
+                $pt = (float) ($data['pt'] ?? 0);
+                $pf = (float) ($data['pf'] ?? 0);
 
                 // $standardNet = $user->net_salary ?? 0;
 

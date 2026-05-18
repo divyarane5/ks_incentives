@@ -53,7 +53,7 @@
                                 continue;
                             }
                             $confirmationDate = $user->confirm_date
-                                ? \Carbon\Carbon::parse($user->confirm_date)
+                                ? \Carbon\Carbon::parse($user->confirm_date)->startOfMonth()
                                 : null;
 
                             $pf = ($confirmationDate &&
@@ -159,8 +159,23 @@
                                     {{ !$m['enabled'] ? 'disabled' : '' }}>
                             </td>
 
-                            <td>₹ {{ number_format($pt,2) }}</td>
-                            <td>₹ {{ number_format($pf,2) }}</td>
+                            <td>
+                                <input type="number"
+                                    step="0.01"
+                                    min="0"
+                                    class="form-control pt-input"
+                                    name="salary[{{ $m['year'] }}][{{ $m['month'] }}][pt]"
+                                    value="{{ $pt }}">
+                            </td>
+                            <td>
+                                <input type="number"
+                                    step="0.01"
+                                    min="0"
+                                    class="form-control pf-input"
+                                    name="salary[{{ $m['year'] }}][{{ $m['month'] }}][pf]"
+                                    value="{{ $pf }}">
+                                    
+                            </td>
 
                             <td>
                                 ₹ <span class="row-total">
@@ -218,8 +233,11 @@ function calculateSalary() {
 
         if (!salaryInput || salaryInput.disabled) return;
 
-        let pt = parseFloat(salaryInput.dataset.pt) || 0;
-        let pf = parseFloat(salaryInput.dataset.pf) || 0;
+        let ptInput = row.querySelector('.pt-input');
+        let pfInput = row.querySelector('.pf-input');
+
+        let pt = parseFloat(ptInput.value) || 0;
+        let pf = parseFloat(pfInput.value) || 0;
 
         let credited = parseFloat(salaryInput.value) || 0;
         let tds = parseFloat(tdsInput.value) || 0;
@@ -350,7 +368,9 @@ document.addEventListener('input', e => {
     if (
         e.target.classList.contains('salary-input') ||
         e.target.classList.contains('tds-input') ||
-        e.target.classList.contains('gross-input')
+        e.target.classList.contains('gross-input') ||
+        e.target.classList.contains('pt-input') ||
+        e.target.classList.contains('pf-input')
     ) {
         calculateSalary();
     }
