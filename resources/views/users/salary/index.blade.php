@@ -56,27 +56,40 @@
                                 ? \Carbon\Carbon::parse($user->confirm_date)->startOfMonth()
                                 : null;
 
-                            $pf = ($confirmationDate &&
-                                   $monthDate->gte($confirmationDate) &&
-                                   $user->employment_status === 'confirmed')
-                                ? ($user->pf_employee ?? 0) + ($user->pf_employer ?? 0)
-                                : 0;
+                            if (isset($m['pf_amount']) && $m['pf_amount'] !== null) {
 
-                            // PT Logic
-                        if ($user->gender === 'female' && $user->current_ctc < 25000) {
-
-                            $pt = 0;
-
-                        } else {
-
-                            // February PT = 300
-                            if ($monthDate->month == 2) {
-
-                                $pt = 300;
+                                $pf = $m['pf_amount'];
 
                             } else {
 
-                                $pt = $user->professional_tax ?? 0;
+                                $pf = ($confirmationDate &&
+                                    $monthDate->gte($confirmationDate) &&
+                                    $user->employment_status === 'confirmed')
+                                    ? ($user->pf_employee ?? 0) + ($user->pf_employer ?? 0)
+                                    : 0;
+                            }
+
+                            // PT Logic
+                        if (isset($m['professional_tax']) && $m['professional_tax'] !== null) {
+
+                            $pt = $m['professional_tax'];
+
+                        } else {
+
+                            if ($user->gender === 'female' && $user->current_ctc < 25000) {
+
+                                $pt = 0;
+
+                            } else {
+
+                                if ($monthDate->month == 2) {
+
+                                    $pt = 300;
+
+                                } else {
+
+                                    $pt = $user->professional_tax ?? 0;
+                                }
                             }
                         }
 

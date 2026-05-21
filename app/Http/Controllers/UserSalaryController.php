@@ -46,6 +46,8 @@ class UserSalaryController extends Controller
                 'enabled'          => $cursor >= $salaryStart,
                 'gross_salary'     => $record->gross_salary ?? null,
                 'salary_credited'  => $record->salary_credited ?? 0,
+                'professional_tax' => $record->professional_tax ?? null,
+                'pf_amount'        => $record->pf_amount ?? null,
                 'tds' => $record->tds ?? 0, 
                 'remarks'          => $record->remarks ?? null,
                 'status'           => $record->status ?? 'Pending',
