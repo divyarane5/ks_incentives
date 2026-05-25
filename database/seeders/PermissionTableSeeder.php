@@ -134,6 +134,16 @@ class PermissionTableSeeder extends Seeder
             'mandate-booking-ledger-view',
             'mandate-booking-ledger-create',
             'mandate-booking-ledger-delete',
+
+            'incentive-slab-view',
+            'incentive-slab-create',
+            'incentive-slab-edit',
+            'incentive-slab-delete',
+            'incentive-calculation-view',
+            'incentive-calculation-create',
+            'incentive-breakdown-view',
+            'incentive-hierarchy-view',
+            'incentive-ledger-view',
             
         ];
 

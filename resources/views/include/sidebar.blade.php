@@ -130,6 +130,55 @@
 
         @endif
 
+        {{-- Incentives --}}
+        @canany([
+            'incentive-slab-view',
+            'incentive-calculation-view',
+            'incentive-hierarchy-view',
+            'incentive-ledger-view'
+        ])
+
+        <li class="menu-item {{ in_array(Request::segment(1), ['incentives', 'incentive-slabs']) ? 'active open' : '' }}">
+
+            <a href="javascript:void(0);" class="menu-link menu-toggle">
+                <i class="menu-icon tf-icons bx bx-rupee"></i>
+                <div>Incentives</div>
+            </a>
+
+            <ul class="menu-sub">
+
+                {{-- Incentive Slabs --}}
+                @can('incentive-slab-view')
+                <li class="menu-item {{ Request::segment(1) == 'incentive-slabs' ? 'active' : '' }}">
+                    <a href="{{ route('incentive-slabs.index') }}" class="menu-link">
+                        <div>Slabs</div>
+                    </a>
+                </li>
+                @endcan
+
+                {{-- Incentive Calculations --}}
+                @can('incentive-calculation-view')
+                <li class="menu-item {{ Request::segment(2) == 'preview' ? 'active' : '' }}">
+                    <a href="{{ route('incentives.preview') }}" class="menu-link">
+                        <div>Calculations</div>
+                    </a>
+                </li>
+                @endcan
+
+                {{-- Ledger --}}
+                @can('incentive-ledger-view')
+                <li class="menu-item">
+                    <a href="javascript:void(0);" class="menu-link">
+                        <div>Ledger & Freeze</div>
+                    </a>
+                </li>
+                @endcan
+
+            </ul>
+        </li>
+
+        @endcanany
+
         {{-- Mandate Section (unchanged) --}}
         @if($isSAorAdmin || auth()->user()->businessUnit?->code === 'AI')
             <li class="menu-item {{ in_array(Request::segment(1), ['mandate_projects','channel_partners','client-enquiries']) ? 'active open' : '' }}">

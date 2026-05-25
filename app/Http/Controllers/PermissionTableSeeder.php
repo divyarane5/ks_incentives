@@ -105,6 +105,7 @@ class PermissionTableSeeder extends Seeder
             // 'project-offer-edit',
             // 'project-offer-send-image-email',
             // 'project-offer-send-pdf-email',
+            
          ];
 
          foreach ($permissions as $permission) {

@@ -52,9 +52,10 @@
                                 Select Role
                             </option>
 
-                            <option value="FOS">
-                                FOS
-                            </option>
+                            <option value="FOS">FOS</option>
+                            <option value="TL">TL</option>
+                            <option value="Sr. TL">Sr. TL</option>
+                            <option value="CH">CH</option>
 
                         </select>
                     </div>
@@ -157,8 +158,9 @@
                             <th class="text-end">Annual Salary</th>
                             <th class="text-end">Collection</th>
                             <th class="text-center">Times</th>
-                            <th class="text-center">Slab %</th>
+                            
                             <th class="text-end">Justification</th>
+                            <th class="text-center">Slab %</th>
                             <th class="text-end">Eligible Amount</th>
                             <th class="text-end">Final Incentive</th>
                             <th width="120">
@@ -252,6 +254,8 @@
 
                             <td class="text-center">
 
+                               @if($role == 'FOS')
+
                                 @if($row['times'] >= 4)
 
                                     <span class="badge bg-success">
@@ -266,6 +270,36 @@
 
                                 @endif
 
+                            @else
+
+                                @if($row['times'] >= 2)
+
+                                    <span class="badge bg-success">
+                                        {{ number_format($row['times'],2) }}x
+                                    </span>
+
+                                @else
+
+                                    <span class="badge bg-danger">
+                                        {{ number_format($row['times'],2) }}x
+                                    </span>
+
+                                @endif
+
+                            @endif
+
+                            </td>
+                            <input type="hidden"
+                                name="calculations[{{ $key }}][justification_multiplier]"
+                                value="{{ $row['justification_multiplier'] ?? 0 }}">
+                            <td class="text-end">
+                               ₹ {{ number_format($row['justification'],2) }}
+
+                                <br>
+
+                                <small class="text-muted">
+                                    {{ $row['justification_multiplier'] ?? 0 }}x
+                                </small>
                             </td>
 
                             <td class="text-center">
@@ -276,9 +310,7 @@
 
                             </td>
 
-                            <td class="text-end">
-                                ₹ {{ number_format($row['justification'],2) }}
-                            </td>
+                            
 
                             <td class="text-end">
 
@@ -305,7 +337,11 @@
                             </td>
                             <td>
 
-                                <a href="{{ route('incentives.show', $row['user_id']) }}"
+                                <a href="{{ route('incentives.show', [
+                                    'user' => $row['user_id'],
+                                    'fy' => $fy,
+                                    'role' => $role
+                                ]) }}"
                                 class="btn btn-sm btn-primary">
 
                                     View
@@ -320,7 +356,7 @@
 
                         <tr>
 
-                            <td colspan="9"
+                            <td colspan="10"
                                 class="text-center py-4">
 
                                 No Data Found

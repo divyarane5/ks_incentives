@@ -112,8 +112,8 @@ Route::group(['middleware' => 'auth'], function () {
     // Dashboard
     Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
         ->name('dashboard');
-    Route::match(['get','post'],'/dashboard-two',[App\Http\Controllers\DashboardController::class,'dashboardTwo']);
-    Route::get('/dashboard-two-reset',[App\Http\Controllers\DashboardController::class,'resetDashboard']);
+    Route::match(['get','post'],'/incentive-dashboard-view',[App\Http\Controllers\DashboardController::class,'dashboardTwo']);
+    Route::get('/incentive-dashboard-view-reset',[App\Http\Controllers\DashboardController::class,'resetDashboard']);
 
     Route::get('/account', [App\Http\Controllers\DashboardController::class, 'account'])
         ->name('account');
@@ -295,6 +295,9 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::resource('invoice', App\Http\Controllers\InvoiceController::class);
 
+
+    Route::resource('incentive-slabs',App\Http\Controllers\IncentiveSlabController::class);
+    
     Route::prefix('incentives')->group(function () {
 
         Route::get('/preview', [App\Http\Controllers\IncentiveController::class, 'preview'])

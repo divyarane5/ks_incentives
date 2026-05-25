@@ -18,7 +18,7 @@
 <div class="card mb-4">
 <div class="card-body">
 
-<form method="POST" action="{{ url('/dashboard-two') }}">
+<form method="POST" action="{{ url('/incentive-dashboard-view') }}">
 @csrf
 
 <div class="row g-3">
@@ -91,7 +91,7 @@
 </div>
 
 <div class="col-md-2">
-<a href="{{ url('/dashboard-two') }}" class="btn btn-secondary w-100">Reset</a>
+<a href="{{ url('/incentive-dashboard-view') }}" class="btn btn-secondary w-100">Reset</a>
 </div>
 
 </div>

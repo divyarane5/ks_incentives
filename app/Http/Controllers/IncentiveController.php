@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\UserSalary;
-use App\Models\Booking;
 use App\Models\BookingBrokeragePayment;
 use App\Models\IncentiveSlab;
 use Illuminate\Http\Request;
@@ -26,10 +25,32 @@ class IncentiveController extends Controller
 
         /*
         |--------------------------------------------------------------------------
-        | FY DATE RANGE
+        | FOS PREVIEW
         |--------------------------------------------------------------------------
         */
 
+        if($role == 'FOS'){
+
+            return $this->previewFOS($fy, $role);
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | TL / SR TL / CH PREVIEW
+        |--------------------------------------------------------------------------
+        */
+
+        return $this->previewHierarchy($fy, $role);
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | FOS PREVIEW
+    |--------------------------------------------------------------------------
+    */
+
+    public function previewFOS($fy, $role)
+    {
         $fyStart = '2025-04-01';
 
         $fyEnd = '2026-03-31';
@@ -47,8 +68,8 @@ class IncentiveController extends Controller
                         $q->where('name', $role);
 
                     })
-                    ->where('department_id', 1) // Sales
-                    ->where('business_unit_id', 1) // KREA
+                    ->where('department_id', 1)
+                    ->where('business_unit_id', 1)
                     ->where('status', 'Active')
                     ->get();
 
@@ -78,14 +99,20 @@ class IncentiveController extends Controller
                             )
                             ->where('bookings.sales_user_id', $user->id)
 
-                            ->where('booking_brokerage_payments.status', 'received')
+                            ->where(
+                                'booking_brokerage_payments.status',
+                                'received'
+                            )
 
                             // ->whereBetween(
                             //     'booking_brokerage_payments.bank_received_date',
                             //     [$fyStart, $fyEnd]
                             // )
 
-                            ->sum('booking_brokerage_payments.bank_received_amount');
+                            ->sum(
+                                'booking_brokerage_payments.bank_received_amount'
+                            );
+
             /*
             |--------------------------------------------------------------------------
             | SKIP INVALID USERS
@@ -96,18 +123,14 @@ class IncentiveController extends Controller
 
                 continue;
             }
+
             /*
             |--------------------------------------------------------------------------
             | PERFORMANCE TIMES
             |--------------------------------------------------------------------------
             */
 
-            $times = 0;
-
-            if ($annualSalary > 0) {
-
-                $times = $collection / $annualSalary;
-            }
+            $times = $collection / $annualSalary;
 
             /*
             |--------------------------------------------------------------------------
@@ -119,7 +142,7 @@ class IncentiveController extends Controller
 
                         ->where('role', $role)
 
-                        ->where('from_times', '<', $times)
+                        ->where('from_times', '<=', $times)
 
                         ->where('to_times', '>=', $times)
 
@@ -176,6 +199,8 @@ class IncentiveController extends Controller
 
                 'times' => round($times, 2),
 
+                'justification_multiplier' => $multiplier,
+
                 'slab_percent' => $slabPercent,
 
                 'justification' => $justification,
@@ -193,6 +218,244 @@ class IncentiveController extends Controller
         ));
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | TL / SR TL / CH PREVIEW
+    |--------------------------------------------------------------------------
+    */
+
+    private function previewHierarchy($fy, $role)
+    {
+        $calculations = [];
+
+        $users = User::whereHas('roles', function ($q) use ($role) {
+
+                        $q->where('name', $role);
+
+                    })
+                    ->where('department_id', 1)
+                    ->where('business_unit_id', 1)
+                    ->where('status', 'Active')
+                    ->get();
+
+        foreach ($users as $user) {
+
+            $teamIds = [];
+
+            /*
+            |--------------------------------------------------------------------------
+            | TL => DIRECT FOS
+            |--------------------------------------------------------------------------
+            */
+
+            if($role == 'TL'){
+
+                $teamIds = User::where('reporting_manager_id', $user->id)
+                            ->whereHas('roles', function ($q) {
+
+                                $q->where('name', 'FOS');
+
+                            })
+                            ->pluck('id')
+                            ->toArray();
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | SR TL => FOS UNDER TL
+            |--------------------------------------------------------------------------
+            */
+
+            if($role == 'Sr. TL'){
+
+                $tlIds = User::where('reporting_manager_id', $user->id)
+                            ->whereHas('roles', function ($q) {
+
+                                $q->where('name', 'TL');
+
+                            })
+                            ->pluck('id')
+                            ->toArray();
+
+                $teamIds = User::whereIn('reporting_manager_id', $tlIds)
+                            ->whereHas('roles', function ($q) {
+
+                                $q->where('name', 'FOS');
+
+                            })
+                            ->pluck('id')
+                            ->toArray();
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | CH => FOS UNDER SR TL + TL
+            |--------------------------------------------------------------------------
+            */
+
+            if($role == 'CH'){
+
+                $srTlIds = User::where('reporting_manager_id', $user->id)
+                                ->whereHas('roles', function ($q) {
+
+                                    $q->where('name', 'Sr. TL');
+
+                                })
+                                ->pluck('id')
+                                ->toArray();
+
+                $tlIds = User::whereIn('reporting_manager_id', $srTlIds)
+                            ->whereHas('roles', function ($q) {
+
+                                $q->where('name', 'TL');
+
+                            })
+                            ->pluck('id')
+                            ->toArray();
+
+                $teamIds = User::whereIn('reporting_manager_id', $tlIds)
+                            ->whereHas('roles', function ($q) {
+
+                                $q->where('name', 'FOS');
+
+                            })
+                            ->pluck('id')
+                            ->toArray();
+            }
+
+            if(count($teamIds) == 0){
+
+                continue;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | TEAM SALARY
+            |--------------------------------------------------------------------------
+            */
+
+            $teamSalary = UserSalary::whereIn('user_id', $teamIds)
+                            ->where('financial_year', $fy)
+                            ->sum('total_employee_cost');
+
+            /*
+            |--------------------------------------------------------------------------
+            | TEAM COLLECTION
+            |--------------------------------------------------------------------------
+            */
+
+            $teamCollection = BookingBrokeragePayment::join(
+                                'bookings',
+                                'bookings.id',
+                                '=',
+                                'booking_brokerage_payments.booking_id'
+                            )
+                            ->whereIn('bookings.sales_user_id', $teamIds)
+                            ->where('booking_brokerage_payments.status', 'received')
+                            ->sum('booking_brokerage_payments.bank_received_amount');
+
+            /*
+            |--------------------------------------------------------------------------
+            | TOTAL FOS INCENTIVES
+            |--------------------------------------------------------------------------
+            */
+
+            $teamIncentives = IncentiveCalculation::whereIn('user_id', $teamIds)
+                                ->where('financial_year', $fy)
+                                ->where('role', 'FOS')
+                                ->sum('final_incentive');
+
+            if($teamSalary <= 0 || $teamCollection <= 0){
+
+                continue;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | PERFORMANCE TIMES
+            |--------------------------------------------------------------------------
+            */
+
+            $times = $teamCollection / $teamSalary;
+
+            /*
+            |--------------------------------------------------------------------------
+            | FIND SLAB USING JUSTIFICATION MULTIPLIER
+            |--------------------------------------------------------------------------
+            */
+
+            
+            $slab = IncentiveSlab::where('financial_year', $fy)
+                        ->where('role', $role)
+                        ->where('justification_multiplier', '<=', $times)
+                        ->orderBy('justification_multiplier', 'DESC')
+                        ->first();
+            /*
+            |--------------------------------------------------------------------------
+            | NO ELIGIBILITY
+            |--------------------------------------------------------------------------
+            */
+
+            if(!$slab){
+
+                $justification = 0;
+
+                $percent = 0;
+
+                $finalIncentive = 0;
+
+            }else{
+
+                $justification = $teamSalary * $slab->justification_multiplier;
+
+                $percent = $slab->incentive_percent;
+
+                $finalIncentive = ($teamIncentives * $percent) / 100;
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | PREVIEW
+            |--------------------------------------------------------------------------
+            */
+
+            $calculations[] = [
+
+                'user_id' => $user->id,
+
+                'name' => $user->name,
+
+                'annual_salary' => $teamSalary,
+
+                'collection' => $teamCollection,
+
+                'times' => round($times, 2),
+
+                'justification_multiplier' => $slab->justification_multiplier ?? 0,
+
+                'slab_percent' => $percent,
+
+                'justification' => $justification,
+
+                'eligible_amount' => $teamIncentives,
+
+                'incentive' => $finalIncentive,
+            ];
+        }
+
+        return view('incentives.preview', compact(
+            'calculations',
+            'fy',
+            'role'
+        ));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | SAVE
+    |--------------------------------------------------------------------------
+    */
+
     public function save(Request $request)
     {
         $fy = $request->financial_year;
@@ -200,12 +463,6 @@ class IncentiveController extends Controller
         $role = $request->role;
 
         $calculations = $request->calculations ?? [];
-
-        /*
-        |--------------------------------------------------------------------------
-        | VALIDATION
-        |--------------------------------------------------------------------------
-        */
 
         if(count($calculations) == 0){
 
@@ -219,7 +476,7 @@ class IncentiveController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | DELETE OLD CALCULATIONS
+            | DELETE OLD
             |--------------------------------------------------------------------------
             */
 
@@ -229,37 +486,32 @@ class IncentiveController extends Controller
 
             /*
             |--------------------------------------------------------------------------
-            | SAVE NEW CALCULATIONS
+            | SAVE NEW
             |--------------------------------------------------------------------------
             */
 
             foreach($calculations as $row){
 
-                $annualSalary = (float) $row['annual_salary'];
+                $annualSalary = (float) (
+                    $row['annual_salary']
+                    ?? $row['team_salary']
+                    ?? 0
+                );
 
-                $collection = (float) $row['collection'];
+                $collection = (float) (
+                    $row['collection']
+                    ?? $row['team_collection']
+                    ?? 0
+                );
 
-                $incentive = (float) $row['incentive'];
-
-                /*
-                |--------------------------------------------------------------------------
-                | SKIP NON ELIGIBLE USERS
-                |--------------------------------------------------------------------------
-                */
+                $incentive = (float) ($row['incentive'] ?? 0);
 
                 if(
                     $annualSalary <= 0 ||
-                    $collection <= 0 ||
-                    $incentive <= 0
+                    $collection <= 0 
                 ){
                     continue;
                 }
-
-                /*
-                |--------------------------------------------------------------------------
-                | SAVE
-                |--------------------------------------------------------------------------
-                */
 
                 IncentiveCalculation::create([
 
@@ -273,13 +525,13 @@ class IncentiveController extends Controller
 
                     'booking_collection' => $collection,
 
-                    'performance_times' => $row['times'],
+                    'performance_times' => $row['times'] ?? 0,
 
-                    'justification_amount' => $row['justification'],
+                    'justification_amount' => $row['justification'] ?? 0,
 
-                    'eligible_collection' => $row['eligible_amount'],
+                    'eligible_collection' => $row['eligible_amount'] ?? 0,
 
-                    'incentive_percent' => $row['slab_percent'],
+                    'incentive_percent' => $row['slab_percent'] ?? 0,
 
                     'final_incentive' => $incentive,
                 ]);
@@ -289,7 +541,10 @@ class IncentiveController extends Controller
 
             return redirect()
                 ->route('incentives.preview')
-                ->with('success', 'Incentive calculations saved successfully.');
+                ->with(
+                    'success',
+                    'Incentive calculations saved successfully.'
+                );
 
         }catch(\Exception $e){
 
@@ -300,13 +555,19 @@ class IncentiveController extends Controller
         }
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | SHOW
+    |--------------------------------------------------------------------------
+    */
+
     public function show(User $user)
     {
         $fy = request('fy', '2025-26');
 
         /*
         |--------------------------------------------------------------------------
-        | INCENTIVE SUMMARY
+        | GET INCENTIVE SUMMARY
         |--------------------------------------------------------------------------
         */
 
@@ -314,46 +575,147 @@ class IncentiveController extends Controller
                         ->where('financial_year', $fy)
                         ->first();
 
+        if(!$summary){
+
+            abort(404, 'Incentive data not found.');
+        }
+
+        $role = $summary->role;
+
+        $teamIds = [];
+
         /*
         |--------------------------------------------------------------------------
-        | FY DATE RANGE
+        | FOS
         |--------------------------------------------------------------------------
         */
 
-        $fyStart = '2025-04-01';
+        if($role == 'FOS'){
 
-        $fyEnd = '2026-03-31';
+            $teamIds = [$user->id];
+        }
 
         /*
         |--------------------------------------------------------------------------
-        | BOOKING BREAKDOWN
+        | TL => DIRECT FOS
+        |--------------------------------------------------------------------------
+        */
+
+        if($role == 'TL'){
+
+            $teamIds = User::where('reporting_manager_id', $user->id)
+                        ->whereHas('roles', function ($q) {
+
+                            $q->where('name', 'FOS');
+
+                        })
+                        ->pluck('id')
+                        ->toArray();
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | SR TL => FOS UNDER TL
+        |--------------------------------------------------------------------------
+        */
+
+        if($role == 'Sr. TL'){
+
+            $tlIds = User::where('reporting_manager_id', $user->id)
+                        ->whereHas('roles', function ($q) {
+
+                            $q->where('name', 'TL');
+
+                        })
+                        ->pluck('id')
+                        ->toArray();
+
+            $teamIds = User::whereIn('reporting_manager_id', $tlIds)
+                        ->whereHas('roles', function ($q) {
+
+                            $q->where('name', 'FOS');
+
+                        })
+                        ->pluck('id')
+                        ->toArray();
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | CH => FOS UNDER SR TL
+        |--------------------------------------------------------------------------
+        */
+
+        if($role == 'CH'){
+
+            $srTlIds = User::where('reporting_manager_id', $user->id)
+                        ->whereHas('roles', function ($q) {
+
+                            $q->where('name', 'Sr. TL');
+
+                        })
+                        ->pluck('id')
+                        ->toArray();
+
+            $tlIds = User::whereIn('reporting_manager_id', $srTlIds)
+                        ->whereHas('roles', function ($q) {
+
+                            $q->where('name', 'TL');
+
+                        })
+                        ->pluck('id')
+                        ->toArray();
+
+            $teamIds = User::whereIn('reporting_manager_id', $tlIds)
+                        ->whereHas('roles', function ($q) {
+
+                            $q->where('name', 'FOS');
+
+                        })
+                        ->pluck('id')
+                        ->toArray();
+        }
+
+        /*
+        |--------------------------------------------------------------------------
+        | BOOKINGS
         |--------------------------------------------------------------------------
         */
 
         $bookings = BookingBrokeragePayment::join(
-                    'bookings',
-                    'bookings.id',
-                    '=',
-                    'booking_brokerage_payments.booking_id'
-                )
-                ->where('bookings.sales_user_id', $user->id)
+                        'bookings',
+                        'bookings.id',
+                        '=',
+                        'booking_brokerage_payments.booking_id'
+                    )
+                    ->join(
+                        'users',
+                        'users.id',
+                        '=',
+                        'bookings.sales_user_id'
+                    )
+                    ->whereIn('bookings.sales_user_id', $teamIds)
 
-                ->select(
+                    ->select(
 
-                    'booking_brokerage_payments.*',
+                        'booking_brokerage_payments.*',
 
-                    'bookings.client_name',
+                        'bookings.client_name',
 
-                    'bookings.id as booking_ref_id'
-                )
+                        'bookings.id as booking_ref_id',
 
-                ->orderBy(
-                    'booking_brokerage_payments.bank_received_date',
-                    'DESC'
-                )
+                        'users.name as fos_name'
+                    )
 
-                ->get();
+                    ->orderBy(
+                        'booking_brokerage_payments.bank_received_date',
+                        'DESC'
+                    )
+
+                    ->get();
+
         $total = $bookings->sum('bank_received_amount');
+
         return view('incentives.show', compact(
 
             'user',

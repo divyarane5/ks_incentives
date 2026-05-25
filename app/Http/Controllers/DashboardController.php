@@ -248,7 +248,7 @@ class DashboardController extends Controller
     'to_date'
     ]);
 
-    return redirect('/dashboard-two');
+    return redirect('/incentive-dashboard-view');
 
     }
 }
