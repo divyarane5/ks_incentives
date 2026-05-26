@@ -27,89 +27,64 @@ class BrokerageCalculationService
             return;
         }
 
-        /* =========================================================
-        * STEP 1: CALCULATE FINAL LADDER PER DATE WINDOW (FLAT)
-        * ========================================================= */
-        $finalLadderMap = [];
-
-        $projectLadders = ProjectLadder::where('project_id', $projectId)
-            ->where('status', 1)
-            ->get()
-            ->groupBy(function ($ladder) {
-                return date('Y-m-d', strtotime($ladder->project_s_date)) . '_' .
-                    date('Y-m-d', strtotime($ladder->project_e_date));
-            });
-
-        foreach ($projectLadders as $key => $ladders) {
-
-            $first = $ladders->first();
-
-            $startDate = date('Y-m-d', strtotime($first->project_s_date));
-            $endDate   = date('Y-m-d', strtotime($first->project_e_date));
-
-            // ✅ TOTAL deals in this window
-            $totalDeals = Booking::where('project_id', $projectId)
-                ->where('booking_confirm', 'approved')
-                ->whereBetween('booking_date', [$startDate, $endDate])
-                ->count();
-
-            // ✅ FINAL ladder based on TOTAL deals (not per booking)
-            $finalPercent = ProjectLadder::where('project_id', $projectId)
-                ->where('status', 1)
-                ->whereDate('project_s_date', $startDate)
-                ->whereDate('project_e_date', $endDate)
-                ->where('s_booking', '<=', $totalDeals)
-                ->where(function ($q) use ($totalDeals) {
-                    $q->where('e_booking', '>=', $totalDeals)
-                    ->orWhereNull('e_booking');
-                })
-                ->orderBy('s_booking', 'desc')
-                ->value('ladder') ?? 0;
-
-            $finalLadderMap[$key] = (float) $finalPercent;
-        }
-
-        /* =========================================================
-        * STEP 2: APPLY SAME LADDER TO ALL BOOKINGS IN WINDOW
-        * ========================================================= */
         foreach ($bookings as $booking) {
+
+            /* =========================================================
+            * STEP 1: SITE LADDER (FIXED)
+            * ========================================================= */
 
             $sitePercent = 0;
 
-            $ladder = ProjectLadder::where('project_id', $projectId)
+            $window = ProjectLadder::where('project_id', $projectId)
                 ->where('status', 1)
                 ->whereDate('project_s_date', '<=', $booking->booking_date)
                 ->whereDate('project_e_date', '>=', $booking->booking_date)
-                ->orderBy('project_s_date', 'desc')
+                ->orderByDesc('project_s_date')
                 ->first();
 
-            if ($ladder) {
+            if ($window) {
 
-                $key = date('Y-m-d', strtotime($ladder->project_s_date)) . '_' .
-                    date('Y-m-d', strtotime($ladder->project_e_date));
+                $dealCount = Booking::where('project_id', $projectId)
+                    ->where('booking_confirm', 'approved')
+                    ->whereBetween('booking_date', [
+                        $window->project_s_date,
+                        $window->project_e_date
+                    ])
+                    ->count();
 
-                $sitePercent = $finalLadderMap[$key] ?? 0;
+                $sitePercent = ProjectLadder::where('project_id', $projectId)
+                    ->where('status', 1)
+                    ->where('project_s_date', $window->project_s_date)
+                    ->where('project_e_date', $window->project_e_date)
+                    ->where('s_booking', '<=', $dealCount)
+                    ->where(function ($q) use ($dealCount) {
+                        $q->where('e_booking', '>=', $dealCount)
+                        ->orWhereNull('e_booking');
+                    })
+                    ->orderByDesc('s_booking')
+                    ->value('ladder') ?? 0;
             }
 
             /* =========================================================
-            * STEP 3: AOP CALCULATION
+            * STEP 2: AOP LADDER (CORRECT)
             * ========================================================= */
+
             $aopPercent = 0;
 
-            $aopLadder = DeveloperLadder::where('developer_id', $booking->developer_id)
+            $aopWindow = DeveloperLadder::where('developer_id', $booking->developer_id)
                 ->where('status', 1)
                 ->whereDate('aop_s_date', '<=', $booking->booking_date)
                 ->whereDate('aop_e_date', '>=', $booking->booking_date)
-                ->orderBy('aop_s_date', 'desc')
+                ->orderByDesc('aop_s_date')
                 ->first();
 
-            if ($aopLadder) {
+            if ($aopWindow) {
 
                 $developerRevenue = Booking::where('developer_id', $booking->developer_id)
                     ->where('booking_confirm', 'approved')
                     ->whereBetween('booking_date', [
-                        $aopLadder->aop_s_date,
-                        $aopLadder->aop_e_date
+                        $aopWindow->aop_s_date,
+                        $aopWindow->aop_e_date
                     ])
                     ->whereDate('booking_date', '<=', $booking->booking_date)
                     ->sum('agreement_value');
@@ -123,13 +98,14 @@ class BrokerageCalculationService
                         $q->where('max_aop', '>=', $developerRevenue)
                         ->orWhereNull('max_aop');
                     })
-                    ->orderBy('min_aop', 'desc')
+                    ->orderByDesc('min_aop')
                     ->value('ladder') ?? 0;
             }
 
             /* =========================================================
-            * STEP 4: FINAL CALCULATION
+            * STEP 3: FINAL CALCULATION
             * ========================================================= */
+
             $totalPercent = $basePercent + $sitePercent + $aopPercent;
 
             $agreementValue = (float) $booking->agreement_value;
@@ -141,16 +117,17 @@ class BrokerageCalculationService
                 - ($booking->passback ?? 0);
 
             /* =========================================================
-            * STEP 5: SAVE
+            * STEP 4: SAVE
             * ========================================================= */
-            $booking->base_brokerage_percent = $basePercent;
-            $booking->site_ladder_percent    = $sitePercent;
-            $booking->aop_ladder_percent     = $aopPercent;
-            $booking->total_brokerage_percent = $totalPercent;
+
+            $booking->base_brokerage_percent   = $basePercent;
+            $booking->site_ladder_percent      = $sitePercent;
+            $booking->aop_ladder_percent       = $aopPercent;
+            $booking->total_brokerage_percent  = $totalPercent;
             $booking->current_effective_amount = $brokerageAmount;
-            $booking->final_revenue          = $finalRevenue;
-            $booking->amount_receivable      = round($finalRevenue * 0.98, 2);
-            $booking->tds_amount             = round($finalRevenue * 0.02, 2);
+            $booking->final_revenue            = $finalRevenue;
+            $booking->amount_receivable        = round($finalRevenue * 0.98, 2);
+            $booking->tds_amount               = round($finalRevenue * 0.02, 2);
 
             $booking->save();
         }

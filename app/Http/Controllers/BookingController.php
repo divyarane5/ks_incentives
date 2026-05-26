@@ -99,8 +99,8 @@ class BookingController extends Controller
                 ->addColumn('additional_kicker', fn($row) => number_format($row->additional_kicker ?? 0, 0))
                 ->addColumn('passback', fn($row) => number_format($row->passback ?? 0, 0))
                 ->addColumn('final_revenue', fn($row) => number_format($row->final_revenue ?? 0, 0))
-                ->addColumn('total_paid_amount', fn($row) => number_format($row->total_paid_amount ?? 0, 0))
-                ->addColumn('pending_amount', fn($row) => number_format($row->pending_amount ?? 0, 0))
+                // ->addColumn('total_paid_amount', fn($row) => number_format($row->total_paid_amount ?? 0, 0))
+                // ->addColumn('pending_amount', fn($row) => number_format($row->pending_amount ?? 0, 0))
                 ->addColumn('total_invoice_percent', function ($row) {
                     return number_format($row->total_invoice_percent ?? 0, 2) . '%';
                 })
