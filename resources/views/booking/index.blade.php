@@ -178,9 +178,19 @@ readonly>
 
 <div class="col-md-6 mb-3">
 <label>Bank Received Amount</label>
-<input type="number" name="bank_received_amount" class="form-control">
+<input
+type="number"
+name="bank_received_amount"
+class="form-control"
+step="0.01">
 </div>
-
+<div class="col-md-6 mb-3">
+    <label>TDS Amount</label>
+    <input type="number"
+           name="tds_amount"
+           class="form-control"
+           step="0.01">
+</div>
 <div class="col-md-6 mb-3">
 <label>Bank Received Date</label>
 <input type="date" name="bank_received_date" class="form-control">
@@ -207,46 +217,119 @@ Save Payment
 </div>
 </div>
 
-
-
-{{-- ================= UPDATE PAYMENT MODAL ================= --}}
+{{-- ================= EDIT PAYMENT MODAL ================= --}}
 
 <div class="modal fade" id="receivePaymentModal">
-<div class="modal-dialog">
+<div class="modal-dialog modal-lg">
 <div class="modal-content">
 
-<form method="POST" id="receiveForm">
+<form method="POST"
+      id="receiveForm"
+      enctype="multipart/form-data">
+
 @csrf
+@method('PUT')
 
 <div class="modal-header">
-<h5 class="modal-title">Update Payment</h5>
-<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+<h5 class="modal-title">Edit Invoice / Payment</h5>
+
+<button type="button"
+        class="btn-close"
+        data-bs-dismiss="modal">
+</button>
 </div>
 
 <div class="modal-body">
 
-<div class="mb-3">
-<label>Received Amount</label>
+<div class="row">
+
+<div class="col-md-6 mb-3">
+<label>Invoice %</label>
+
 <input type="number"
-       name="bank_received_amount"
-       id="update_received_amount"
+       step="0.01"
+       name="invoice_percent"
+       id="edit_invoice_percent"
        class="form-control">
 </div>
 
-<div class="mb-3">
-<label>Received Date</label>
+<div class="col-md-6 mb-3">
+<label>Invoice Amount</label>
+
+<input type="number"
+       step="0.01"
+       name="invoice_amount"
+       id="edit_invoice_amount"
+       class="form-control"
+       readonly>
+</div>
+
+<div class="col-md-6 mb-3">
+<label>Invoice Date</label>
+
+<input type="date"
+       name="invoice_date"
+       id="edit_invoice_date"
+       class="form-control">
+</div>
+
+<div class="col-md-6 mb-3">
+<label>Invoice File</label>
+
+<input type="file"
+       name="invoice_file"
+       class="form-control">
+</div>
+
+<div class="col-md-6 mb-3">
+<label>Bank Received Amount</label>
+
+<input type="number"
+       step="0.01"
+       name="bank_received_amount"
+       id="edit_received_amount"
+       class="form-control">
+</div>
+
+<div class="col-md-6 mb-3">
+<label>TDS Amount</label>
+
+<input type="number"
+       step="0.01"
+       name="tds_amount"
+       id="edit_tds_amount"
+       class="form-control">
+</div>
+
+<div class="col-md-6 mb-3">
+<label>Bank Received Date</label>
+
 <input type="date"
        name="bank_received_date"
-       id="update_received_date"
-       class="form-control">
+       id="edit_received_date"
+       class="form-control" step="0.01">
+</div>
+
+
+<div class="col-md-12 mb-3">
+<label>Remarks</label>
+
+<textarea name="remarks"
+          id="edit_remarks"
+          class="form-control"></textarea>
+</div>
+
 </div>
 
 </div>
 
 <div class="modal-footer">
-<button type="submit" class="btn btn-success">
+
+<button type="submit"
+        class="btn btn-success">
 Update Payment
 </button>
+
 </div>
 
 </form>
@@ -255,6 +338,8 @@ Update Payment
 </div>
 </div>
 
+
+
 @endsection
 
 
@@ -262,7 +347,7 @@ Update Payment
 @section('script')
 
 <script>
-
+let totalInvoiceUsed = 0;
 $(document).ready(function(){
 
 /* ================= DATATABLE ================= */
@@ -315,6 +400,7 @@ $('input[name="bank_received_date"]').val('');
 $('textarea[name="remarks"]').val('');
 
 let booking_id = $(this).data('id');
+totalInvoiceUsed = 0;
 let agreement  = $(this).data('agreement');
 let percent    = $(this).data('percent');
 let brokerage  = $(this).data('brokerage');
@@ -341,43 +427,59 @@ $.get("{{ url('booking/payment-history') }}/"+booking_id,function(data){
 let html='';
 
 if(data.length>0){
+let totalPercent = 0;
+let totalInvoice = 0;
+let totalReceived = 0;
+let totalTds = 0;
 
 data.forEach(function(p){
+    totalPercent += parseFloat(p.invoice_percent ?? 0);
+    totalInvoice += parseFloat(p.invoice_amount ?? 0);
+    totalReceived += parseFloat(p.bank_received_amount ?? 0);
+    totalTds += parseFloat(p.tds_amount ?? 0);
+    totalInvoiceUsed += parseFloat(p.invoice_percent ?? 0);
 
-let badge = (p.status==='received')
-? '<span class="badge bg-success">Received</span>'
-: '<span class="badge bg-warning">Invoice Raised</span>';
+    let badge = (p.status==='received')
+    ? '<span class="badge bg-success">Received</span>'
+    : '<span class="badge bg-warning">Invoice Raised</span>';
 
-let actionBtn = '';
+    let actionBtn = `
+    <button type="button"
+    class="btn btn-sm btn-primary update-payment"
+    data-id="${p.id}"
+    data-invoice_percent="${p.invoice_percent ?? ''}"
+    data-invoice_amount="${p.invoice_amount ?? ''}"
+    data-invoice_date="${p.invoice_date ?? ''}"
+    data-bank_received_amount="${p.bank_received_amount ?? ''}"
+    data-bank_received_date="${p.bank_received_date ?? ''}"
+    data-tds_amount="${p.tds_amount ?? ''}"
+    data-status="${p.status ?? ''}"
+    data-remarks="${p.remarks ?? ''}">
+    Edit
+    </button>`;
 
-if(p.status!=='received'){
-
-actionBtn = `
-<button type="button"
-class="btn btn-sm btn-primary update-payment"
-data-id="${p.id}"
-data-amount="${p.bank_received_amount ?? ''}"
-data-date="${p.bank_received_date ?? ''}">
-Update
-</button>`;
-
-}
-
-html += `
-
-<tr>
-<td>${p.invoice_percent ?? 0}%</td>
-<td>₹ ${Number(p.invoice_amount ?? 0).toLocaleString()}</td>
-<td>${p.invoice_date ?? '-'}</td>
-<td>₹ ${Number(p.bank_received_amount ?? 0).toLocaleString()}</td>
-<td>${badge}</td>
-<td>${actionBtn}</td>
-</tr>
-
-`;
+    html += `
+    <tr>
+    <td>${p.invoice_percent ?? 0}%</td>
+    <td>₹ ${Number(p.invoice_amount ?? 0).toLocaleString()}</td>
+    <td>${p.invoice_date ?? '-'}</td>
+    <td>₹ ${Number(p.bank_received_amount ?? 0).toLocaleString()}</td>
+    <td>${badge}</td>
+    <td>${actionBtn}</td>
+    </tr>
+    `;
 
 });
-
+html += `
+<tr class="table-dark fw-bold">
+<td>${totalPercent.toFixed(2)}%</td>
+<td>₹ ${Number(totalInvoice).toLocaleString()}</td>
+<td>Total</td>
+<td>₹ ${Number(totalReceived).toLocaleString()}</td>
+<td>TDS: ₹ ${Number(totalTds).toLocaleString()}</td>
+<td>-</td>
+</tr>
+`;
 }else{
 
 html = '<tr><td colspan="6" class="text-center">No history found</td></tr>';
@@ -416,41 +518,140 @@ $('#addPaymentModal').modal('show');
 
 $(document).on('click','.update-payment',function(){
 
-let id     = $(this).data('id');
-let amount = $(this).data('amount');
-let date   = $(this).data('date');
+let id = $(this).data('id');
 
 $('#receiveForm').attr(
 'action',
 "{{ url('booking/payment-update') }}/"+id
 );
 
-$('#update_received_amount').val(amount);
-$('#update_received_date').val(date);
+$('#edit_invoice_percent').val($(this).data('invoice_percent'));
+
+$('#edit_invoice_amount').val($(this).data('invoice_amount'));
+
+$('#edit_invoice_date').val($(this).data('invoice_date'));
+
+$('#edit_received_amount').val($(this).data('bank_received_amount'));
+
+$('#edit_received_date').val($(this).data('bank_received_date'));
+
+$('#edit_tds_amount').val($(this).data('tds_amount'));
+
+$('#edit_status').val($(this).data('status'));
+
+$('#edit_remarks').val($(this).data('remarks'));
 
 $('#receivePaymentModal').modal('show');
 
 });
 
-
 /* ================= INVOICE AMOUNT CALCULATION ================= */
 
-$('#invoice_percent').on('keyup change',function(){
+$('#invoice_percent').on('keyup change', function () {
 
-let percent   = $(this).val();
-let agreement = $('#agreement_value_raw').val();
+    let percent = parseFloat($(this).val()) || 0;
 
-if(percent && agreement){
+    let agreement =
+        parseFloat($('#agreement_value_raw').val()) || 0;
 
-let amount = (agreement * percent) / 100;
+    let totalBrokeragePercent =
+        parseFloat(
+            $('#total_brokerage_percent')
+            .val()
+            .replace('%','')
+        ) || 0;
 
-$('#invoice_amount').val(Math.round(amount));
+    let allowedBalance =
+        totalBrokeragePercent - totalInvoiceUsed;
 
-}
+    if(percent > allowedBalance){
+
+        alert(
+            'Invoice % exceeds remaining brokerage balance.\nRemaining Allowed: '
+            + allowedBalance.toFixed(2) + '%'
+        );
+
+        $(this).val('');
+        $('#invoice_amount').val('');
+
+        return;
+    }
+
+    let amount = (agreement * percent) / 100;
+
+    amount = amount.toFixed(2);
+
+    $('#invoice_amount').val(amount);
+
+    // AUTO 98% RECEIVED
+    let received = (amount * 0.98).toFixed(2);
+
+    // AUTO 2% TDS
+    let tds = (amount * 0.02).toFixed(2);
+
+    $('input[name="bank_received_amount"]').val(received);
+
+    $('input[name="tds_amount"]').val(tds);
 
 });
 
+$('#edit_invoice_percent').on('keyup change', function () {
 
+    let currentEditPercent =
+        parseFloat($(this).val()) || 0;
+
+    let originalPercent =
+        parseFloat(
+            $('.update-payment[data-id="' +
+            $('#receiveForm').attr('action').split('/').pop()
+            + '"]').data('invoice_percent')
+        ) || 0;
+
+    let totalBrokeragePercent =
+        parseFloat(
+            $('#total_brokerage_percent')
+            .val()
+            .replace('%','')
+        ) || 0;
+
+    let allowedBalance =
+        totalBrokeragePercent
+        - totalInvoiceUsed
+        + originalPercent;
+
+    if(currentEditPercent > allowedBalance){
+
+        alert(
+            'Invoice % exceeds allowed brokerage balance.\nAllowed: '
+            + allowedBalance.toFixed(2) + '%'
+        );
+
+        $(this).val(originalPercent);
+
+        return;
+    }
+
+    let agreement =
+        parseFloat($('#agreement_value_raw').val()) || 0;
+
+    let amount =
+        (agreement * currentEditPercent) / 100;
+
+    amount = amount.toFixed(2);
+
+    $('#edit_invoice_amount').val(amount);
+
+    // AUTO 98%
+    let received = (amount * 0.98).toFixed(2);
+
+    // AUTO 2%
+    let tds = (amount * 0.02).toFixed(2);
+
+    $('#edit_received_amount').val(received);
+
+    $('#edit_tds_amount').val(tds);
+
+});
 /* ================= TOOLTIP FIX ================= */
 
 $(document).on('draw.dt',function(){

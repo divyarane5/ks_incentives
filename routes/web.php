@@ -284,7 +284,7 @@ Route::group(['middleware' => 'auth'], function () {
     [App\Http\Controllers\BookingBrokeragePaymentController::class,'history'])
     ->name('booking.payment.history');
 
-    Route::post('booking/payment-update/{id}',
+    Route::match(['post','put'], 'booking/payment-update/{id}',
     [App\Http\Controllers\BookingBrokeragePaymentController::class,'update'])
     ->name('booking.payment.update');
     /*
@@ -297,7 +297,7 @@ Route::group(['middleware' => 'auth'], function () {
 
 
     Route::resource('incentive-slabs',App\Http\Controllers\IncentiveSlabController::class);
-    
+
     Route::prefix('incentives')->group(function () {
 
         Route::get('/preview', [App\Http\Controllers\IncentiveController::class, 'preview'])

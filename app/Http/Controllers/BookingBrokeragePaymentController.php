@@ -16,9 +16,16 @@ class BookingBrokeragePaymentController extends Controller
             'invoice_percent' => 'nullable|numeric',
             'invoice_amount' => 'nullable|numeric',
             'invoice_date' => 'nullable|date',
-            'bank_received_amount' => 'nullable|numeric',
             'bank_received_date' => 'nullable|date',
         ]);
+        if(
+            empty($request->invoice_percent) &&
+            empty($request->invoice_amount) &&
+            empty($request->bank_received_amount) &&
+            empty($request->tds_amount)
+        ){
+            return back()->with('error','Cannot save empty payment row.');
+        }
         $totalInvoicePercent = BookingBrokeragePayment::where('booking_id',$request->booking_id)
                 ->sum('invoice_percent');
 
@@ -38,7 +45,7 @@ class BookingBrokeragePaymentController extends Controller
 
         $payment->bank_received_amount = $request->bank_received_amount ?? 0;
         $payment->bank_received_date = $request->bank_received_date;
-
+        $payment->tds_amount = $request->tds_amount ?? 0;
         $payment->remarks = $request->remarks;
 
         if ($request->bank_received_amount > 0) {
@@ -67,22 +74,58 @@ class BookingBrokeragePaymentController extends Controller
 
     public function update(Request $request,$id)
     {
-        $request->validate([
-            'bank_received_amount' => 'required|numeric',
-            'bank_received_date' => 'required|date'
-        ]);
-
+        if(
+            empty($request->invoice_percent) &&
+            empty($request->invoice_amount) &&
+            empty($request->bank_received_amount) &&
+            empty($request->tds_amount) &&
+            empty($request->invoice_date) &&
+            empty($request->bank_received_date) &&
+            empty($request->remarks) &&
+            !$request->hasFile('invoice_file')
+        ){
+            return back()->with('error','Cannot update empty payment row.');
+        }
         $payment = BookingBrokeragePayment::findOrFail($id);
+
+        $payment->invoice_percent = $request->invoice_percent;
+        $payment->invoice_amount = $request->invoice_amount;
+        $payment->invoice_date = $request->invoice_date;
 
         $payment->bank_received_amount = $request->bank_received_amount;
         $payment->bank_received_date = $request->bank_received_date;
-        $payment->status = 'received';
+
+        $payment->tds_amount = $request->tds_amount;
+
+        $payment->remarks = $request->remarks;
+
+        if (($request->bank_received_amount ?? 0) > 0) {
+
+            $payment->status = 'received';
+
+        } elseif (($request->invoice_amount ?? 0) > 0) {
+
+            $payment->status = 'invoice_raised';
+
+        } else {
+
+            $payment->status = 'pending';
+        }
+
+        if($request->hasFile('invoice_file')){
+
+            $file = $request->file('invoice_file')
+                            ->store('invoice-files');
+
+            $payment->invoice_file = $file;
+        }
 
         $payment->save();
 
+        // recalculate booking summary
         $this->updateBookingPaymentSummary($payment->booking_id);
 
-        return back()->with('success','Payment Updated');
+        return back()->with('success','Payment updated successfully');
     }
 
 
@@ -95,10 +138,11 @@ class BookingBrokeragePaymentController extends Controller
 
         $totalInvoiceAmount = BookingBrokeragePayment::where('booking_id',$bookingId)
             ->sum('invoice_amount');
-
+        $totalTdsAmount = BookingBrokeragePayment::where('booking_id',$bookingId)
+        ->sum('tds_amount');
         $totalReceivedAmount = BookingBrokeragePayment::where('booking_id',$bookingId)
             ->sum('bank_received_amount');
-
+        $totalSettledAmount = $totalReceivedAmount + $totalTdsAmount;
         $totalBrokeragePercent = $booking->total_brokerage_percent;
         $totalBrokerageAmount = $booking->current_effective_amount;
 
@@ -110,7 +154,7 @@ class BookingBrokeragePaymentController extends Controller
 
         $pendingPercent = max(0, $totalBrokeragePercent - $totalInvoicePercent);
 
-        $pendingAmount = max(0, $totalBrokerageAmount - $totalReceivedAmount);
+        $pendingAmount = max(0, $totalBrokerageAmount - $totalSettledAmount);
 
         /*
         |--------------------------------------- 
@@ -118,11 +162,11 @@ class BookingBrokeragePaymentController extends Controller
         |---------------------------------------
         */
 
-        if ($totalReceivedAmount == 0) {
+        if ($totalSettledAmount <= 0) {
 
             $status = 'pending';
 
-        } elseif ($totalReceivedAmount < $totalBrokerageAmount) {
+        } elseif ($totalSettledAmount < $totalBrokerageAmount) {
 
             $status = 'partial';
 

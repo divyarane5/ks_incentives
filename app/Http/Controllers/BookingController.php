@@ -403,7 +403,7 @@ class BookingController extends Controller
     {
         $booking = Booking::find($id);
         $user = DB::table('users')
-                    ->select('users.name as u_name','users.id as u_id','designations.name as d_name','users.mobile')
+                    ->select('users.name as u_name','users.id as u_id','designations.name as d_name')
                    ->join('designations', 'users.designation_id','=','designations.id','inner')
 	               ->where('users.id',$booking->created_by)
 	               ->first();
