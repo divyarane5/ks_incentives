@@ -59,6 +59,11 @@ class PermissionTableSeeder extends Seeder
             'booking-edit',
             'booking-create',
             'booking-delete',
+            // Brokerage Payments
+            'brokerage-payment-view',
+            'brokerage-payment-create',
+            'brokerage-payment-edit',
+            'brokerage-payment-delete',
             // 'expense-view',
             // 'expense-create',
             // 'expense-edit',

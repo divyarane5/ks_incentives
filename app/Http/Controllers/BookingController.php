@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use App\Mail\BookingMail;
 use Illuminate\Support\Facades\Mail;
 use DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 //use App\Services\BookingRevenueService;
 use App\Services\BrokerageCalculationService;
 
@@ -395,6 +396,20 @@ class BookingController extends Controller
             ->with('success', 'Booking Updated Successfully');
     }
 
+    public function downloadPdf($id)
+    {
+        $booking = Booking::with([
+            'project',
+            'developer',
+            'user.reportingManager.reportingManager.reportingManager',
+            'brokeragePayments'
+        ])->findOrFail($id);
+
+        $pdf = Pdf::loadView('booking.pdf', compact('booking'))
+            ->setPaper('a4', 'portrait');
+
+        return $pdf->download('booking-'.$booking->id.'.pdf');
+    }
     public function destroy($id)
     {
         Booking::where('id', $id)->delete();

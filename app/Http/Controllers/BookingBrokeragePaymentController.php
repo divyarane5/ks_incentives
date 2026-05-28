@@ -5,10 +5,92 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\BookingBrokeragePayment;
+use Yajra\DataTables\Facades\DataTables;
 
 class BookingBrokeragePaymentController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(
+            'permission:payment-view',
+            ['only' => ['index','datatable']]
+        );
 
+        $this->middleware(
+            'permission:payment-create',
+            ['only' => ['create','store']]
+        );
+
+        $this->middleware(
+            'permission:payment-edit',
+            ['only' => ['edit','update']]
+        );
+
+        $this->middleware(
+            'permission:payment-delete',
+            ['only' => ['destroy']]
+        );
+    }
+    public function index()
+    {
+        return view('booking_brokerage_payments.index');
+    }
+    public function datatable(Request $request)
+    {
+        $query = BookingBrokeragePayment::with([
+            'booking.project',
+            'booking.developer'
+        ]);
+
+        return datatables()->of($query)
+
+            ->addColumn('booking_id', function($row){
+                return $row->booking->id ?? '-';
+            })
+
+            ->addColumn('client_name', function($row){
+                return $row->booking->client_name ?? '-';
+            })
+
+            ->addColumn('project_name', function($row){
+                return optional($row->booking->project)->name ?? '-';
+            })
+
+            ->addColumn('invoice_amount_format', function($row){
+                return number_format($row->invoice_amount,2);
+            })
+
+            ->addColumn('received_amount_format', function($row){
+                return number_format($row->bank_received_amount,2);
+            })
+
+            ->addColumn('status_badge', function($row){
+
+                if($row->status == 'received'){
+                    return '<span class="badge bg-success">Received</span>';
+                }
+
+                if($row->status == 'invoice_raised'){
+                    return '<span class="badge bg-warning">Invoice Raised</span>';
+                }
+
+                return '<span class="badge bg-secondary">Pending</span>';
+            })
+
+            ->addColumn('action', function($row){
+
+                return '
+                <button
+                    class="btn btn-sm btn-primary editInvoiceBtn"
+                    data-id="'.$row->id.'">
+                    Edit
+                </button>';
+            })
+
+            ->rawColumns(['status_badge','action'])
+
+            ->make(true);
+    }
     public function store(Request $request)
     {
         $request->validate([

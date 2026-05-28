@@ -276,6 +276,9 @@ Route::group(['middleware' => 'auth'], function () {
         App\Http\Controllers\BookingController::class,
         'sendBookingMail'
     ]);
+    Route::get('/booking/{id}/pdf', [App\Http\Controllers\BookingController::class, 'downloadPdf'])
+    ->name('booking.pdf');
+
     Route::post('/booking-brokerage-payment/store',
     [App\Http\Controllers\BookingBrokeragePaymentController::class,'store'])
     ->name('booking.brokerage.payment.store');
@@ -287,6 +290,18 @@ Route::group(['middleware' => 'auth'], function () {
     Route::match(['post','put'], 'booking/payment-update/{id}',
     [App\Http\Controllers\BookingBrokeragePaymentController::class,'update'])
     ->name('booking.payment.update');
+
+    Route::resource(
+        'brokerage-payments',
+        App\Http\Controllers\BookingBrokeragePaymentController::class
+    );
+
+    Route::get(
+        'brokerage-payments-datatable',
+        [App\Http\Controllers\BookingBrokeragePaymentController::class, 'datatable']
+    )->name('brokerage-payments.datatable');
+
+    
     /*
     |--------------------------------------------------------------------------
     | Invoice

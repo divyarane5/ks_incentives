@@ -10,6 +10,7 @@ class PermissionTableSeeder extends Seeder
     public function run()
     {
         $permissions = [
+            //organisation starts
             'role-view',
             'role-create',
             'role-edit',
@@ -39,6 +40,7 @@ class PermissionTableSeeder extends Seeder
             'business_unit-create',
             'business_unit-edit',
             'business_unit-delete',
+            //Channel Partner starts
             'developer-view',
             'developer-create',
             'developer-edit',
@@ -61,6 +63,19 @@ class PermissionTableSeeder extends Seeder
             'booking-delete',
             'booking-status-update',
             'booking-send-mail',
+            'payment-view',
+            'payment-create',
+            'payment-edit',
+            'payment-delete',
+            'incentive-slab-view',
+            'incentive-slab-create',
+            'incentive-slab-edit',
+            'incentive-slab-delete',
+            'incentive-calculation-view',
+            'incentive-calculation-create',
+            'incentive-breakdown-view',
+            'incentive-hierarchy-view',
+            'incentive-ledger-view',
             // 'expense-view',
             // 'expense-create',
             // 'expense-edit',
@@ -77,7 +92,7 @@ class PermissionTableSeeder extends Seeder
             // 'configuration-create',
             // 'configuration-edit',
             // 'configuration-delete',
-
+            //on hold now
             'indent-view-all',
             'indent-view-own',
             'indent-create',
@@ -107,7 +122,7 @@ class PermissionTableSeeder extends Seeder
             // 'project-offer-edit',
             // 'project-offer-send-image-email',
             // 'project-offer-send-pdf-email',
-
+            //Mandate Starts
             'mandate_project-view',
             'mandate_project-create',
             'mandate_project-edit',
@@ -135,15 +150,7 @@ class PermissionTableSeeder extends Seeder
             'mandate-booking-ledger-create',
             'mandate-booking-ledger-delete',
 
-            'incentive-slab-view',
-            'incentive-slab-create',
-            'incentive-slab-edit',
-            'incentive-slab-delete',
-            'incentive-calculation-view',
-            'incentive-calculation-create',
-            'incentive-breakdown-view',
-            'incentive-hierarchy-view',
-            'incentive-ledger-view',
+            
             
         ];
 

@@ -14,4 +14,27 @@ class RoleRepository implements RoleRepositoryInterface
                             ->get();
         return $permissions->groupBy('module');
     }
+
+        //     public function getPermissions()
+        // {
+        //     $permissions = Permission::select(['id', 'name'])
+        //         ->orderBy('id', 'asc')
+        //         ->get()
+
+        //         ->map(function ($permission) {
+
+        //             $parts = explode('-', $permission->name);
+
+        //             $permission->action = end($parts);
+
+        //             array_pop($parts);
+
+        //             $permission->module = implode('_', $parts);
+
+        //             return $permission;
+        //         });
+
+        //     return $permissions->groupBy('module');
+        // }
+ 
 }

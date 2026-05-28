@@ -2,6 +2,54 @@
 
 @section('content')
 
+<style>
+
+.table th{
+    width: 35%;
+    background: #f7f7f7;
+    font-weight: 600;
+}
+
+.card{
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.04);
+}
+
+.badge{
+    font-size: 12px;
+    padding: 7px 10px;
+}
+
+.summary-card{
+    transition: 0.2s ease;
+}
+
+.summary-card:hover{
+    transform: translateY(-2px);
+}
+
+.info-title{
+    font-size: 12px;
+    color: #8592a3;
+    margin-bottom: 5px;
+}
+
+.info-value{
+    font-size: 15px;
+    font-weight: 600;
+}
+
+.section-title{
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.table td{
+    vertical-align: middle;
+}
+
+</style>
+
 <div class="container-xxl flex-grow-1 container-p-y">
 
     {{-- HEADER --}}
@@ -39,15 +87,122 @@
 
         <div>
 
-            <a href="{{ route('booking.index') }}"
-               class="btn btn-secondary">
-                Back
-            </a>
+            @if(!isset($pdf))
 
-            <a href="{{ route('booking.edit',$booking->id) }}"
-               class="btn btn-primary">
-                Edit Booking
-            </a>
+                <a href="#"
+                class="btn btn-success">
+                    <i class="bx bx-money"></i>
+                    Add Invoice
+                </a>
+
+                <a href="{{ route('booking.pdf', $booking->id) }}"
+                class="btn btn-primary">
+                    <i class="bx bx-download"></i>
+                    Download PDF
+                </a>
+
+                <a href="{{ route('booking.index') }}"
+                class="btn btn-secondary">
+                    Back
+                </a>
+
+                <a href="{{ route('booking.edit',$booking->id) }}"
+                class="btn btn-primary">
+                    Edit Booking
+                </a>
+
+            @endif
+
+        </div>
+
+    </div>
+
+    {{-- ================= PAGE INFO BAR ================= --}}
+    <div class="card mb-4 border-0 bg-label-secondary">
+
+        <div class="card-body py-3">
+
+            <div class="row align-items-center">
+
+                <div class="col-md-2">
+
+                    <div class="info-title">
+                        Booking Date
+                    </div>
+
+                    <div class="info-value">
+                        {{ $booking->booking_date ?? '-' }}
+                    </div>
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <div class="info-title">
+                        Registration Date
+                    </div>
+
+                    <div class="info-value">
+                        {{ $booking->registration_date ?? '-' }}
+                    </div>
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <div class="info-title">
+                        Lead Source
+                    </div>
+
+                    <div class="info-value">
+                        {{ $booking->lead_source ?? '-' }}
+                    </div>
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <div class="info-title">
+                        Payment Follow Up
+                    </div>
+
+                    <div class="info-value text-danger">
+                        {{ $booking->payment_followup_date ?? '-' }}
+                    </div>
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <div class="info-title">
+                        Invoice Raised
+                    </div>
+
+                    <div class="info-value">
+
+                        @if($booking->invoice_raised)
+                            Yes
+                        @else
+                            No
+                        @endif
+
+                    </div>
+
+                </div>
+
+                <div class="col-md-2">
+
+                    <div class="info-title">
+                        Created By
+                    </div>
+
+                    <div class="info-value">
+                        {{ $booking->created_by ?? '-' }}
+                    </div>
+
+                </div>
+
+            </div>
 
         </div>
 
@@ -55,8 +210,7 @@
 
 
     {{-- SUMMARY CARDS --}}
-    ```blade
-    {{-- ================= FINANCIAL SUMMARY ================= --}}
+ 
     <div class="card mb-4">
 
         <div class="card-header">
@@ -266,7 +420,7 @@
         </div>
 
     </div>
-    ```
+  
 
 
 
@@ -387,11 +541,14 @@
     </div>
 
 
+  
     {{-- TEAM HIERARCHY --}}
     <div class="card mb-4">
 
         <div class="card-header">
-            <h5 class="mb-0">Team Hierarchy</h5>
+            <h5 class="mb-0 section-title">
+                Team Hierarchy
+            </h5>
         </div>
 
         <div class="card-body">
@@ -408,26 +565,70 @@
 
             @endphp
 
-            <div class="row">
+            <div class="row g-3">
 
-                <div class="col-md-3 mb-3">
-                    <label class="fw-bold">Sales Manager</label>
-                    <div>{{ $salesManager->name ?? '-' }}</div>
+                <div class="col-md-3">
+
+                    <div class="border rounded p-3 bg-label-primary h-100">
+
+                        <small class="text-muted d-block">
+                            Sales Manager
+                        </small>
+
+                        <h6 class="mb-0 mt-2">
+                            {{ $salesManager->name ?? '-' }}
+                        </h6>
+
+                    </div>
+
                 </div>
 
-                <div class="col-md-3 mb-3">
-                    <label class="fw-bold">Team Leader</label>
-                    <div>{{ $tl->name ?? '-' }}</div>
+                <div class="col-md-3">
+
+                    <div class="border rounded p-3 bg-label-info h-100">
+
+                        <small class="text-muted d-block">
+                            Team Leader
+                        </small>
+
+                        <h6 class="mb-0 mt-2">
+                            {{ $tl->name ?? '-' }}
+                        </h6>
+
+                    </div>
+
                 </div>
 
-                <div class="col-md-3 mb-3">
-                    <label class="fw-bold">Senior TL</label>
-                    <div>{{ $srTl->name ?? '-' }}</div>
+                <div class="col-md-3">
+
+                    <div class="border rounded p-3 bg-label-warning h-100">
+
+                        <small class="text-muted d-block">
+                            Senior TL
+                        </small>
+
+                        <h6 class="mb-0 mt-2">
+                            {{ $srTl->name ?? '-' }}
+                        </h6>
+
+                    </div>
+
                 </div>
 
-                <div class="col-md-3 mb-3">
-                    <label class="fw-bold">Cluster Head</label>
-                    <div>{{ $clusterHead->name ?? '-' }}</div>
+                <div class="col-md-3">
+
+                    <div class="border rounded p-3 bg-label-success h-100">
+
+                        <small class="text-muted d-block">
+                            Cluster Head
+                        </small>
+
+                        <h6 class="mb-0 mt-2">
+                            {{ $clusterHead->name ?? '-' }}
+                        </h6>
+
+                    </div>
+
                 </div>
 
             </div>
@@ -435,6 +636,8 @@
         </div>
 
     </div>
+   
+
 
 
     {{-- PAYMENT HISTORY --}}
@@ -457,6 +660,16 @@
         </div>
 
         <div class="card-body">
+    
+            @php
+
+                $totalInvoice = $booking->brokeragePayments->sum('invoice_amount');
+
+                $totalReceived = $booking->brokeragePayments->sum('bank_received_amount');
+
+                $totalTds = $booking->brokeragePayments->sum('tds_amount');
+
+            @endphp
 
             <div class="table-responsive">
 
@@ -560,12 +773,92 @@
                         </tr>
 
                     @endforelse
+               
+                    <tr class="table-dark">
+
+                        <th colspan="2">
+                            Totals
+                        </th>
+
+                        <th>
+                            ₹ {{ number_format($totalInvoice,2) }}
+                        </th>
+
+                        <th>
+                            ₹ {{ number_format($totalTds,2) }}
+                        </th>
+
+                        <th>
+                            ₹ {{ number_format($totalReceived,2) }}
+                        </th>
+
+                        <th colspan="3">
+                            -
+                        </th>
+
+                    </tr>
+                    
+
 
                     </tbody>
 
                 </table>
 
             </div>
+
+        </div>
+
+    </div>
+
+    <div class="card mt-4">
+
+        <div class="card-header">
+            <h5 class="mb-0">Payment Timeline</h5>
+        </div>
+
+        <div class="card-body">
+
+            <ul class="list-group">
+
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Booking Created</span>
+                    <span class="text-muted">{{ $booking->created_at }}</span>
+                </li>
+
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Invoice Raised</span>
+                    <span>
+                        @if($booking->total_invoice_amount > 0)
+                            <span class="badge bg-success">Done</span>
+                        @else
+                            <span class="badge bg-secondary">Pending</span>
+                        @endif
+                    </span>
+                </li>
+
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Partial Payment</span>
+                    <span>
+                        @if($booking->total_received_amount > 0 && $booking->payment_status != 'completed')
+                            <span class="badge bg-warning">In Progress</span>
+                        @else
+                            -
+                        @endif
+                    </span>
+                </li>
+
+                <li class="list-group-item d-flex justify-content-between">
+                    <span>Final Payment</span>
+                    <span>
+                        @if($booking->payment_status == 'completed')
+                            <span class="badge bg-success">Completed</span>
+                        @else
+                            <span class="badge bg-danger">Pending</span>
+                        @endif
+                    </span>
+                </li>
+
+            </ul>
 
         </div>
 

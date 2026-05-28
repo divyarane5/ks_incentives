@@ -127,6 +127,17 @@
                 </a>
             </li>
             @endcan
+            @can('payment-view')
+            <li class="menu-item">
+                <a href="{{ route('brokerage-payments.index') }}"
+                class="menu-link">
+
+                <i class="menu-icon tf-icons bx bx-money"></i>
+
+                <div>Brokerage Payments</div>
+                </a>
+            </li>
+            @endcan
 
         @endif
 
