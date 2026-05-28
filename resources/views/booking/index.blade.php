@@ -443,29 +443,68 @@ data.forEach(function(p){
     ? '<span class="badge bg-success">Received</span>'
     : '<span class="badge bg-warning">Invoice Raised</span>';
 
+    let fileBtn = '';
+
+    if(p.invoice_file){
+
+        fileBtn = `
+        <a href="{{ asset('storage') }}/${p.invoice_file}"
+        target="_blank"
+        class="btn btn-sm btn-info">
+        View File
+        </a>`;
+    }
+
     let actionBtn = `
-    <button type="button"
-    class="btn btn-sm btn-primary update-payment"
-    data-id="${p.id}"
-    data-invoice_percent="${p.invoice_percent ?? ''}"
-    data-invoice_amount="${p.invoice_amount ?? ''}"
-    data-invoice_date="${p.invoice_date ?? ''}"
-    data-bank_received_amount="${p.bank_received_amount ?? ''}"
-    data-bank_received_date="${p.bank_received_date ?? ''}"
-    data-tds_amount="${p.tds_amount ?? ''}"
-    data-status="${p.status ?? ''}"
-    data-remarks="${p.remarks ?? ''}">
-    Edit
-    </button>`;
+        <button type="button"
+        class="btn btn-sm btn-primary update-payment"
+        data-id="${p.id}"
+        data-invoice_percent="${p.invoice_percent ?? ''}"
+        data-invoice_amount="${p.invoice_amount ?? ''}"
+        data-invoice_date="${p.invoice_date ?? ''}"
+        data-bank_received_amount="${p.bank_received_amount ?? ''}"
+        data-bank_received_date="${p.bank_received_date ?? ''}"
+        data-tds_amount="${p.tds_amount ?? ''}"
+        data-status="${p.status ?? ''}"
+        data-remarks="${p.remarks ?? ''}">
+        Edit
+        </button>
+        `;
+
 
     html += `
     <tr>
-    <td>${p.invoice_percent ?? 0}%</td>
-    <td>₹ ${Number(p.invoice_amount ?? 0).toLocaleString()}</td>
-    <td>${p.invoice_date ?? '-'}</td>
-    <td>₹ ${Number(p.bank_received_amount ?? 0).toLocaleString()}</td>
-    <td>${badge}</td>
-    <td>${actionBtn}</td>
+
+    <td>
+        ${p.invoice_percent ?? 0}%
+    </td>
+
+    <td>
+        ₹ ${Number(p.invoice_amount ?? 0).toLocaleString()}
+        <br>
+        <small class="text-muted">
+            TDS: ₹ ${Number(p.tds_amount ?? 0).toLocaleString()}
+        </small>
+    </td>
+
+    <td>
+        ${p.invoice_date ?? '-'}
+        <br>
+        ${fileBtn}
+    </td>
+
+    <td>
+        ₹ ${Number(p.bank_received_amount ?? 0).toLocaleString()}
+    </td>
+
+    <td>
+        ${badge}
+    </td>
+
+    <td>
+        ${actionBtn}
+    </td>
+
     </tr>
     `;
 

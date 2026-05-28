@@ -250,7 +250,9 @@ class BookingController extends Controller
                         </button>
                     
                         <div class="dropdown-menu">
-                            
+                            <a class="dropdown-item" href="' . route('booking.show', $row->id) . '">
+                                <i class="bx bx-show me-1"></i> View Booking
+                            </a>
                             <a class="dropdown-item" href="' . route('booking.edit', $row->id) . '">
                                 <i class="bx bx-edit-alt me-1"></i> Edit
                             </a>
@@ -401,15 +403,14 @@ class BookingController extends Controller
 
     public function show($id)
     {
-        $booking = Booking::find($id);
-        $user = DB::table('users')
-                    ->select('users.name as u_name','users.id as u_id','designations.name as d_name')
-                   ->join('designations', 'users.designation_id','=','designations.id','inner')
-	               ->where('users.id',$booking->created_by)
-	               ->first();
+        $booking = Booking::with([
+            'project',
+            'developer',
+            'user.reportingManager.reportingManager.reportingManager',
+            'brokeragePayments'
+        ])->findOrFail($id);
 
-        return view('booking.show', compact('id', 'booking','user'));
-
+        return view('booking.show', compact('booking'));
     }
 
     public function sendBookingMail($id){

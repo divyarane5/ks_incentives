@@ -17,6 +17,7 @@ class BookingBrokeragePaymentController extends Controller
             'invoice_amount' => 'nullable|numeric',
             'invoice_date' => 'nullable|date',
             'bank_received_date' => 'nullable|date',
+            'invoice_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,xlsx,xls|max:5120',
         ]);
         if(
             empty($request->invoice_percent) &&
@@ -53,6 +54,13 @@ class BookingBrokeragePaymentController extends Controller
         } else {
             $payment->status = 'invoice_raised';
         }
+        if($request->hasFile('invoice_file')){
+
+        $file = $request->file('invoice_file')
+                        ->store('invoice-files','public');
+
+        $payment->invoice_file = $file;
+    }
 
         $payment->save();
 
@@ -115,7 +123,7 @@ class BookingBrokeragePaymentController extends Controller
         if($request->hasFile('invoice_file')){
 
             $file = $request->file('invoice_file')
-                            ->store('invoice-files');
+                            ->store('invoice-files','public');
 
             $payment->invoice_file = $file;
         }
