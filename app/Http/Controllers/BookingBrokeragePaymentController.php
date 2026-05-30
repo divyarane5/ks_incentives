@@ -45,7 +45,17 @@ class BookingBrokeragePaymentController extends Controller
         return datatables()->of($query)
 
             ->addColumn('booking_id', function($row){
-                return $row->booking->id ?? '-';
+
+                if(!$row->booking){
+                    return '-';
+                }
+
+                return '
+                    <a href="'.url('booking/'.$row->booking->id).'"
+                    target="_blank">
+                        #'.$row->booking->id.'
+                    </a>
+                ';
             })
 
             ->addColumn('client_name', function($row){
@@ -59,7 +69,20 @@ class BookingBrokeragePaymentController extends Controller
             ->addColumn('invoice_amount_format', function($row){
                 return number_format($row->invoice_amount,2);
             })
+            ->addColumn('invoice_file', function($row){
 
+                if(!$row->invoice_file){
+                    return '-';
+                }
+
+                return '
+                    <a href="'.asset('storage/'.$row->invoice_file).'"
+                    target="_blank"
+                    class="btn btn-sm btn-info">
+                    View
+                    </a>
+                ';
+            })
             ->addColumn('received_amount_format', function($row){
                 return number_format($row->bank_received_amount,2);
             })
@@ -79,17 +102,68 @@ class BookingBrokeragePaymentController extends Controller
 
             ->addColumn('action', function($row){
 
-                return '
-                <button
-                    class="btn btn-sm btn-primary editInvoiceBtn"
-                    data-id="'.$row->id.'">
-                    Edit
-                </button>';
+                $buttons = '
+                    <a href="'.route('brokerage-payments.edit',$row->id).'"
+                        class="btn btn-sm btn-primary">
+                        Edit
+                    </a>
+                ';
+
+                if(auth()->user()->can('payment-delete')){
+
+                    $buttons .= '
+                        <button
+                            type="button"
+                            class="btn btn-sm btn-danger delete-payment"
+                            data-id="'.$row->id.'">
+                            Delete
+                        </button>
+                    ';
+                }
+
+                return $buttons;
             })
 
-            ->rawColumns(['status_badge','action'])
+            ->rawColumns(['status_badge','invoice_file','action','booking_id'])
 
             ->make(true);
+    }
+    public function create()
+    {
+        $bookings = Booking::with('project')
+            ->where('booking_confirm', 'approved')
+            ->orderBy('id','desc')
+            ->get();
+
+        return view(
+            'booking_brokerage_payments.create',
+            compact('bookings')
+        );
+    }
+
+    public function edit($id)
+    {
+        $payment = BookingBrokeragePayment::with('booking.project')
+            ->findOrFail($id);
+
+        return view(
+            'booking_brokerage_payments.edit',
+            compact('payment')
+        );
+    }
+    public function destroy($id)
+    {
+        $payment = BookingBrokeragePayment::findOrFail($id);
+
+        $bookingId = $payment->booking_id;
+
+        $payment->delete();
+
+        $this->updateBookingPaymentSummary($bookingId);
+
+        return response()->json([
+            'success' => true
+        ]);
     }
     public function store(Request $request)
     {
@@ -164,6 +238,15 @@ class BookingBrokeragePaymentController extends Controller
 
     public function update(Request $request,$id)
     {
+        $request->validate([
+            'invoice_percent' => 'nullable|numeric|min:0',
+            'invoice_amount' => 'nullable|numeric|min:0',
+            'bank_received_amount' => 'nullable|numeric|min:0',
+            'tds_amount' => 'nullable|numeric|min:0',
+            'invoice_date' => 'nullable|date',
+            'bank_received_date' => 'nullable|date',
+            'invoice_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,xlsx,xls|max:5120',
+        ]);
         if(
             empty($request->invoice_percent) &&
             empty($request->invoice_amount) &&
@@ -177,7 +260,24 @@ class BookingBrokeragePaymentController extends Controller
             return back()->with('error','Cannot update empty payment row.');
         }
         $payment = BookingBrokeragePayment::findOrFail($id);
+        $booking = Booking::findOrFail($payment->booking_id);
 
+        $usedPercent = BookingBrokeragePayment::where(
+                'booking_id',
+                $payment->booking_id
+            )
+            ->where('id', '!=', $payment->id)
+            ->sum('invoice_percent');
+
+        $newPercent = $request->invoice_percent ?? 0;
+
+        if(($usedPercent + $newPercent) > $booking->total_brokerage_percent){
+
+            return back()->with(
+                'error',
+                'Invoice percent exceeds total brokerage limit'
+            );
+        }
         $payment->invoice_percent = $request->invoice_percent;
         $payment->invoice_amount = $request->invoice_amount;
         $payment->invoice_date = $request->invoice_date;
