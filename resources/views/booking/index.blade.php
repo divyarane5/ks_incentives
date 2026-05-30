@@ -106,7 +106,7 @@
 </div>
 
 <div class="col-md-4">
-<label>Total Brokerage Amount</label>
+<label>Final Revenue(Total Brokerage + Additional Kicker)</label>
 <input type="text" id="total_brokerage_amount" class="form-control" readonly>
 </div>
 
@@ -476,7 +476,9 @@ data.forEach(function(p){
     <tr>
 
     <td>
-        ${p.invoice_percent ?? 0}%
+        ${parseFloat(p.invoice_percent) > 0
+        ? p.invoice_percent + '%'
+        : 'Additional Revenue'}
     </td>
 
     <td>
@@ -603,6 +605,33 @@ $('#invoice_percent').on('keyup change', function () {
     let allowedBalance =
         totalBrokeragePercent - totalInvoiceUsed;
 
+    /*
+    |--------------------------------------------------------------------------
+    | ADDITIONAL KICKER MODE
+    |--------------------------------------------------------------------------
+    */
+
+    if(percent <= 0){
+
+        $('#invoice_amount')
+            .val('')
+            .prop('readonly', false);
+
+        $('input[name="bank_received_amount"]').val('');
+        $('input[name="tds_amount"]').val('');
+
+        return;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | NORMAL BROKERAGE MODE
+    |--------------------------------------------------------------------------
+    */
+
+    $('#invoice_amount')
+        .prop('readonly', true);
+
     if(percent > allowedBalance){
 
         alert(
@@ -622,10 +651,8 @@ $('#invoice_percent').on('keyup change', function () {
 
     $('#invoice_amount').val(amount);
 
-    // AUTO 98% RECEIVED
     let received = (amount * 0.98).toFixed(2);
 
-    // AUTO 2% TDS
     let tds = (amount * 0.02).toFixed(2);
 
     $('input[name="bank_received_amount"]').val(received);
@@ -633,62 +660,30 @@ $('#invoice_percent').on('keyup change', function () {
     $('input[name="tds_amount"]').val(tds);
 
 });
+$('#invoice_amount').on('keyup change', function () {
 
-$('#edit_invoice_percent').on('keyup change', function () {
+    let percent =
+        parseFloat($('#invoice_percent').val()) || 0;
 
-    let currentEditPercent =
-        parseFloat($(this).val()) || 0;
+    /*
+    |--------------------------------------------------------------------------
+    | ONLY FOR KICKER MODE
+    |--------------------------------------------------------------------------
+    */
 
-    let originalPercent =
-        parseFloat(
-            $('.update-payment[data-id="' +
-            $('#receiveForm').attr('action').split('/').pop()
-            + '"]').data('invoice_percent')
-        ) || 0;
-
-    let totalBrokeragePercent =
-        parseFloat(
-            $('#total_brokerage_percent')
-            .val()
-            .replace('%','')
-        ) || 0;
-
-    let allowedBalance =
-        totalBrokeragePercent
-        - totalInvoiceUsed
-        + originalPercent;
-
-    if(currentEditPercent > allowedBalance){
-
-        alert(
-            'Invoice % exceeds allowed brokerage balance.\nAllowed: '
-            + allowedBalance.toFixed(2) + '%'
-        );
-
-        $(this).val(originalPercent);
-
+    if(percent > 0){
         return;
     }
 
-    let agreement =
-        parseFloat($('#agreement_value_raw').val()) || 0;
+    let amount = parseFloat($(this).val()) || 0;
 
-    let amount =
-        (agreement * currentEditPercent) / 100;
-
-    amount = amount.toFixed(2);
-
-    $('#edit_invoice_amount').val(amount);
-
-    // AUTO 98%
     let received = (amount * 0.98).toFixed(2);
 
-    // AUTO 2%
     let tds = (amount * 0.02).toFixed(2);
 
-    $('#edit_received_amount').val(received);
+    $('input[name="bank_received_amount"]').val(received);
 
-    $('#edit_tds_amount').val(tds);
+    $('input[name="tds_amount"]').val(tds);
 
 });
 /* ================= TOOLTIP FIX ================= */

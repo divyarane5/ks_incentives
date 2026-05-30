@@ -262,7 +262,7 @@ class BookingController extends Controller
                                 data-id="'.$row->id.'"
                                 data-agreement="'.$row->agreement_value.'"
                                 data-percent="'.$row->total_brokerage_percent.'"
-                                data-brokerage="'.$row->current_effective_amount.'"
+                                data-brokerage="'.$row->final_revenue.'"
                                 data-status="'.$row->payment_status.'"
                                 data-bs-toggle="modal"
                                 data-bs-target="#addPaymentModal">

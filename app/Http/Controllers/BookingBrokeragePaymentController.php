@@ -234,7 +234,7 @@ class BookingBrokeragePaymentController extends Controller
             ->sum('bank_received_amount');
         $totalSettledAmount = $totalReceivedAmount + $totalTdsAmount;
         $totalBrokeragePercent = $booking->total_brokerage_percent;
-        $totalBrokerageAmount = $booking->current_effective_amount;
+        $totalBrokerageAmount = $booking->final_revenue;
 
         /*
         |---------------------------------------
