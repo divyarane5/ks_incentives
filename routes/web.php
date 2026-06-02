@@ -254,53 +254,67 @@ Route::group(['middleware' => 'auth'], function () {
     */
 
     Route::resource('booking', App\Http\Controllers\BookingController::class);
-    // Route::match(['get','post'], 'booking', [App\Http\Controllers\BookingController::class, 'index'])
-    //     ->name('booking.index');
 
-    Route::post('booking/update_status', [
-        App\Http\Controllers\BookingController::class,
-        'updateStatus'
-    ])->name('booking.update_status');
-
-    Route::post('booking/update_istatus', [
-        App\Http\Controllers\BookingController::class,
-        'updateIStatus'
-    ])->name('booking.update_istatus');
-
-    Route::post('booking/update_bstatus', [
-        App\Http\Controllers\BookingController::class,
-        'updateBStatus'
-    ])->name('booking.update_bstatus');
-
-    Route::get('send_booking_mail/{id}', [
-        App\Http\Controllers\BookingController::class,
-        'sendBookingMail'
-    ]);
-    Route::get('/booking/{id}/pdf', [App\Http\Controllers\BookingController::class, 'downloadPdf'])
-    ->name('booking.pdf');
+    /*
+    |--------------------------------------------------------------------------
+    | Booking Brokerage Payment - custom routes FIRST
+    |--------------------------------------------------------------------------
+    */
 
     Route::post('/booking-brokerage-payment/store',
-    [App\Http\Controllers\BookingBrokeragePaymentController::class,'store'])
-    ->name('booking.brokerage.payment.store');
+        [App\Http\Controllers\BookingBrokeragePaymentController::class,'store']
+    )->name('booking.brokerage.payment.store');
 
     Route::get('booking/payment-history/{id}',
-    [App\Http\Controllers\BookingBrokeragePaymentController::class,'history'])
-    ->name('booking.payment.history');
+        [App\Http\Controllers\BookingBrokeragePaymentController::class,'history']
+    )->name('booking.payment.history');
 
     Route::match(['post','put'], 'booking/payment-update/{id}',
-    [App\Http\Controllers\BookingBrokeragePaymentController::class,'update'])
-    ->name('booking.payment.update');
+        [App\Http\Controllers\BookingBrokeragePaymentController::class,'update']
+    )->name('booking.payment.update');
+
+    /*
+    |--------------------------------------------------------------------------
+    | AJAX dropdown routes (IMPORTANT: must be before resource)
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        'brokerage-payments/projects',
+        [App\Http\Controllers\BookingBrokeragePaymentController::class,'projects']
+    )->name('brokerage-payments.projects');
+
+    Route::get(
+        'brokerage-payments/developers',
+        [App\Http\Controllers\BookingBrokeragePaymentController::class,'developers']
+    )->name('brokerage-payments.developers');
+
+    /*
+    |--------------------------------------------------------------------------
+    | Resource route (MUST be after everything)
+    |--------------------------------------------------------------------------
+    */
 
     Route::resource(
         'brokerage-payments',
         App\Http\Controllers\BookingBrokeragePaymentController::class
     );
 
+    /*
+    |--------------------------------------------------------------------------
+    | Datatable + Summary
+    |--------------------------------------------------------------------------
+    */
+
     Route::get(
         'brokerage-payments-datatable',
         [App\Http\Controllers\BookingBrokeragePaymentController::class, 'datatable']
     )->name('brokerage-payments.datatable');
 
+    Route::get(
+        'brokerage-payments-summary',
+        [App\Http\Controllers\BookingBrokeragePaymentController::class,'summary']
+    )->name('brokerage-payments.summary');
     
     /*
     |--------------------------------------------------------------------------

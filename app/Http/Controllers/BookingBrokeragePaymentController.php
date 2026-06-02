@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\Booking;
 use App\Models\BookingBrokeragePayment;
 use Yajra\DataTables\Facades\DataTables;
+use App\Models\Project;
+use App\Models\Developer;
 
 class BookingBrokeragePaymentController extends Controller
 {
@@ -42,20 +44,57 @@ class BookingBrokeragePaymentController extends Controller
             'booking.developer'
         ]);
 
+        /*
+        |--------------------------------------------------------------------------
+        | Filters
+        |--------------------------------------------------------------------------
+        */
+
+        if ($request->project_id) {
+
+            $query->whereHas('booking', function ($q) use ($request) {
+
+                $q->where('project_id', $request->project_id);
+
+            });
+        }
+
+        if ($request->developer_id) {
+
+            $query->whereHas('booking', function ($q) use ($request) {
+
+                $q->where('developer_id', $request->developer_id);
+
+            });
+        }
+
+        if ($request->status) {
+
+            $query->where('status', $request->status);
+        }
+
+        if ($request->date_from) {
+
+            $query->whereDate(
+                'invoice_date',
+                '>=',
+                $request->date_from
+            );
+        }
+
+        if ($request->date_to) {
+
+            $query->whereDate(
+                'invoice_date',
+                '<=',
+                $request->date_to
+            );
+        }
+
         return datatables()->of($query)
 
             ->addColumn('booking_id', function($row){
-
-                if(!$row->booking){
-                    return '-';
-                }
-
-                return '
-                    <a href="'.url('booking/'.$row->booking->id).'"
-                    target="_blank">
-                        #'.$row->booking->id.'
-                    </a>
-                ';
+                return $row->booking->id ?? '-';
             })
 
             ->addColumn('client_name', function($row){
@@ -69,20 +108,7 @@ class BookingBrokeragePaymentController extends Controller
             ->addColumn('invoice_amount_format', function($row){
                 return number_format($row->invoice_amount,2);
             })
-            ->addColumn('invoice_file', function($row){
 
-                if(!$row->invoice_file){
-                    return '-';
-                }
-
-                return '
-                    <a href="'.asset('storage/'.$row->invoice_file).'"
-                    target="_blank"
-                    class="btn btn-sm btn-info">
-                    View
-                    </a>
-                ';
-            })
             ->addColumn('received_amount_format', function($row){
                 return number_format($row->bank_received_amount,2);
             })
@@ -99,34 +125,50 @@ class BookingBrokeragePaymentController extends Controller
 
                 return '<span class="badge bg-secondary">Pending</span>';
             })
+            ->addColumn('invoice_file_html', function($row){
 
-            ->addColumn('action', function($row){
-
-                $buttons = '
-                    <a href="'.route('brokerage-payments.edit',$row->id).'"
-                        class="btn btn-sm btn-primary">
-                        Edit
-                    </a>
-                ';
-
-                if(auth()->user()->can('payment-delete')){
-
-                    $buttons .= '
-                        <button
-                            type="button"
-                            class="btn btn-sm btn-danger delete-payment"
-                            data-id="'.$row->id.'">
-                            Delete
-                        </button>
-                    ';
+                if(!$row->invoice_file){
+                    return '-';
                 }
 
-                return $buttons;
+                return '<a href="'.asset('storage/'.$row->invoice_file).'"
+                            target="_blank"
+                            class="btn btn-sm btn-info">
+                            View
+                        </a>';
+            })
+            ->addColumn('action', function($row){
+
+                return '
+                <button
+                    class="btn btn-sm btn-primary editInvoiceBtn"
+                    data-id="'.$row->id.'">
+                    Edit
+                </button>';
             })
 
-            ->rawColumns(['status_badge','invoice_file','action','booking_id'])
+            ->rawColumns([
+                'invoice_file_html',
+                'status_badge',
+                'action'
+            ])
 
             ->make(true);
+    }
+    public function projects()
+    {
+        return \App\Models\Project::whereHas('bookings.brokeragePayments')
+            ->select('id','name')
+            ->orderBy('name')
+            ->get();
+    }
+
+    public function developers()
+    {
+        return \App\Models\Developer::whereHas('bookings.brokeragePayments')
+            ->select('id','name')
+            ->orderBy('name')
+            ->get();
     }
     public function create()
     {
@@ -380,5 +422,45 @@ class BookingBrokeragePaymentController extends Controller
 
         $booking->save();
     }
+    public function summary(Request $request)
+    {
+        $query = BookingBrokeragePayment::query();
 
+        if($request->project_id){
+            $query->whereHas('booking', function($q) use ($request){
+                $q->where('project_id',$request->project_id);
+            });
+        }
+
+        if($request->developer_id){
+            $query->whereHas('booking', function($q) use ($request){
+                $q->where('developer_id',$request->developer_id);
+            });
+        }
+
+        if($request->status){
+            $query->where('status',$request->status);
+        }
+
+        if($request->date_from){
+            $query->whereDate('invoice_date','>=',$request->date_from);
+        }
+
+        if($request->date_to){
+            $query->whereDate('invoice_date','<=',$request->date_to);
+        }
+
+        $invoice = $query->sum('invoice_amount');
+
+        $received = $query->sum('bank_received_amount');
+
+        $tds = $query->sum('tds_amount');
+
+        return response()->json([
+            'invoice' => $invoice,
+            'received' => $received,
+            'tds' => $tds,
+            'pending' => ($invoice - ($received + $tds))
+        ]);
+    }
 }

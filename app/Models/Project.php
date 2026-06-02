@@ -36,4 +36,8 @@ class Project extends Model
     {
         return $this->hasMany(ProjectLadder::class);
     }
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
 }

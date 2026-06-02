@@ -26,4 +26,8 @@ class Developer extends Model
     {
         return $this->hasMany(DeveloperLadder::class);
     }
+    public function bookings()
+    {
+        return $this->hasMany(Booking::class);
+    }
 }

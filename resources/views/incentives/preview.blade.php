@@ -1,7 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
-
+<style>
+    .table:not(.table-dark) th {
+    color: #ffffff;
+}
+</style>
 <div class="container-xxl container-p-y">
 
     <h4 class="fw-bold mb-4">
