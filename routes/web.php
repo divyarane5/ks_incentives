@@ -254,7 +254,25 @@ Route::group(['middleware' => 'auth'], function () {
     */
 
     Route::resource('booking', App\Http\Controllers\BookingController::class);
+    Route::post('booking/update_status', [
+        App\Http\Controllers\BookingController::class,
+        'updateStatus'
+    ])->name('booking.update_status');
 
+    Route::post('booking/update_istatus', [
+        App\Http\Controllers\BookingController::class,
+        'updateIStatus'
+    ])->name('booking.update_istatus');
+
+    Route::post('booking/update_bstatus', [
+        App\Http\Controllers\BookingController::class,
+        'updateBStatus'
+    ])->name('booking.update_bstatus');
+
+    Route::get('send_booking_mail/{id}', [
+        App\Http\Controllers\BookingController::class,
+        'sendBookingMail'
+    ]);
     /*
     |--------------------------------------------------------------------------
     | Booking Brokerage Payment - custom routes FIRST
@@ -294,12 +312,17 @@ Route::group(['middleware' => 'auth'], function () {
     | Resource route (MUST be after everything)
     |--------------------------------------------------------------------------
     */
-
+    Route::get(
+        'brokerage-payments/export',
+        [App\Http\Controllers\BookingBrokeragePaymentController::class,'export']
+    )->name('brokerage-payments.export');
+    
     Route::resource(
         'brokerage-payments',
         App\Http\Controllers\BookingBrokeragePaymentController::class
     );
-
+    
+   
     /*
     |--------------------------------------------------------------------------
     | Datatable + Summary

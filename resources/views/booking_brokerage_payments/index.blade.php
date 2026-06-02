@@ -113,6 +113,14 @@
                     Apply
                 </button>
             </div>
+            <div class="col-md-2">
+                <label>&nbsp;</label>
+
+                <button class="btn btn-success w-100"
+                        id="exportExcel">
+                    Export Excel
+                </button>
+            </div>
 
         </div>
 
@@ -320,6 +328,22 @@ $(document).on('click','.editInvoiceBtn',function(){
 
     window.location.href =
         "{{ url('brokerage-payments') }}/" + id + "/edit";
+
+});
+$('#exportExcel').click(function(){
+
+    let params = $.param({
+
+        project_id: $('#projectFilter').val(),
+        developer_id: $('#developerFilter').val(),
+        status: $('#statusFilter').val(),
+        date_from: $('#dateFrom').val(),
+        date_to: $('#dateTo').val()
+
+    });
+
+    window.location =
+        "{{ route('brokerage-payments.export') }}?" + params;
 
 });
 </script>

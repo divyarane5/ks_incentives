@@ -8,6 +8,8 @@ use App\Models\BookingBrokeragePayment;
 use Yajra\DataTables\Facades\DataTables;
 use App\Models\Project;
 use App\Models\Developer;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Exports\BrokeragePaymentsExport;
 
 class BookingBrokeragePaymentController extends Controller
 {
@@ -31,6 +33,13 @@ class BookingBrokeragePaymentController extends Controller
         $this->middleware(
             'permission:payment-delete',
             ['only' => ['destroy']]
+        );
+    }
+    public function export(Request $request)
+    {
+        return Excel::download(
+            new BrokeragePaymentsExport($request->all()),
+            'brokerage-payments.xlsx'
         );
     }
     public function index()
