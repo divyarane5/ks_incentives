@@ -103,7 +103,10 @@ class BookingBrokeragePaymentController extends Controller
         return datatables()->of($query)
 
             ->addColumn('booking_id', function($row){
-                return $row->booking->id ?? '-';
+                return '<a href="'.url('booking/'.$row->booking->id).'"
+                    target="_blank">
+                    #'.$row->booking->id.'
+                </a>';
             })
 
             ->addColumn('client_name', function($row){
@@ -113,6 +116,19 @@ class BookingBrokeragePaymentController extends Controller
             ->addColumn('project_name', function($row){
                 return optional($row->booking->project)->name ?? '-';
             })
+            ->addColumn('developer_name', function($row){
+
+                return optional(
+                    $row->booking->developer
+                )->name ?? '-';
+
+            })
+            ->addColumn('invoice_date_format', function($row){
+
+                return $row->invoice_date
+                    ? date('d-m-Y',strtotime($row->invoice_date))
+                    : '-';
+            })
 
             ->addColumn('invoice_amount_format', function($row){
                 return number_format($row->invoice_amount,2);
@@ -121,7 +137,33 @@ class BookingBrokeragePaymentController extends Controller
             ->addColumn('received_amount_format', function($row){
                 return number_format($row->bank_received_amount,2);
             })
+            ->addColumn('tds_amount_format', function($row){
 
+                return number_format(
+                    $row->tds_amount,
+                    2
+                );
+            })
+            ->addColumn('outstanding_amount_format', function($row){
+
+                $outstanding =
+                    $row->invoice_amount
+                    -
+                    $row->bank_received_amount
+                    -
+                    $row->tds_amount;
+
+                return number_format(
+                    max(0,$outstanding),
+                    2
+                );
+
+            })
+            ->addColumn('remarks_text', function($row){
+
+                return $row->remarks ?? '-';
+
+            })
             ->addColumn('status_badge', function($row){
 
                 if($row->status == 'received'){
@@ -133,6 +175,50 @@ class BookingBrokeragePaymentController extends Controller
                 }
 
                 return '<span class="badge bg-secondary">Pending</span>';
+            })
+            ->addColumn('invoice_age', function ($row) {
+
+                if ($row->status == 'received') {
+
+                    return '<span class="badge bg-success">
+                                Paid
+                            </span>';
+                }
+
+                if (!$row->invoice_date) {
+
+                    return '<span class="badge bg-secondary">
+                                No Invoice Date
+                            </span>';
+                }
+
+                $days = \Carbon\Carbon::parse($row->invoice_date)
+                    ->diffInDays(now());
+
+                if ($days <= 30) {
+
+                    return '<span class="badge bg-info">
+                                '.$days.' Days
+                            </span>';
+                }
+
+                if ($days <= 60) {
+
+                    return '<span class="badge bg-warning">
+                                '.$days.' Days
+                            </span>';
+                }
+
+                if ($days <= 90) {
+
+                    return '<span class="badge bg-orange">
+                                '.$days.' Days
+                            </span>';
+                }
+
+                return '<span class="badge bg-danger">
+                            '.$days.' Days
+                        </span>';
             })
             ->addColumn('invoice_file_html', function($row){
 
@@ -157,8 +243,10 @@ class BookingBrokeragePaymentController extends Controller
             })
 
             ->rawColumns([
-                'invoice_file_html',
+                'booking_id',
                 'status_badge',
+                'invoice_age',
+                'invoice_file_html',
                 'action'
             ])
 
@@ -464,12 +552,94 @@ class BookingBrokeragePaymentController extends Controller
         $received = $query->sum('bank_received_amount');
 
         $tds = $query->sum('tds_amount');
+        $collectionEfficiency = 0;
 
+        if($invoice > 0){
+
+            $collectionEfficiency =
+                min(
+                    100,
+                    (($received + $tds) / $invoice) * 100
+                );
+        }
+        $pending =
+            max(
+                0,
+                $invoice - ($received + $tds)
+            );
+        $excessCollection =
+            max(
+                0,
+                ($received + $tds) - $invoice
+            );
+        $outstanding = $pending;
         return response()->json([
+
             'invoice' => $invoice,
             'received' => $received,
             'tds' => $tds,
-            'pending' => ($invoice - ($received + $tds))
+            'pending' => $pending,
+            'collection_efficiency' => round($collectionEfficiency,2),
+
+            'excess_collection' => $excessCollection,
+
+            'outstanding' => $outstanding
+
+        ]);
+    }
+    public function agingReport()
+    {
+        $today = now();
+
+        $payments = BookingBrokeragePayment::where(
+            'status',
+            '!=',
+            'received'
+        )->get();
+
+        $aging30 = 0;
+        $aging60 = 0;
+        $aging90 = 0;
+        $aging90plus = 0;
+
+        foreach($payments as $payment){
+
+            if(!$payment->invoice_date){
+                continue;
+            }
+
+            $days = $today->diffInDays(
+                $payment->invoice_date
+            );
+
+            $amount =
+                $payment->invoice_amount -
+                $payment->bank_received_amount -
+                $payment->tds_amount;
+
+            if($days <= 30){
+
+                $aging30 += $amount;
+
+            } elseif($days <= 60){
+
+                $aging60 += $amount;
+
+            } elseif($days <= 90){
+
+                $aging90 += $amount;
+
+            } else {
+
+                $aging90plus += $amount;
+            }
+        }
+
+        return response()->json([
+            'aging30' => $aging30,
+            'aging60' => $aging60,
+            'aging90' => $aging90,
+            'aging90plus' => $aging90plus,
         ]);
     }
 }

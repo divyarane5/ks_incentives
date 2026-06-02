@@ -273,6 +273,10 @@ Route::group(['middleware' => 'auth'], function () {
         App\Http\Controllers\BookingController::class,
         'sendBookingMail'
     ]);
+    Route::get(
+        'booking/{id}/pdf',
+        [App\Http\Controllers\BookingController::class, 'downloadPdf']
+    )->name('booking.pdf');
     /*
     |--------------------------------------------------------------------------
     | Booking Brokerage Payment - custom routes FIRST
@@ -316,13 +320,16 @@ Route::group(['middleware' => 'auth'], function () {
         'brokerage-payments/export',
         [App\Http\Controllers\BookingBrokeragePaymentController::class,'export']
     )->name('brokerage-payments.export');
-    
+
     Route::resource(
         'brokerage-payments',
         App\Http\Controllers\BookingBrokeragePaymentController::class
     );
-    
-   
+    Route::get(
+        'brokerage-payments-aging',
+        [App\Http\Controllers\BookingBrokeragePaymentController::class,'agingReport']
+    )->name('brokerage-payments.aging');
+     
     /*
     |--------------------------------------------------------------------------
     | Datatable + Summary

@@ -40,6 +40,31 @@
             </div>
         </div>
     </div>
+    <div class="col-md-3">
+        <div class="card border-success">
+            <div class="card-body">
+                <h6>Collection Efficiency</h6>
+                <h4 id="collectionEfficiency">0%</h4>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-danger">
+            <div class="card-body">
+                <h6>Excess Collection</h6>
+                <h4 id="excessCollection">₹ 0</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-info">
+            <div class="card-body">
+                <h6>Outstanding Amount</h6>
+                <h4 id="outstandingAmount">₹ 0</h4>
+            </div>
+        </div>
+    </div>
 
 </div>
 <div class="row mb-3">
@@ -59,6 +84,45 @@
         </a>
         @endcan
 
+    </div>
+
+</div>
+<div class="row mb-3">
+
+    <div class="col-md-3">
+        <div class="card border-danger">
+            <div class="card-body">
+                <h6>0-30 Days</h6>
+                <h4 id="aging30">₹ 0</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body">
+                <h6>31-60 Days</h6>
+                <h4 id="aging60">₹ 0</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-info">
+            <div class="card-body">
+                <h6>61-90 Days</h6>
+                <h4 id="aging90">₹ 0</h4>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card border-dark">
+            <div class="card-body">
+                <h6>90+ Days</h6>
+                <h4 id="aging90plus">₹ 0</h4>
+            </div>
+        </div>
     </div>
 
 </div>
@@ -129,8 +193,10 @@
 <div class="card">
 
 <div class="card-body">
+<div class="table-responsive">
 
-<table class="table table-bordered" id="invoiceTable">
+<table class="table table-bordered nowrap w-100"
+       id="invoiceTable">
 
 <thead>
 <tr>
@@ -138,17 +204,23 @@
 <th>Booking</th>
 <th>Client</th>
 <th>Project</th>
+<th>Developer</th>
+<th>Invoice Date</th>
 <th>Invoice %</th>
 <th>Invoice Amount</th>
 <th>Invoice File</th>
 <th>Received</th>
+<th>TDS</th>
+<th>Outstanding</th>
+<th>Remarks</th>
 <th>Status</th>
+<th>Invoice Age</th>
 <th>Action</th>
 </tr>
 </thead>
 
 </table>
-
+</div>
 </div>
 </div>
 </div>
@@ -204,7 +276,7 @@ let table = $('#invoiceTable').DataTable({
 
     processing:true,
     serverSide:true,
-
+    scrollX:true,
     ajax:{
         url:"{{ route('brokerage-payments.datatable') }}",
 
@@ -225,11 +297,17 @@ let table = $('#invoiceTable').DataTable({
         {data:'booking_id'},
         {data:'client_name'},
         {data:'project_name'},
+        {data:'developer_name'},
+        {data:'invoice_date_format'},
         {data:'invoice_percent'},
         {data:'invoice_amount_format'},
         {data:'invoice_file_html'},
         {data:'received_amount_format'},
+        {data:'tds_amount_format'},
+        {data:'outstanding_amount_format'},
+        {data:'remarks_text'},
         {data:'status_badge'},
+        {data:'invoice_age'},
         {data:'action'}
 
     ]
@@ -243,7 +321,7 @@ $('#applyFilter').click(function(){
     table.ajax.reload();
 
     loadSummary();
-
+    loadAging();
 });
 
 
@@ -276,7 +354,16 @@ function loadSummary()
             $('#totalPending').html(
                 '₹ ' + Number(res.pending).toLocaleString()
             );
+            $('#collectionEfficiency').html(
+                res.collection_efficiency + '%'
+            );
+            $('#excessCollection').html(
+                '₹ ' + Number(res.excess_collection).toLocaleString()
+            );
 
+            $('#outstandingAmount').html(
+                '₹ ' + Number(res.outstanding).toLocaleString()
+            );
         }
     );
 }
@@ -285,6 +372,32 @@ function loadSummary()
 
 loadSummary();
 
+function loadAging()
+{
+    $.get(
+        "{{ route('brokerage-payments.aging') }}",
+        function(res){
+
+            $('#aging30').html(
+                '₹ ' + Number(res.aging30).toLocaleString()
+            );
+
+            $('#aging60').html(
+                '₹ ' + Number(res.aging60).toLocaleString()
+            );
+
+            $('#aging90').html(
+                '₹ ' + Number(res.aging90).toLocaleString()
+            );
+
+            $('#aging90plus').html(
+                '₹ ' + Number(res.aging90plus).toLocaleString()
+            );
+        }
+    );
+}
+
+loadAging();
 
 
 $(document).on('click','.delete-payment',function(){
