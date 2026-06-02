@@ -314,7 +314,14 @@ $(document).on('click','.delete-payment',function(){
     });
 
 });
+$(document).on('click','.editInvoiceBtn',function(){
 
+    let id = $(this).data('id');
+
+    window.location.href =
+        "{{ url('brokerage-payments') }}/" + id + "/edit";
+
+});
 </script>
 
 @endsection
