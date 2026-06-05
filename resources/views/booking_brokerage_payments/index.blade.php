@@ -6,87 +6,112 @@
 <div class="row mb-4">
 
     <div class="col-md-3">
-        <div class="card">
+        <div class="card border-primary shadow-sm">
             <div class="card-body">
-                <h6>Total Invoiced</h6>
+                <small class="text-muted">
+                    Total Invoiced
+                    <i class="bx bx-info-circle"
+                       data-bs-toggle="tooltip"
+                       title="Total brokerage invoices raised">
+                    </i>
+                </small>
                 <h4 id="totalInvoiced">₹ 0</h4>
             </div>
         </div>
     </div>
 
     <div class="col-md-3">
-        <div class="card">
+        <div class="card border-success shadow-sm">
             <div class="card-body">
-                <h6>Total Received</h6>
+                <small class="text-muted">
+                    Total Received
+                    <i class="bx bx-info-circle"
+                       data-bs-toggle="tooltip"
+                       title="Net amount received from developers">
+                    </i>
+                </small>
                 <h4 id="totalReceived">₹ 0</h4>
             </div>
         </div>
     </div>
 
     <div class="col-md-3">
-        <div class="card">
+        <div class="card border-secondary shadow-sm">
             <div class="card-body">
-                <h6>Total TDS</h6>
+                <small class="text-muted">
+                    Total TDS
+                    <i class="bx bx-info-circle"
+                       data-bs-toggle="tooltip"
+                       title="TDS deducted by developers">
+                    </i>
+                </small>
                 <h4 id="totalTds">₹ 0</h4>
             </div>
         </div>
     </div>
 
     <div class="col-md-3">
-        <div class="card">
+        <div class="card border-warning shadow-sm">
             <div class="card-body">
-                <h6>Pending Collection</h6>
+                <small class="text-muted">
+                    Pending Collection
+                    <i class="bx bx-info-circle"
+                       data-bs-toggle="tooltip"
+                       title="Invoice Amount - Received - TDS">
+                    </i>
+                </small>
                 <h4 id="totalPending">₹ 0</h4>
             </div>
         </div>
     </div>
-    <div class="col-md-3">
-        <div class="card border-success">
-            <div class="card-body">
-                <h6>Collection Efficiency</h6>
-                <h4 id="collectionEfficiency">0%</h4>
-            </div>
-        </div>
-    </div>
-    <div class="col-md-3">
-        <div class="card border-danger">
-            <div class="card-body">
-                <h6>Excess Collection</h6>
-                <h4 id="excessCollection">₹ 0</h4>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-3">
-        <div class="card border-info">
-            <div class="card-body">
-                <h6>Outstanding Amount</h6>
-                <h4 id="outstandingAmount">₹ 0</h4>
-            </div>
-        </div>
-    </div>
 
 </div>
-<div class="row mb-3">
+<div class="row mb-4">
 
     <div class="col-md-6">
-        <h4 class="fw-bold py-3 mb-0">
-            Brokerage Invoice Management
-        </h4>
+        <div class="card border-success shadow-sm">
+            <div class="card-body text-center">
+
+                <small class="text-muted">
+                    Collection Efficiency
+                    <i class="bx bx-info-circle"
+                       data-bs-toggle="tooltip"
+                       title="(Received + TDS) ÷ Invoice Amount × 100">
+                    </i>
+                </small>
+
+                <h2 id="collectionEfficiency" class="text-success">
+                    0%
+                </h2>
+
+            </div>
+        </div>
     </div>
 
-    <div class="col-md-6 text-end">
+    <div class="col-md-6">
+        <div class="card border-danger shadow-sm">
+            <div class="card-body text-center">
 
-        @can('payment-create')
-        <a href="{{ route('brokerage-payments.create') }}"
-           class="btn btn-primary">
-            Add Invoice
-        </a>
-        @endcan
+                <small class="text-muted">
+                    Excess Collection
+                    <i class="bx bx-info-circle"
+                       data-bs-toggle="tooltip"
+                       title="Amount received above invoice value">
+                    </i>
+                </small>
 
+                <h2 id="excessCollection" class="text-danger">
+                    ₹ 0
+                </h2>
+
+            </div>
+        </div>
     </div>
 
 </div>
+<h5 class="mb-3">
+    Outstanding Aging Analysis
+</h5>
 <div class="row mb-3">
 
     <div class="col-md-3">

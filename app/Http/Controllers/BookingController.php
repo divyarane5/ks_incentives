@@ -15,6 +15,7 @@ use App\Mail\BookingMail;
 use Illuminate\Support\Facades\Mail;
 use DB;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Spatie\Permission\Models\Role;
 //use App\Services\BookingRevenueService;
 use App\Services\BrokerageCalculationService;
 
@@ -58,6 +59,104 @@ class BookingController extends Controller
 
             $data = $query;
 
+            /*
+            |--------------------------------------------------------------------------
+            | Filters
+            |--------------------------------------------------------------------------
+            */
+
+            if ($request->filled('project_id')) {
+                $query->where('project_id', $request->project_id);
+            }
+
+            if ($request->filled('developer_id')) {
+                $query->where('developer_id', $request->developer_id);
+            }
+            /*
+            |--------------------------------------------------------------------------
+            | Team Filters
+            |--------------------------------------------------------------------------
+            */
+
+            if ($request->filled('fos_id')) {
+
+                $query->where('sales_user_id', $request->fos_id);
+            }
+
+            if ($request->filled('tl_id')) {
+
+                $query->whereHas('user', function ($q) use ($request) {
+
+                    $q->where('reporting_manager_id', $request->tl_id);
+                });
+            }
+
+            if ($request->filled('srtl_id')) {
+
+                $query->whereHas('user.reportingManager', function ($q) use ($request) {
+
+                    $q->where('reporting_manager_id', $request->srtl_id);
+                });
+            }
+
+            if ($request->filled('ch_id')) {
+
+                $query->whereHas(
+                    'user.reportingManager.reportingManager',
+                    function ($q) use ($request) {
+
+                        $q->where('reporting_manager_id', $request->ch_id);
+                    }
+                );
+            }
+            if ($request->filled('lead_source')) {
+
+                $query->where(
+                    'lead_source',
+                    'like',
+                    '%'.$request->lead_source.'%'
+                );
+            }
+            if ($request->filled('booking_status')) {
+                $query->where('booking_confirm', $request->booking_status);
+            }
+
+            if ($request->filled('payment_status')) {
+                $query->where('payment_status', $request->payment_status);
+            }
+
+            if ($request->filled('booking_from')) {
+                $query->whereDate(
+                    'booking_date',
+                    '>=',
+                    $request->booking_from
+                );
+            }
+
+            if ($request->filled('booking_to')) {
+                $query->whereDate(
+                    'booking_date',
+                    '<=',
+                    $request->booking_to
+                );
+            }
+            if ($request->filled('agreement_min')) {
+
+                $query->where(
+                    'agreement_value',
+                    '>=',
+                    $request->agreement_min
+                );
+            }
+
+            if ($request->filled('agreement_max')) {
+
+                $query->where(
+                    'agreement_value',
+                    '<=',
+                    $request->agreement_max
+                );
+            }
             return DataTables::of($data)
                 ->filter(function ($query) use ($request) {
 
@@ -501,5 +600,80 @@ class BookingController extends Controller
         $booking->tds_amount = 0;
 
         $booking->save();
+    }
+
+    public function projects()
+    {
+        return Project::select('id','name')
+            ->orderBy('name')
+            ->get();
+    }
+
+    public function developers()
+    {
+        return Developer::select('id','name')
+            ->orderBy('name')
+            ->get();
+    }
+
+    public function usersByRole(Request $request)
+    {
+        $roleNameMap = [
+            'fos'  => 'FOS',
+            'tl'   => 'TL',
+            'srtl' => 'Sr. TL',
+            'ch'   => 'CH',
+        ];
+
+        $roleName = $roleNameMap[$request->role] ?? null;
+
+        if (!$roleName) {
+            return response()->json([]);
+        }
+
+        return User::role($roleName)
+            ->select('id','name')
+            ->orderBy('name')
+            ->get();
+    }
+    public function usersByHierarchy(Request $request)
+    {
+        $query = User::query();
+
+        /*
+        |-----------------------------------------
+        | BASE FILTER BY ROLE
+        |-----------------------------------------
+        */
+        if ($request->role_id) {
+            $query->where('role_id', $request->role_id);
+        }
+
+        /*
+        |-----------------------------------------
+        | CASCADING FILTER
+        |-----------------------------------------
+        */
+
+        if ($request->ch_id) {
+
+            $query->where('reporting_manager_id', $request->ch_id);
+        }
+
+        if ($request->srtl_id) {
+
+            $query->where('reporting_manager_id', $request->srtl_id);
+        }
+
+        if ($request->tl_id) {
+
+            $query->where('reporting_manager_id', $request->tl_id);
+        }
+
+        return $query->select('id','name','role_id')->orderBy('name')->get();
+    }
+    public function export(Request $request)
+    {
+        dd($request->all());
     }
 } 

@@ -252,7 +252,24 @@ Route::group(['middleware' => 'auth'], function () {
     | Bookings
     |--------------------------------------------------------------------------
     */
+    Route::get('booking/projects', [App\Http\Controllers\BookingController::class,'projects'])
+    ->name('booking.projects');
 
+    Route::get('booking/developers', [App\Http\Controllers\BookingController::class,'developers'])
+    ->name('booking.developers');
+
+    Route::get('booking/users-by-role', [
+    App\Http\Controllers\BookingController::class,
+    'usersByRole'
+    ])->name('booking.users-by-role');
+
+    Route::get('booking/users-hierarchy',
+        [App\Http\Controllers\BookingController::class,'usersByHierarchy']
+    )->name('booking.users-hierarchy');
+    Route::get(
+        '/booking/export',
+        [App\Http\Controllers\BookingController::class, 'export']
+    )->name('booking.export');
     Route::resource('booking', App\Http\Controllers\BookingController::class);
     Route::post('booking/update_status', [
         App\Http\Controllers\BookingController::class,
@@ -277,6 +294,8 @@ Route::group(['middleware' => 'auth'], function () {
         'booking/{id}/pdf',
         [App\Http\Controllers\BookingController::class, 'downloadPdf']
     )->name('booking.pdf');
+    
+    
     /*
     |--------------------------------------------------------------------------
     | Booking Brokerage Payment - custom routes FIRST

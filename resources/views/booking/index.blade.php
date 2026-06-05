@@ -27,7 +27,140 @@
         @endcan
     </div>
 </div>
+<div class="card mb-3">
+<div class="card-body">
 
+<div class="row">
+
+<div class="col-md-2">
+<label>Project</label>
+<select id="projectFilter"
+        class="selectpicker form-select"
+        data-live-search="true">
+</select>
+
+</select>
+</div>
+
+<div class="col-md-2">
+<label>Developer</label>
+<select id="developerFilter" class="form-select">
+
+</select>
+</div>
+
+<div class="col-md-2">
+    <label>FOS</label>
+    <select id="fosFilter" class="selectpicker form-select" data-live-search="true">
+      
+    </select>
+</div>
+
+<div class="col-md-2">
+    <label>TL</label>
+    <select id="tlFilter"
+        class="selectpicker form-select"
+        data-live-search="true">
+    </select>
+</div>
+
+<div class="col-md-2">
+    <label>Sr TL</label>
+    <select id="srtlFilter"
+        class="selectpicker form-select"
+        data-live-search="true">
+    </select>
+</div>
+
+<div class="col-md-2">
+    <label>CH</label>
+    <select id="chFilter"
+        class="selectpicker form-select"
+        data-live-search="true">
+    </select>
+</div>
+
+<div class="col-md-2">
+<label>Booking Status</label>
+<select id="bookingStatusFilter" class="form-select">
+<option value="">All</option>
+<option value="approved">Approved</option>
+<option value="pending">Pending</option>
+<option value="cancelled">Cancelled</option>
+</select>
+</div>
+
+<div class="col-md-2">
+<label>Payment Status</label>
+<select id="paymentStatusFilter" class="form-select">
+<option value="">All</option>
+<option value="pending">Pending</option>
+<option value="partial">Partial</option>
+<option value="completed">Completed</option>
+</select>
+</div>
+
+<div class="col-md-2">
+<label>Lead Source</label>
+<input type="text"
+       id="leadSourceFilter"
+       class="form-control">
+</div>
+
+</div>
+
+<hr>
+
+<div class="row">
+
+<div class="col-md-2">
+<label>Booking From</label>
+<input type="date"
+       id="bookingFrom"
+       class="form-control">
+</div>
+
+<div class="col-md-2">
+<label>Booking To</label>
+<input type="date"
+       id="bookingTo"
+       class="form-control">
+</div>
+
+<div class="col-md-2">
+<label>Agreement Min</label>
+<input type="number"
+       id="agreementMin"
+       class="form-control">
+</div>
+
+<div class="col-md-2">
+<label>Agreement Max</label>
+<input type="number"
+       id="agreementMax"
+       class="form-control">
+</div>
+
+<div class="col-md-2">
+<label>&nbsp;</label>
+<button class="btn btn-primary w-100"
+        id="applyFilter">
+Apply
+</button>
+</div>
+
+<div class="col-md-2">
+<label>&nbsp;</label>
+<button class="btn btn-success w-100"
+        id="exportBookings">
+Export Excel
+</button>
+</div>
+
+</div>
+
+</div>
+</div>
 <div class="card">
 <h5 class="card-header">Bookings</h5>
 
@@ -349,41 +482,66 @@ Update Payment
 <script>
 let totalInvoiceUsed = 0;
 $(document).ready(function(){
+    loadUsersByRole('fos', '#fosFilter');
+    loadUsersByRole('tl', '#tlFilter');
+    loadUsersByRole('srtl', '#srtlFilter');
+    loadUsersByRole('ch', '#chFilter');
+$('.selectpicker').selectpicker();
 
 /* ================= DATATABLE ================= */
-
 $('#booking-datatable').DataTable({
 
-processing:true,
-serverSide:true,
-ajax:"{{ route('booking.index') }}",
+    processing:true,
+    serverSide:true,
 
-columns:[
-{data:'id'},
-{data:'booking_date'},
-{data:'client_name'},
-{data:'client_contact'},
-{data:'lead_source'},
-{data:'project_name'},
-{data:'developer_name'},
-{data:'booking_amount'},
-{data:'agreement_value'},
-{data:'total_brokerage_percent'},
-{data:'current_effective_amount'},
-{data:'final_revenue'},
-{data:'team_hierarchy',orderable:false,searchable:false},
-{data:'booking_confirm'},
-{data:'total_invoice_percent'},
-{data:'total_invoice_amount'},
-{data:'total_received_amount'},
-{data:'pending_brokerage_percent'},
-{data:'pending_brokerage_amount'},
-{data:'payment_status'},
-{data:'action',orderable:false,searchable:false},
-]
+    ajax:{
+        url:"{{ route('booking.index') }}",
+        data:function(d){
 
-});
+            d.project_id      = $('#projectFilter').val() || '';
+            d.developer_id    = $('#developerFilter').val() || '';
 
+            d.fos_id          = $('#fosFilter').val() || '';
+            d.tl_id           = $('#tlFilter').val() || '';
+            d.srtl_id         = $('#srtlFilter').val() || '';
+            d.ch_id           = $('#chFilter').val() || '';
+
+            d.booking_status  = $('#bookingStatusFilter').val() || '';
+            d.payment_status  = $('#paymentStatusFilter').val() || '';
+
+            d.lead_source     = $('#leadSourceFilter').val() || '';
+
+            d.booking_from    = $('#bookingFrom').val() || '';
+            d.booking_to      = $('#bookingTo').val() || '';
+
+            d.agreement_min   = $('#agreementMin').val() || '';
+            d.agreement_max   = $('#agreementMax').val() || '';
+        }
+    },
+
+    columns:[
+        {data:'id'},
+        {data:'booking_date'},
+        {data:'client_name'},
+        {data:'client_contact'},
+        {data:'lead_source'},
+        {data:'project_name'},
+        {data:'developer_name'},
+        {data:'booking_amount'},
+        {data:'agreement_value'},
+        {data:'total_brokerage_percent'},
+        {data:'current_effective_amount'},
+        {data:'final_revenue'},
+        {data:'team_hierarchy',orderable:false,searchable:false},
+        {data:'booking_confirm'},
+        {data:'total_invoice_percent'},
+        {data:'total_invoice_amount'},
+        {data:'total_received_amount'},
+        {data:'pending_brokerage_percent'},
+        {data:'pending_brokerage_amount'},
+        {data:'payment_status'},
+        {data:'action',orderable:false,searchable:false},
+    ]
 });
 
 
@@ -578,7 +736,7 @@ $('#edit_received_date').val($(this).data('bank_received_date'));
 
 $('#edit_tds_amount').val($(this).data('tds_amount'));
 
-$('#edit_status').val($(this).data('status'));
+// $('#edit_status').val($(this).data('status'));
 
 $('#edit_remarks').val($(this).data('remarks'));
 
@@ -691,9 +849,49 @@ $('#invoice_amount').on('keyup change', function () {
 $(document).on('draw.dt',function(){
 $('[data-bs-toggle="tooltip"]').tooltip({html:true});
 });
+$.get("{{ route('booking.projects') }}", function(data){
 
-</script>
-<script>
+    console.log('Projects =>', data);
+
+    let $el = $('#projectFilter');
+
+    $el.empty().append('<option value="">All</option>');
+
+    data.forEach(function(item){
+        $el.append(`<option value="${item.id}">${item.name}</option>`);
+    });
+
+    if ($el.hasClass('selectpicker')) {
+        $el.selectpicker('refresh');
+    }
+
+
+}).fail(function(xhr){
+    console.log('Projects Error =>', xhr.responseText);
+});
+
+
+$.get("{{ route('booking.developers') }}", function(data){
+
+    console.log('Developers =>', data);
+
+    let $el = $('#developerFilter');
+
+    $el.empty().append('<option value="">All</option>');
+
+    data.forEach(function(item){
+        $el.append(`<option value="${item.id}">${item.name}</option>`);
+    });
+
+    $el.selectpicker('refresh');
+
+}).fail(function(xhr){
+    console.log('Developers Error =>', xhr.responseText);
+});
+
+
+
+}); // END document.ready
 function updateBStatus(el, bookingId) {
 
     let status = el.value;
@@ -727,5 +925,54 @@ function updateBStatus(el, bookingId) {
     .catch(err => console.error(err));
 }
 
+$('#applyFilter').click(function(){
+    $('#booking-datatable').DataTable().ajax.reload(null, false);
+});
+function loadUsersByRole(role, selector) {
+
+    $.get("{{ route('booking.users-by-role') }}",
+    { role: role },
+
+    function(data){
+
+        let $el = $(selector);
+
+        $el.empty().append('<option value="">All</option>');
+
+        data.forEach(function(item){
+
+            $el.append(
+                `<option value="${item.id}">
+                    ${item.name}
+                </option>`
+            );
+
+        });
+
+        $el.selectpicker('refresh');
+
+    });
+}
+$('#exportBookings').click(function(){
+
+    let params = $.param({
+        project_id: $('#projectFilter').val(),
+        developer_id: $('#developerFilter').val(),
+        fos_id: $('#fosFilter').val(),
+        tl_id: $('#tlFilter').val(),
+        srtl_id: $('#srtlFilter').val(),
+        ch_id: $('#chFilter').val(),
+        booking_status: $('#bookingStatusFilter').val(),
+        payment_status: $('#paymentStatusFilter').val(),
+        lead_source: $('#leadSourceFilter').val(),
+        booking_from: $('#bookingFrom').val(),
+        booking_to: $('#bookingTo').val(),
+        agreement_min: $('#agreementMin').val(),
+        agreement_max: $('#agreementMax').val()
+    });
+
+    window.location =
+        "{{ route('booking.export') }}?" + params;
+});
 </script>
 @endsection
