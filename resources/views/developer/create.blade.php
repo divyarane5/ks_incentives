@@ -26,6 +26,55 @@
                         <label class="form-label">Developer Name<span class="text-danger">*</span></label>
                         <input name="name" class="form-control" value="{{ old('name') }}" required>
                     </div>
+                    <hr class="mt-4 mb-3">
+
+                    <h5 class="mb-3">Billing Entities</h5>
+
+                    <div id="billing-wrapper">
+
+                        <div class="row billing-row">
+
+                            {{-- Entity Name --}}
+                            <div class="mb-3 col-md-5">
+                                <label>
+                                    Billing Entity Name
+                                </label>
+
+                                <input type="text"
+                                    name="entity_name[]"
+                                    class="form-control">
+                            </div>
+
+                            {{-- GSTIN --}}
+                            <div class="mb-3 col-md-5">
+                                <label>
+                                    GSTIN
+                                </label>
+
+                                <input type="text"
+                                    name="gstin[]"
+                                    class="form-control">
+                            </div>
+
+                            {{-- Remove --}}
+                            <div class="mb-3 col-md-2 d-flex align-items-end">
+                                <button type="button"
+                                        class="btn btn-danger remove-billing">
+                                    X
+                                </button>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="mb-4">
+                        <button type="button"
+                                id="add-billing"
+                                class="btn btn-secondary btn-sm">
+                            + Add Billing Entity
+                        </button>
+                    </div>
 
                     <hr class="mt-4 mb-3">
 
@@ -115,23 +164,88 @@ document.addEventListener('click', function (e) {
 
 // ✅ NEW: Prevent empty ladder rows from submitting
 document.querySelector('form').addEventListener('submit', function () {
-    let rows = document.querySelectorAll('.ladder-row');
 
-    rows.forEach(row => {
+    // Billing Entities
+
+    document.querySelectorAll('.billing-row').forEach(row => {
+
         let inputs = row.querySelectorAll('input');
+
         let isEmpty = true;
 
         inputs.forEach(input => {
+
             if (input.value.trim() !== '') {
                 isEmpty = false;
             }
+
         });
 
-        // Disable empty rows
         if (isEmpty) {
-            inputs.forEach(input => input.disabled = true);
+
+            inputs.forEach(input => {
+                input.disabled = true;
+            });
+
         }
+
     });
+
+    // AOP Ladders
+
+    document.querySelectorAll('.ladder-row').forEach(row => {
+
+        let inputs = row.querySelectorAll('input');
+
+        let isEmpty = true;
+
+        inputs.forEach(input => {
+
+            if (input.value.trim() !== '') {
+                isEmpty = false;
+            }
+
+        });
+
+        if (isEmpty) {
+
+            inputs.forEach(input => {
+                input.disabled = true;
+            });
+
+        }
+
+    });
+
+});
+// Add Billing Entity
+
+document.getElementById('add-billing').addEventListener('click', function () {
+
+    let wrapper = document.getElementById('billing-wrapper');
+
+    let row = document.querySelector('.billing-row').cloneNode(true);
+
+    row.querySelectorAll('input').forEach(input => {
+        input.value = '';
+    });
+
+    wrapper.appendChild(row);
+});
+
+// Remove Billing Entity
+
+document.addEventListener('click', function (e) {
+
+    if (e.target.classList.contains('remove-billing')) {
+
+        let rows = document.querySelectorAll('.billing-row');
+
+        if (rows.length > 1) {
+
+            e.target.closest('.billing-row').remove();
+        }
+    }
 });
 </script>
 @endsection

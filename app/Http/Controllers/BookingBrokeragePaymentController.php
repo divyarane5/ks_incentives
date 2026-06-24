@@ -307,12 +307,29 @@ class BookingBrokeragePaymentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'booking_id' => 'required|exists:bookings,id',
-            'invoice_percent' => 'nullable|numeric',
-            'invoice_amount' => 'nullable|numeric',
+            'invoice_percent' => 'nullable|numeric|min:0',
+            'invoice_amount' => 'nullable|numeric|min:0',
+            'bank_received_amount' => 'nullable|numeric|min:0',
+            'tds_amount' => 'nullable|numeric|min:0',
             'invoice_date' => 'nullable|date',
             'bank_received_date' => 'nullable|date',
             'invoice_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,xlsx,xls|max:5120',
+            'invoice_number' => 'nullable|string|max:100',
+            'invoice_type' => 'required',
+            'developer_billing_entity_id' => 'nullable|integer',
+            'company_bank_account_id' => 'nullable|integer',
+
+            'cgst_percent' => 'nullable|numeric',
+            'cgst_amount' => 'nullable|numeric',
+
+            'sgst_percent' => 'nullable|numeric',
+            'sgst_amount' => 'nullable|numeric',
+
+            'total_gst_amount' => 'nullable|numeric',
+
+            'credit_note_date' => 'nullable|date',
+            'credit_note_reason' => 'nullable|string',
+            'credit_note_number' => 'nullable|string|max:100',
         ]);
         if(
             empty($request->invoice_percent) &&
@@ -335,6 +352,30 @@ class BookingBrokeragePaymentController extends Controller
         $payment = new BookingBrokeragePayment();
 
         $payment->booking_id = $request->booking_id;
+        $payment->invoice_number = $request->invoice_number;
+        $payment->invoice_type = $request->invoice_type;
+
+        $payment->developer_billing_entity_id =
+            $request->developer_billing_entity_id;
+
+        $payment->company_bank_account_id =
+            $request->company_bank_account_id;
+
+        $payment->cgst_percent = $request->cgst_percent ?? 0;
+        $payment->cgst_amount = $request->cgst_amount ?? 0;
+
+        $payment->sgst_percent = $request->sgst_percent ?? 0;
+        $payment->sgst_amount = $request->sgst_amount ?? 0;
+
+        $payment->total_gst_amount =
+            $request->total_gst_amount ?? 0;
+        $payment->credit_note_number =
+            $request->credit_note_number;
+        $payment->credit_note_date =
+            $request->credit_note_date;
+
+        $payment->credit_note_reason =
+            $request->credit_note_reason;
         $payment->invoice_percent = $request->invoice_percent ?? 0;
         $payment->invoice_amount = $request->invoice_amount ?? 0;
         $payment->invoice_date = $request->invoice_date;
@@ -385,6 +426,22 @@ class BookingBrokeragePaymentController extends Controller
             'invoice_date' => 'nullable|date',
             'bank_received_date' => 'nullable|date',
             'invoice_file' => 'nullable|file|mimes:pdf,jpg,jpeg,png,xlsx,xls|max:5120',
+            'invoice_number' => 'nullable|string|max:100',
+            'invoice_type' => 'required',
+            'developer_billing_entity_id' => 'nullable|integer',
+            'company_bank_account_id' => 'nullable|integer',
+
+            'cgst_percent' => 'nullable|numeric',
+            'cgst_amount' => 'nullable|numeric',
+
+            'sgst_percent' => 'nullable|numeric',
+            'sgst_amount' => 'nullable|numeric',
+
+            'total_gst_amount' => 'nullable|numeric',
+
+            'credit_note_date' => 'nullable|date',
+            'credit_note_reason' => 'nullable|string',
+            'credit_note_number' => 'nullable|string|max:100',
         ]);
         if(
             empty($request->invoice_percent) &&
@@ -393,6 +450,7 @@ class BookingBrokeragePaymentController extends Controller
             empty($request->tds_amount) &&
             empty($request->invoice_date) &&
             empty($request->bank_received_date) &&
+            empty($request->invoice_number) &&
             empty($request->remarks) &&
             !$request->hasFile('invoice_file')
         ){
@@ -420,7 +478,43 @@ class BookingBrokeragePaymentController extends Controller
         $payment->invoice_percent = $request->invoice_percent;
         $payment->invoice_amount = $request->invoice_amount;
         $payment->invoice_date = $request->invoice_date;
+        $payment->invoice_number = $request->invoice_number;
 
+        $payment->invoice_type = $request->invoice_type;
+
+        $payment->developer_billing_entity_id =
+            $request->developer_billing_entity_id;
+
+        $payment->company_bank_account_id =
+            $request->company_bank_account_id;
+
+        /*
+        |--------------------------------------------------------------------------
+        | GST
+        |--------------------------------------------------------------------------
+        */
+
+        $payment->cgst_percent = $request->cgst_percent ?? 9;
+        $payment->sgst_percent = $request->sgst_percent ?? 9;
+
+        $payment->cgst_amount = $request->cgst_amount ?? 0;
+        $payment->sgst_amount = $request->sgst_amount ?? 0;
+
+        $payment->total_gst_amount =
+            $request->total_gst_amount ?? 0;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Credit Note
+        |--------------------------------------------------------------------------
+        */
+        $payment->credit_note_number =
+            $request->credit_note_number;
+        $payment->credit_note_date =
+            $request->credit_note_date;
+
+        $payment->credit_note_reason =
+            $request->credit_note_reason;
         $payment->bank_received_amount = $request->bank_received_amount;
         $payment->bank_received_date = $request->bank_received_date;
 

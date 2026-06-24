@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Developer;
 use App\Models\BusinessUnit;
+use App\Models\CompanyBankAccount;
+use App\Models\DeveloperBillingEntity;
 use App\Traits\UserHierarchyTrait;
 use App\Http\Requests\BookingRequest;
 use Yajra\DataTables\Facades\DataTables;
@@ -384,8 +386,14 @@ class BookingController extends Controller
 
                 ->make(true);
         }
-
-        return view('booking.index');
+        $companyBanks = CompanyBankAccount::whereNull('deleted_at')
+        ->orderBy('bank_name')
+        ->get();
+        $developerBillingEntities =
+            DeveloperBillingEntity::where('status',1)
+            ->orderBy('entity_name')
+            ->get();
+         return view('booking.index', compact('companyBanks','developerBillingEntities'));
     }
 
     public function create()

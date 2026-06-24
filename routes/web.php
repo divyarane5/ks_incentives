@@ -149,6 +149,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource('location', App\Http\Controllers\LocationController::class);
     Route::resource('project', App\Http\Controllers\ProjectController::class);
     Route::resource('developer', App\Http\Controllers\DeveloperController::class);
+    Route::resource('company-bank',  App\Http\Controllers\CompanyBankAccountController::class);
     Route::resource('department', App\Http\Controllers\DepartmentController::class);
     Route::resource('designation', App\Http\Controllers\DesignationController::class);
     Route::resource('business_unit', App\Http\Controllers\BusinessUnitController::class);

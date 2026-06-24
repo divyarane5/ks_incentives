@@ -7,7 +7,7 @@
         <a href="{{ route('developer.index') }}" class="text-muted fw-light">Developer</a> / Edit
     </h4>
 
-```
+
 <div class="card mb-4">
     <div class="card-header d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Edit Developer</h5>
@@ -28,6 +28,88 @@
                     <label>Developer Name<span class="text-danger">*</span></label>
                     <input name="name" class="form-control"
                            value="{{ old('name', $developer->name) }}" required>
+                </div>
+
+                <hr class="mt-4 mb-3">
+
+                <h5 class="mb-3">Billing Entities</h5>
+
+                <div id="billing-wrapper">
+
+                    @if($developer->billingEntities->count() > 0)
+
+                        @foreach($developer->billingEntities as $entity)
+
+                        <div class="row billing-row">
+
+                            <div class="mb-3 col-md-5">
+                                <label>Billing Entity Name</label>
+
+                                <input type="text"
+                                    name="entity_name[]"
+                                    value="{{ $entity->entity_name }}"
+                                    class="form-control">
+                            </div>
+
+                            <div class="mb-3 col-md-5">
+                                <label>GSTIN</label>
+
+                                <input type="text"
+                                    name="gstin[]"
+                                    value="{{ $entity->gstin }}"
+                                    class="form-control">
+                            </div>
+
+                            <div class="mb-3 col-md-2 d-flex align-items-end">
+                                <button type="button"
+                                        class="btn btn-danger remove-billing">
+                                    X
+                                </button>
+                            </div>
+
+                        </div>
+
+                        @endforeach
+
+                    @else
+
+                        <div class="row billing-row">
+
+                            <div class="mb-3 col-md-5">
+                                <label>Billing Entity Name</label>
+
+                                <input type="text"
+                                    name="entity_name[]"
+                                    class="form-control">
+                            </div>
+
+                            <div class="mb-3 col-md-5">
+                                <label>GSTIN</label>
+
+                                <input type="text"
+                                    name="gstin[]"
+                                    class="form-control">
+                            </div>
+
+                            <div class="mb-3 col-md-2 d-flex align-items-end">
+                                <button type="button"
+                                        class="btn btn-danger remove-billing">
+                                    X
+                                </button>
+                            </div>
+
+                        </div>
+
+                    @endif
+
+                </div>
+
+                <div class="mb-4">
+                    <button type="button"
+                            id="add-billing"
+                            class="btn btn-secondary btn-sm">
+                        + Add Billing Entity
+                    </button>
                 </div>
 
                 <hr class="mt-4 mb-3">
@@ -139,7 +221,7 @@
         </div>
     </form>
 </div>
-```
+
 
 </div>
 
@@ -166,6 +248,43 @@ document.addEventListener('click', function (e) {
             e.target.closest('.ladder-row').remove();
         }
     }
+});
+// Add Billing Entity
+
+document.getElementById('add-billing').addEventListener('click', function () {
+
+    let wrapper = document.getElementById('billing-wrapper');
+
+    let firstRow = document.querySelector('.billing-row');
+
+    if (!firstRow) return;
+
+    let row = firstRow.cloneNode(true);
+
+    row.querySelectorAll('input').forEach(input => {
+        input.value = '';
+    });
+
+    wrapper.appendChild(row);
+
+});
+
+// Remove Billing Entity
+
+document.addEventListener('click', function (e) {
+
+    if (e.target.classList.contains('remove-billing')) {
+
+        let rows = document.querySelectorAll('.billing-row');
+
+        if (rows.length > 1) {
+
+            e.target.closest('.billing-row').remove();
+
+        }
+
+    }
+
 });
 </script>
 

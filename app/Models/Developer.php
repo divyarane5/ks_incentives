@@ -30,4 +30,11 @@ class Developer extends Model
     {
         return $this->hasMany(Booking::class);
     }
+    public function billingEntities()
+    {
+        return $this->hasMany(
+            DeveloperBillingEntity::class,
+            'developer_id'
+        );
+    }
 }

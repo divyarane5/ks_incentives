@@ -26,4 +26,20 @@ class BookingBrokeragePayment extends Model
     {
         return $this->belongsTo(Booking::class);
     }
+
+    public function billingEntity()
+    {
+        return $this->belongsTo(
+            DeveloperBillingEntity::class,
+            'developer_billing_entity_id'
+        );
+    }
+
+    public function companyBank()
+    {
+        return $this->belongsTo(
+            CompanyBankAccount::class,
+            'company_bank_account_id'
+        );
+    }
 }

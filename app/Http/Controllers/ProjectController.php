@@ -24,7 +24,8 @@ class ProjectController extends Controller
     {
         if ($request->ajax()) {
 
-            $data = Project::with(['developer', 'ladders'])->select('projects.*');
+            $data = Project::with(['developer', 'ladders'])
+            ->orderByDesc('id');
 
             return DataTables::of($data)
                 ->filter(function ($query) use ($request) {
@@ -37,6 +38,7 @@ class ProjectController extends Controller
                             ->orWhere('projects.name', 'like', "%{$search}%")
                             ->orWhere('projects.rera_number', 'like', "%{$search}%")
                             ->orWhere('projects.base_brokerage_percent', 'like', "%{$search}%")
+                            ->orWhere('projects.project_contacts', 'like', "%{$search}%")
 
                             // 🔥 developer search
                             ->orWhereHas('developer', function ($q2) use ($search) {
@@ -67,7 +69,9 @@ class ProjectController extends Controller
                 ->addColumn('rera_number', function ($row) {
                     return $row->rera_number ?? '-';
                 })
-
+                ->addColumn('project_contacts', function ($row) {
+                    return nl2br(e($row->project_contacts ?? '-'));
+                })
                 ->addColumn('ladders', function ($row) {
 
                     if (!$row->ladders || $row->ladders->isEmpty()) {
@@ -147,7 +151,7 @@ class ProjectController extends Controller
                                     </div>' : '';
                 })
 
-                ->rawColumns(['ladders','action'])
+                ->rawColumns(['ladders','action','project_contacts'])
                 ->make(true);
         }
 
@@ -170,6 +174,7 @@ class ProjectController extends Controller
                 'developer_id'           => $request->developer_id,
                 'base_brokerage_percent' => $request->base_brokerage_percent ?? 0,
                 'rera_number'            => $request->rera_number,
+                'project_contacts'             => $request->project_contacts, // NEW
             ]);
 
             // ✅ Ladders OPTIONAL
@@ -218,6 +223,7 @@ class ProjectController extends Controller
             'developer_id'           => $request->developer_id,
             'base_brokerage_percent' => $request->base_brokerage_percent ?? 0,
             'rera_number'            => $request->rera_number,
+            'project_contacts'             => $request->project_contacts, // NEW
         ]);
 
         // ✅ Refresh ladders (optional)

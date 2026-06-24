@@ -210,7 +210,7 @@
 
 
     {{-- SUMMARY CARDS --}}
- 
+
     <div class="card mb-4">
 
         <div class="card-header">
@@ -299,6 +299,18 @@
                 {{-- RIGHT SIDE --}}
                 <div class="col-md-6">
 
+                    @php
+                        $payments = $booking->brokeragePayments ?? collect();
+
+                        $totalGST = $payments->sum('total_gst_amount');
+
+                        $totalInvoiceInclGST = $payments->sum(function ($p) {
+                            return ($p->invoice_amount ?? 0) + ($p->total_gst_amount ?? 0);
+                        });
+
+                        $totalTDS = $payments->sum('tds_amount');
+                    @endphp
+
                     <table class="table table-bordered">
 
                         <tr class="table-success">
@@ -318,10 +330,28 @@
                         </tr>
 
                         <tr>
-                            <th>
-                                Amount Receivable
-                            </th>
+                            <th>Total GST Raised</th>
+                            <td>
+                                ₹ {{ number_format($totalGST,2) }}
+                            </td>
+                        </tr>
 
+                        <tr>
+                            <th>Total Invoice Value (Incl GST)</th>
+                            <td>
+                                ₹ {{ number_format($totalInvoiceInclGST,2) }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>Total TDS Deducted</th>
+                            <td>
+                                ₹ {{ number_format($totalTDS,2) }}
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <th>Amount Receivable</th>
                             <td>
                                 ₹ {{ number_format($booking->amount_receivable ?? 0,2) }}
                             </td>
@@ -329,7 +359,6 @@
 
                         <tr>
                             <th>TDS Amount</th>
-
                             <td>
                                 ₹ {{ number_format($booking->tds_amount ?? 0,2) }}
                             </td>
@@ -337,7 +366,6 @@
 
                         <tr>
                             <th>Total Invoice % Raised</th>
-
                             <td>
                                 {{ number_format($booking->total_invoice_percent ?? 0,2) }}%
                             </td>
@@ -345,7 +373,6 @@
 
                         <tr>
                             <th>Total Invoice Amount Raised</th>
-
                             <td>
                                 ₹ {{ number_format($booking->total_invoice_amount ?? 0,2) }}
                             </td>
@@ -353,7 +380,6 @@
 
                         <tr>
                             <th>Total Received Amount</th>
-
                             <td>
                                 ₹ {{ number_format($booking->total_received_amount ?? 0,2) }}
                             </td>
@@ -361,7 +387,6 @@
 
                         <tr>
                             <th>Pending Brokerage %</th>
-
                             <td>
                                 {{ number_format($booking->pending_brokerage_percent ?? 0,2) }}%
                             </td>
@@ -369,7 +394,6 @@
 
                         <tr>
                             <th>Pending Brokerage Amount</th>
-
                             <td>
                                 ₹ {{ number_format($booking->pending_brokerage_amount ?? 0,2) }}
                             </td>
@@ -377,27 +401,14 @@
 
                         <tr>
                             <th>Payment Status</th>
-
                             <td>
 
                                 @if($booking->payment_status == 'completed')
-
-                                    <span class="badge bg-success">
-                                        Completed
-                                    </span>
-
+                                    <span class="badge bg-success">Completed</span>
                                 @elseif($booking->payment_status == 'partial')
-
-                                    <span class="badge bg-warning">
-                                        Partial
-                                    </span>
-
+                                    <span class="badge bg-warning">Partial</span>
                                 @else
-
-                                    <span class="badge bg-danger">
-                                        Pending
-                                    </span>
-
+                                    <span class="badge bg-danger">Pending</span>
                                 @endif
 
                             </td>
@@ -405,7 +416,6 @@
 
                         <tr>
                             <th>Payment Follow Up Date</th>
-
                             <td>
                                 {{ $booking->payment_followup_date ?? '-' }}
                             </td>
@@ -420,7 +430,6 @@
         </div>
 
     </div>
-  
 
 
 
@@ -539,7 +548,6 @@
         </div>
 
     </div>
-
 
   
     {{-- TEAM HIERARCHY --}}
@@ -660,44 +668,83 @@
         </div>
 
         <div class="card-body">
-    
+
             @php
+            $payments = $booking->brokeragePayments ?? collect();
 
-                $totalInvoice = $booking->brokeragePayments->sum('invoice_amount');
+            $totalInvoice = $payments->sum('invoice_amount');
+            $totalReceived = $payments->sum('bank_received_amount');
+            $totalTds = $payments->sum('tds_amount');
 
-                $totalReceived = $booking->brokeragePayments->sum('bank_received_amount');
-
-                $totalTds = $booking->brokeragePayments->sum('tds_amount');
-
-            @endphp
+            $totalActualReceipt = $payments->sum(function ($payment) {
+                return ($payment->invoice_amount ?? 0)
+                    + ($payment->total_gst_amount ?? 0)
+                    - ($payment->tds_amount ?? 0);
+            });
+        @endphp
 
             <div class="table-responsive">
 
                 <table class="table table-bordered table-striped">
 
                     <thead>
-
-                    <tr>
-                        <th>Date</th>
-                        <th>Invoice %</th>
-                        <th>Invoice Amount</th>
-                        <th>TDS</th>
-                        <th>Received</th>
-                        <th>Status</th>
-                        <th>File</th>
-                        <th>Remarks</th>
-                    </tr>
-
-                    </thead>
+                        <tr>
+                            <th>Invoice Date</th>
+                            <th>Invoice No</th>
+                            <th>Type</th>
+                            <th>%</th>
+                            <th>Base Amount</th>
+                            <th>GST</th>
+                            <th>Grand Value</th>
+                            <th>TDS</th>
+                            <th>Received</th>
+                            <th>Actual Receipt</th>
+                            <th>Received Date</th>
+                            <th>Billing Entity</th>
+                            <th>Company Bank</th>
+                            <th>Status</th>
+                            <th>File</th>
+                            <th>Remarks</th>
+                        </tr>
+                        </thead>
 
                     <tbody>
 
-                    @forelse($booking->brokeragePayments as $payment)
+                    @forelse($payments as $payment)
+
+                        @php
+                            $grandValue = ($payment->invoice_amount ?? 0) + ($payment->total_gst_amount ?? 0);
+                        @endphp
 
                         <tr>
 
                             <td>
-                                {{ $payment->invoice_date ?? '-' }}
+                                {{ $payment->invoice_date
+                                    ? \Carbon\Carbon::parse($payment->invoice_date)->format('d-m-Y')
+                                    : '-' }}
+                            </td>
+
+                            <td>{{ $payment->invoice_number ?? '-' }}</td>
+
+                            <td>
+                                @if($payment->invoice_type=='tax_invoice')
+                                    <span class="badge bg-primary">Tax Invoice</span>
+
+                                @elseif($payment->invoice_type=='proforma')
+                                    <span class="badge bg-info">Proforma</span>
+
+                                @elseif($payment->invoice_type=='credit_note')
+                                    <span class="badge bg-danger">Credit Note</span>
+
+                                    <br>
+
+                                    <small class="text-danger">
+                                        {{ $payment->credit_note_number ?? '' }}
+                                    </small>
+
+                                @else
+                                    -
+                                @endif
                             </td>
 
                             <td>
@@ -709,33 +756,96 @@
                             </td>
 
                             <td>
+                                CGST :
+                                ₹ {{ number_format($payment->cgst_amount ?? 0,2) }}
+
+                                <br>
+
+                                SGST :
+                                ₹ {{ number_format($payment->sgst_amount ?? 0,2) }}
+
+                                <br>
+
+                                <b>
+                                    ₹ {{ number_format($payment->total_gst_amount ?? 0,2) }}
+                                </b>
+                            </td>
+
+                            <td>
+                                ₹ {{ number_format($grandValue,2) }}
+                            </td>
+
+                            <td>
                                 ₹ {{ number_format($payment->tds_amount ?? 0,2) }}
                             </td>
 
                             <td>
                                 ₹ {{ number_format($payment->bank_received_amount ?? 0,2) }}
+                                <br>
+                                <small class="text-muted">
+                                    Incentive Collection
+                                </small>
+                            </td>
+
+                            <td>
+                                @php
+                                    $actualReceipt =
+                                        ($payment->invoice_amount ?? 0)
+                                        + ($payment->total_gst_amount ?? 0)
+                                        - ($payment->tds_amount ?? 0);
+                                @endphp
+
+                                ₹ {{ number_format($actualReceipt,2) }}
+
+                                <br>
+
+                                <small class="text-success">
+                                    Bank Receipt
+                                </small>
+                            </td>
+
+                            <td>
+                                {{ $payment->bank_received_date
+                                    ? \Carbon\Carbon::parse($payment->bank_received_date)->format('d-m-Y')
+                                    : '-' }}
+                            </td>
+
+                            <td>
+                                {{ optional($payment->billingEntity)->entity_name ?? '-' }}
+                            </td>
+
+                            <td>
+                                @if($payment->companyBank)
+
+                                    {{ $payment->companyBank->account_name }}
+
+                                    <br>
+
+                                    <small>
+                                        {{ $payment->companyBank->bank_name }}
+                                    </small>
+
+                                @else
+                                    -
+                                @endif
                             </td>
 
                             <td>
 
                                 @if($payment->status == 'received')
-
                                     <span class="badge bg-success">
                                         Received
                                     </span>
 
                                 @elseif($payment->status == 'invoice_raised')
-
                                     <span class="badge bg-warning">
                                         Invoice Raised
                                     </span>
 
                                 @else
-
                                     <span class="badge bg-secondary">
                                         Pending
                                     </span>
-
                                 @endif
 
                             </td>
@@ -745,44 +855,49 @@
                                 @if($payment->invoice_file)
 
                                     <a href="{{ asset('storage/'.$payment->invoice_file) }}"
-                                       target="_blank"
-                                       class="btn btn-sm btn-info">
+                                    target="_blank"
+                                    class="btn btn-sm btn-info">
 
-                                        View File
+                                        View
 
                                     </a>
 
                                 @else
+
                                     -
+
                                 @endif
 
                             </td>
 
-                            <td>
-                                {{ $payment->remarks ?? '-' }}
-                            </td>
+                            <td>{{ $payment->remarks ?? '-' }}</td>
 
                         </tr>
 
                     @empty
 
                         <tr>
-                            <td colspan="8" class="text-center">
+                            <td colspan="13" class="text-center">
                                 No invoice history found
                             </td>
                         </tr>
 
                     @endforelse
-               
+
+                    {{-- TOTALS ROW FIXED --}}
                     <tr class="table-dark">
 
-                        <th colspan="2">
+                        <th colspan="4">
                             Totals
                         </th>
 
                         <th>
                             ₹ {{ number_format($totalInvoice,2) }}
                         </th>
+
+                        <th>-</th>
+
+                        <th>-</th>
 
                         <th>
                             ₹ {{ number_format($totalTds,2) }}
@@ -792,13 +907,13 @@
                             ₹ {{ number_format($totalReceived,2) }}
                         </th>
 
-                        <th colspan="3">
-                            -
+                        <th>
+                            ₹ {{ number_format($totalActualReceipt,2) }}
                         </th>
 
-                    </tr>
-                    
+                        <th colspan="6">-</th>
 
+                    </tr>
 
                     </tbody>
 
@@ -809,60 +924,216 @@
         </div>
 
     </div>
+     @php
+    $creditNotes = $booking->brokeragePayments
+                            ->where('invoice_type','credit_note');
+    @endphp
 
+    {{-- CREDIT NOTES --}}
     <div class="card mt-4">
-
         <div class="card-header">
-            <h5 class="mb-0">Payment Timeline</h5>
+            <h5>Credit Notes</h5>
         </div>
 
         <div class="card-body">
 
-            <ul class="list-group">
+            <div class="table-responsive">
+                <table class="table table-bordered">
 
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Booking Created</span>
-                    <span class="text-muted">{{ $booking->created_at }}</span>
-                </li>
+                    <thead>
+                        <tr>
+                            <th>Credit Note No</th>
+                            <th>Credit Note Date</th>
+                            <th>Reason</th>
 
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Invoice Raised</span>
-                    <span>
-                        @if($booking->total_invoice_amount > 0)
-                            <span class="badge bg-success">Done</span>
-                        @else
-                            <span class="badge bg-secondary">Pending</span>
-                        @endif
-                    </span>
-                </li>
+                            <th>Invoice No</th>
+                            <th>Invoice Date</th>
+                            <th>Invoice Type</th>
 
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Partial Payment</span>
-                    <span>
-                        @if($booking->total_received_amount > 0 && $booking->payment_status != 'completed')
-                            <span class="badge bg-warning">In Progress</span>
-                        @else
-                            -
-                        @endif
-                    </span>
-                </li>
+                            <th>Invoice Amount</th>
+                            <th>GST</th>
+                            <th>Grand Value</th>
 
-                <li class="list-group-item d-flex justify-content-between">
-                    <span>Final Payment</span>
-                    <span>
-                        @if($booking->payment_status == 'completed')
-                            <span class="badge bg-success">Completed</span>
-                        @else
-                            <span class="badge bg-danger">Pending</span>
-                        @endif
-                    </span>
-                </li>
+                            <th>Billing Entity</th>
+                            <th>Company Bank</th>
+                        </tr>
+                    </thead>
 
-            </ul>
+                    <tbody>
+
+                    @forelse($creditNotes as $cn)
+
+                        @php
+                            $grandValue =
+                                ($cn->invoice_amount ?? 0) +
+                                ($cn->total_gst_amount ?? 0);
+                        @endphp
+
+                        <tr>
+
+                            <td>{{ $cn->credit_note_number ?? '-' }}</td>
+
+                            <td>
+                                {{ $cn->credit_note_date
+                                    ? \Carbon\Carbon::parse($cn->credit_note_date)->format('d-m-Y')
+                                    : '-' }}
+                            </td>
+
+                            <td>{{ $cn->credit_note_reason ?? '-' }}</td>
+
+                            <td>{{ $cn->invoice_number ?? '-' }}</td>
+
+                            <td>
+                                {{ $cn->invoice_date
+                                    ? \Carbon\Carbon::parse($cn->invoice_date)->format('d-m-Y')
+                                    : '-' }}
+                            </td>
+
+                            <td>
+                                <span class="badge bg-danger">
+                                    Credit Note
+                                </span>
+                            </td>
+
+                            <td>₹ {{ number_format($cn->invoice_amount ?? 0,2) }}</td>
+
+                            <td>
+                                ₹ {{ number_format($cn->total_gst_amount ?? 0,2) }}
+                            </td>
+
+                            <td>
+                                ₹ {{ number_format($grandValue,2) }}
+                            </td>
+
+                            <td>
+                                {{ optional($cn->billingEntity)->entity_name ?? '-' }}
+                            </td>
+
+                            <td>
+                                @if($cn->companyBank)
+                                    {{ $cn->companyBank->account_name }}
+                                    <br>
+                                    <small>{{ $cn->companyBank->bank_name }}</small>
+                                @else
+                                    -
+                                @endif
+                            </td>
+
+                        </tr>
+
+                    @empty
+
+                        <tr>
+                            <td colspan="11" class="text-center">
+                                No credit notes found
+                            </td>
+                        </tr>
+
+                    @endforelse
+
+                    </tbody>
+
+                </table>
+            </div>
 
         </div>
+    </div>
+    <div class="row mt-4">
+
+    <div class="col-md-3">
+        <div class="card bg-label-primary">
+            <div class="card-body">
+                <h6>Total Invoices</h6>
+                <h3>{{ $booking->brokeragePayments->count() }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-label-success">
+            <div class="card-body">
+                <h6>Received</h6>
+                <h3>₹ {{ number_format($totalReceived ?? 0,0) }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-label-warning">
+            <div class="card-body">
+                <h6>Pending</h6>
+                <h3>
+                    ₹ {{ number_format($booking->pending_brokerage_amount ?? 0,0) }}
+                </h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-label-danger">
+            <div class="card-body">
+                <h6>TDS Deducted</h6>
+                <h3>₹ {{ number_format($totalTds ?? 0,0) }}</h3>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div class="card mt-4">
+
+    <div class="card-header">
+        <h5 class="mb-0">Payment Timeline</h5>
+    </div>
+
+    <div class="card-body">
+
+        <ul class="list-group">
+
+            <li class="list-group-item d-flex justify-content-between">
+                <span>Booking Created</span>
+                <span class="text-muted">
+                    {{ optional($booking->created_at)->format('d-m-Y H:i') }}
+                </span>
+            </li>
+
+            <li class="list-group-item d-flex justify-content-between">
+                <span>Invoice Raised</span>
+                <span>
+                    @if($booking->total_invoice_amount > 0)
+                        <span class="badge bg-success">Done</span>
+                    @else
+                        <span class="badge bg-secondary">Pending</span>
+                    @endif
+                </span>
+            </li>
+
+            <li class="list-group-item d-flex justify-content-between">
+                <span>Partial Payment</span>
+                <span>
+                    @if($booking->total_received_amount > 0 && $booking->payment_status != 'completed')
+                        <span class="badge bg-warning">In Progress</span>
+                    @else
+                        -
+                    @endif
+                </span>
+            </li>
+
+            <li class="list-group-item d-flex justify-content-between">
+                <span>Final Payment</span>
+                <span>
+                    @if($booking->payment_status == 'completed')
+                        <span class="badge bg-success">Completed</span>
+                    @else
+                        <span class="badge bg-danger">Pending</span>
+                    @endif
+                </span>
+            </li>
+
+        </ul>
 
     </div>
+
+</div>
 
 </div>
 

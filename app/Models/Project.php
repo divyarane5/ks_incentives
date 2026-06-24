@@ -15,8 +15,9 @@ class Project extends Model
     protected $fillable = [
         'name',
         'developer_id',
-         'base_brokerage_percent',
-         'rera_number',
+        'base_brokerage_percent',
+        'rera_number',
+        'project_contacts',
     ];
 
     protected static function boot() { 

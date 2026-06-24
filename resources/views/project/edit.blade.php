@@ -58,12 +58,28 @@
                                value="{{ old('base_brokerage_percent', $project->base_brokerage_percent) }}">
                     </div>
 
-                    {{-- ✅ NEW FIELD --}}
                     <div class="mb-3 col-md-6">
                         <label class="form-label">RERA Number</label>
-                        <input type="text" name="rera_number"
-                               class="form-control"
-                               value="{{ old('rera_number', $project->rera_number) }}">
+                        <input type="text"
+                            name="rera_number"
+                            class="form-control"
+                            value="{{ old('rera_number', $project->rera_number) }}">
+                    </div>
+
+                    <div class="mb-3 col-md-12">
+                        <label class="form-label">
+                            Project Contacts
+                        </label>
+
+                        <textarea
+                            name="project_contacts"
+                            class="form-control"
+                            rows="4"
+                            placeholder="Sadhana Jha (SM) - 9876543210&#10;Jyoti Tiwari (CP Manager) - 9988776655&#10;Rakesh Shah (Collections) - 9123456789">{{ old('project_contacts', $project->project_contacts) }}</textarea>
+
+                        <small class="text-muted">
+                            Enter one contact per line.
+                        </small>
                     </div>
 
                 </div>

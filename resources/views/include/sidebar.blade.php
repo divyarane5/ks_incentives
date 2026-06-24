@@ -118,6 +118,14 @@
                 </a>
             </li>
             @endcan
+            @can('company-bank-view')
+            <li class="menu-item {{ Request::segment(1) == 'company-bank' ? 'active' : '' }}">
+                <a href="{{ route('company-bank.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-bank"></i>
+                    <div>Company Bank Accounts</div>
+                </a>
+            </li>
+            @endcan
 
             @can('booking-view')
             <li class="menu-item {{ Request::segment(1) == 'booking' ? 'active' : '' }}">

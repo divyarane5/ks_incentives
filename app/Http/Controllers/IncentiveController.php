@@ -241,6 +241,7 @@ class IncentiveController extends Controller
         foreach ($users as $user) {
 
             $teamIds = [];
+            $salaryUserIds = [];
 
             /*
             |--------------------------------------------------------------------------
@@ -334,9 +335,9 @@ class IncentiveController extends Controller
             |--------------------------------------------------------------------------
             */
 
-            $teamSalary = UserSalary::whereIn('user_id', $teamIds)
-                            ->where('financial_year', $fy)
-                            ->sum('total_employee_cost');
+            $teamSalary = UserSalary::whereIn('user_id', $salaryUserIds)
+                ->where('financial_year', $fy)
+                ->sum('total_employee_cost');
 
             /*
             |--------------------------------------------------------------------------
@@ -611,6 +612,11 @@ class IncentiveController extends Controller
                         })
                         ->pluck('id')
                         ->toArray();
+
+            $salaryUserIds = array_merge(
+                [$user->id],   // TL own salary
+                $teamIds       // FOS salaries
+            );
         }
 
         /*
@@ -638,6 +644,12 @@ class IncentiveController extends Controller
                         })
                         ->pluck('id')
                         ->toArray();
+
+            $salaryUserIds = array_merge(
+                [$user->id],   // Sr TL
+                $tlIds,        // TLs
+                $teamIds       // FOS
+            );
         }
 
         /*
@@ -649,13 +661,13 @@ class IncentiveController extends Controller
         if($role == 'CH'){
 
             $srTlIds = User::where('reporting_manager_id', $user->id)
-                        ->whereHas('roles', function ($q) {
+                            ->whereHas('roles', function ($q) {
 
-                            $q->where('name', 'Sr. TL');
+                                $q->where('name', 'Sr. TL');
 
-                        })
-                        ->pluck('id')
-                        ->toArray();
+                            })
+                            ->pluck('id')
+                            ->toArray();
 
             $tlIds = User::whereIn('reporting_manager_id', $srTlIds)
                         ->whereHas('roles', function ($q) {
@@ -674,8 +686,14 @@ class IncentiveController extends Controller
                         })
                         ->pluck('id')
                         ->toArray();
-        }
 
+            $salaryUserIds = array_merge(
+                [$user->id],   // CH
+                $srTlIds,      // Sr TL
+                $tlIds,        // TL
+                $teamIds       // FOS
+            );
+        }
         /*
         |--------------------------------------------------------------------------
         | BOOKINGS

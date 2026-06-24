@@ -30,7 +30,8 @@ class DeveloperController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $data = Developer::query();
+            $data = Developer::with(['ladders', 'billingEntities'])
+                    ->orderByDesc('id');
             return DataTables::of($data)
             ->filter(function ($query) use ($request) {
 
@@ -42,7 +43,7 @@ class DeveloperController extends Controller
                         ->orWhere('developers.name', 'like', "%{$search}%")
                         ->orWhere('developers.status', 'like', "%{$search}%")
                         ->orWhere('developers.created_at', 'like', "%{$search}%");
-
+                        
                         // 🔥 ladder search
                         $q->orWhereHas('ladders', function ($q2) use ($search) {
                             $q2->where('min_aop', 'like', "%{$search}%")
@@ -51,6 +52,10 @@ class DeveloperController extends Controller
                             ->orWhere('aop_s_date', 'like', "%{$search}%")
                             ->orWhere('aop_e_date', 'like', "%{$search}%");
                         });
+                        $q->orWhereHas('billingEntities', function ($q3) use ($search) {
+                            $q3->where('entity_name', 'like', "%{$search}%")
+                            ->orWhere('gstin', 'like', "%{$search}%");
+                        });
 
                     });
                 }
@@ -58,6 +63,39 @@ class DeveloperController extends Controller
             })
                 ->addColumn('name', function ($row) {
                     return $row->name;
+                })
+                ->addColumn('view_billing_entities', function ($row) {
+
+                    if ($row->billingEntities->isEmpty()) {
+                        return '-';
+                    }
+
+                    $html = '
+                        <button class="btn btn-sm btn-info"
+                            type="button"
+                            data-bs-toggle="collapse"
+                            data-bs-target="#entities-'.$row->id.'">
+                            View Entities
+                        </button>
+
+                        <div class="collapse mt-2" id="entities-'.$row->id.'">
+                            <ul class="list-group">';
+
+                    foreach ($row->billingEntities as $entity) {
+
+                        $html .= '
+                            <li class="list-group-item">
+                                <strong>'.$entity->entity_name.'</strong>
+                                <br>
+                                GSTIN: '.($entity->gstin ?? '-').'
+                            </li>';
+                    }
+
+                    $html .= '
+                            </ul>
+                        </div>';
+
+                    return $html;
                 })
                 ->addColumn('view_ladders', function ($row) {
 
@@ -130,7 +168,7 @@ class DeveloperController extends Controller
                     }
                     return '';
                 })
-                ->rawColumns(['action','view_ladders'])
+                ->rawColumns(['action','view_ladders','view_billing_entities'])
                 ->make(true);
         }
         return view('developer.index');
@@ -153,12 +191,31 @@ class DeveloperController extends Controller
             'ladder.*'  => 'nullable|numeric',
             'aop_s_date.*' => 'nullable|date',
             'aop_e_date.*' => 'nullable|date',
+            'entity_name.*' => 'nullable|string|max:255',
+            'gstin.*'       => 'nullable|string|max:255',
         ]);
 
         $developer = Developer::create([
             'name' => $request->name,
         ]);
+        // 🔥 Billing Entities
+        if ($request->entity_name) {
 
+            foreach ($request->entity_name as $key => $entityName) {
+
+                if (
+                    empty($request->entity_name[$key]) &&
+                    empty($request->gstin[$key])
+                ) {
+                    continue;
+                }
+
+                $developer->billingEntities()->create([
+                    'entity_name' => $entityName,
+                    'gstin'       => $request->gstin[$key] ?? null,
+                ]);
+            }
+        }
         if ($request->min_aop) {
 
         foreach ($request->min_aop as $key => $minAop) {
@@ -208,6 +265,8 @@ class DeveloperController extends Controller
             'ladder.*'  => 'nullable|numeric',
             'aop_s_date.*' => 'nullable|date',
             'aop_e_date.*' => 'nullable|date',
+            'entity_name.*' => 'nullable|string|max:255',
+            'gstin.*'       => 'nullable|string|max:255',
         ]);
 
         $developer = Developer::findOrFail($id);
@@ -244,6 +303,25 @@ class DeveloperController extends Controller
                     'aop_e_date' => $request->aop_e_date[$key],
                     'ladder_type'=> 'flat',
                     'created_by' => auth()->id(),
+                ]);
+            }
+        }
+        $developer->billingEntities()->delete();
+        // 🔥 Recreate Billing Entities
+        if ($request->entity_name) {
+
+            foreach ($request->entity_name as $key => $entityName) {
+
+                if (
+                    empty($request->entity_name[$key]) &&
+                    empty($request->gstin[$key])
+                ) {
+                    continue;
+                }
+
+                $developer->billingEntities()->create([
+                    'entity_name' => $entityName,
+                    'gstin'       => $request->gstin[$key] ?? null,
                 ]);
             }
         }
