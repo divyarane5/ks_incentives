@@ -164,17 +164,22 @@ class BookingBrokeragePaymentController extends Controller
                 return $row->remarks ?? '-';
 
             })
-            ->addColumn('status_badge', function($row){
+            ->addColumn('status_badge', function ($row) {
 
-                if($row->status == 'received'){
-                    return '<span class="badge bg-success">Received</span>';
+                switch ($row->status) {
+
+                    case 'received':
+                        return '<span class="badge bg-success">Received</span>';
+
+                    case 'partial':
+                        return '<span class="badge bg-info text-dark">Partial Payment</span>';
+
+                    case 'invoice_raised':
+                        return '<span class="badge bg-warning text-dark">Invoice Raised</span>';
+
+                    default:
+                        return '<span class="badge bg-secondary">Unknown</span>';
                 }
-
-                if($row->status == 'invoice_raised'){
-                    return '<span class="badge bg-warning">Invoice Raised</span>';
-                }
-
-                return '<span class="badge bg-secondary">Pending</span>';
             })
             ->addColumn('invoice_age', function ($row) {
 
@@ -381,22 +386,42 @@ class BookingBrokeragePaymentController extends Controller
         $payment->invoice_date = $request->invoice_date;
 
         $payment->bank_received_amount = $request->bank_received_amount ?? 0;
+        $payment->actual_receipt_amount = $request->actual_receipt_amount;
         $payment->bank_received_date = $request->bank_received_date;
         $payment->tds_amount = $request->tds_amount ?? 0;
         $payment->remarks = $request->remarks;
 
-        if ($request->bank_received_amount > 0) {
-            $payment->status = 'received';
-        } else {
+        $actualReceipt = (float) ($request->actual_receipt_amount ?? 0);
+        $tdsAmount = (float) ($request->tds_amount ?? 0);
+
+        $grandInvoice =
+            ($request->invoice_amount ?? 0)
+            + ($request->total_gst_amount ?? 0);
+
+        $settledAmount = $actualReceipt + $tdsAmount;
+
+        if ($settledAmount <= 0) {
+
             $payment->status = 'invoice_raised';
+
+        }
+        elseif ($settledAmount < $grandInvoice) {
+
+            $payment->status = 'partial';
+
+        }
+        else {
+
+            $payment->status = 'received';
+
         }
         if($request->hasFile('invoice_file')){
 
-        $file = $request->file('invoice_file')
-                        ->store('invoice-files','public');
+            $file = $request->file('invoice_file')
+                            ->store('invoice-files','public');
 
-        $payment->invoice_file = $file;
-    }
+            $payment->invoice_file = $file;
+        }
 
         $payment->save();
 
@@ -418,6 +443,7 @@ class BookingBrokeragePaymentController extends Controller
 
     public function update(Request $request,$id)
     {
+        
         $request->validate([
             'invoice_percent' => 'nullable|numeric|min:0',
             'invoice_amount' => 'nullable|numeric|min:0',
@@ -516,23 +542,36 @@ class BookingBrokeragePaymentController extends Controller
         $payment->credit_note_reason =
             $request->credit_note_reason;
         $payment->bank_received_amount = $request->bank_received_amount;
+        $payment->actual_receipt_amount = $request->actual_receipt_amount;
         $payment->bank_received_date = $request->bank_received_date;
 
         $payment->tds_amount = $request->tds_amount;
 
         $payment->remarks = $request->remarks;
 
-        if (($request->bank_received_amount ?? 0) > 0) {
+        $actualReceipt = (float) ($request->actual_receipt_amount ?? 0);
+        $tdsAmount = (float) ($request->tds_amount ?? 0);
 
-            $payment->status = 'received';
+        $grandInvoice =
+            ($request->invoice_amount ?? 0)
+            + ($request->total_gst_amount ?? 0);
 
-        } elseif (($request->invoice_amount ?? 0) > 0) {
+        $settledAmount = $actualReceipt + $tdsAmount;
+
+        if ($settledAmount <= 0) {
 
             $payment->status = 'invoice_raised';
 
-        } else {
+        }
+        elseif ($settledAmount < $grandInvoice) {
 
-            $payment->status = 'pending';
+            $payment->status = 'partial';
+
+        }
+        else {
+
+            $payment->status = 'received';
+
         }
 
         if($request->hasFile('invoice_file')){
@@ -552,63 +591,119 @@ class BookingBrokeragePaymentController extends Controller
     }
 
 
-     private function updateBookingPaymentSummary($bookingId)
+    private function updateBookingPaymentSummary($bookingId)
     {
         $booking = Booking::findOrFail($bookingId);
 
-        $totalInvoicePercent = BookingBrokeragePayment::where('booking_id',$bookingId)
-            ->sum('invoice_percent');
+        $payments = BookingBrokeragePayment::where('booking_id', $bookingId);
 
-        $totalInvoiceAmount = BookingBrokeragePayment::where('booking_id',$bookingId)
-            ->sum('invoice_amount');
-        $totalTdsAmount = BookingBrokeragePayment::where('booking_id',$bookingId)
-        ->sum('tds_amount');
-        $totalReceivedAmount = BookingBrokeragePayment::where('booking_id',$bookingId)
-            ->sum('bank_received_amount');
-        $totalSettledAmount = $totalReceivedAmount + $totalTdsAmount;
+        /*
+        |--------------------------------------------------------------------------
+        | Payment Totals
+        |--------------------------------------------------------------------------
+        */
+
+        $totalInvoicePercent = $payments->sum('invoice_percent');
+
+        $totalInvoiceAmount = $payments->sum('invoice_amount');
+
+        $totalGSTAmount = $payments->sum('total_gst_amount');
+
+        $totalGrandInvoiceAmount = $totalInvoiceAmount + $totalGSTAmount;
+
+        // Total amount received from developer (Including GST)
+        $totalActualReceiptAmount = $payments->sum('actual_receipt_amount');
+
+        // Bank receipt excluding GST (Used only for Brokerage & Incentives)
+        $totalReceivedAmount = $payments->sum('bank_received_amount');
+
+        // TDS deducted by developer
+        $totalTdsAmount = $payments->sum('tds_amount');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Collection Summary
+        |--------------------------------------------------------------------------
+        */
+
+        $pendingCollectionAmount = max(
+            0,
+            $totalGrandInvoiceAmount - ($totalActualReceiptAmount + $totalTdsAmount)
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Brokerage Summary
+        |--------------------------------------------------------------------------
+        */
+
         $totalBrokeragePercent = $booking->total_brokerage_percent;
+
         $totalBrokerageAmount = $booking->final_revenue;
 
+        // Brokerage settlement = Bank Receipt + TDS
+        $totalSettledAmount = $totalReceivedAmount + $totalTdsAmount;
+
+        $pendingBrokeragePercent = max(
+            0,
+            $totalBrokeragePercent - $totalInvoicePercent
+        );
+
+        $pendingBrokerageAmount = max(
+            0,
+            $totalBrokerageAmount - $totalSettledAmount
+        );
+
         /*
-        |---------------------------------------
-        | Calculate Pending Brokerage
-        |---------------------------------------
+        |--------------------------------------------------------------------------
+        | Payment Status (Invoice Collection Status)
+        |--------------------------------------------------------------------------
         */
 
-        $pendingPercent = max(0, $totalBrokeragePercent - $totalInvoicePercent);
+        $totalSettledCollection =
+            $totalActualReceiptAmount +
+            $totalTdsAmount;
 
-        $pendingAmount = max(0, $totalBrokerageAmount - $totalSettledAmount);
-
-        /*
-        |--------------------------------------- 
-        | Determine Payment Status
-        |---------------------------------------
-        */
-
-        if ($totalSettledAmount <= 0) {
+        if ($totalSettledCollection <= 0) {
 
             $status = 'pending';
 
-        } elseif ($totalSettledAmount < $totalBrokerageAmount) {
+        }
+        elseif ($totalSettledCollection < $totalGrandInvoiceAmount) {
 
             $status = 'partial';
 
-        } else {
+        }
+        else {
 
             $status = 'completed';
+
         }
+
         /*
-        |---------------------------------------
-        | Update Booking
-        |---------------------------------------
+        |--------------------------------------------------------------------------
+        | Update Booking Summary
+        |--------------------------------------------------------------------------
         */
 
         $booking->invoice_raised = $totalInvoicePercent > 0 ? 1 : 0;
-        $booking->total_invoice_percent = round($totalInvoicePercent,2);
-        $booking->total_invoice_amount = round($totalInvoiceAmount,2);
-        $booking->total_received_amount = round($totalReceivedAmount,2);
-        $booking->pending_brokerage_percent = round($pendingPercent,2);
-        $booking->pending_brokerage_amount = round($pendingAmount,2);
+
+        // Invoice Summary
+        $booking->total_invoice_percent = round($totalInvoicePercent, 2);
+        $booking->total_invoice_amount = round($totalInvoiceAmount, 2);
+        $booking->total_gst_amount = round($totalGSTAmount, 2);
+        $booking->total_grand_invoice_amount = round($totalGrandInvoiceAmount, 2);
+
+        // Collection Summary
+        $booking->total_actual_receipt_amount = round($totalActualReceiptAmount, 2);
+        $booking->total_received_amount = round($totalReceivedAmount, 2); // Excluding GST
+        $booking->pending_collection_amount = round($pendingCollectionAmount, 2);
+
+        // Brokerage Summary
+        $booking->pending_brokerage_percent = round($pendingBrokeragePercent, 2);
+        $booking->pending_brokerage_amount = round($pendingBrokerageAmount, 2);
+
+        // Payment Status (Based on Invoice Collection)
         $booking->payment_status = $status;
 
         $booking->save();

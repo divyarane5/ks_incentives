@@ -141,30 +141,44 @@
             class="table table-striped table-bordered nowrap"
             width="100%">
             <thead>
-               <tr>
-                  <th>ID</th>
-                  <th>Booking Date</th>
-                  <th>Client Name</th>
-                  <th>Client Contact</th>
-                  <th>Lead Source</th>
-                  <th>Project</th>
-                  <th>Developer</th>
-                  <th>Booking Amount</th>
-                  <th>Agreement Value</th>
-                  <th>Total Brokerage %</th>
-                  <th>Revenue</th>
-                  <th>Final Revenue</th>
-                  <th>Team Hierarchy</th>
-                  <th>Booking Status</th>
-                  <th>Total Invoice %</th>
-                  <th>Total Invoice Amount</th>
-                  <th>Total Received</th>
-                  <th>Pending %</th>
-                  <th>Pending Amount</th>
-                  <th>Payment Status</th>
-                  <th>Actions</th>
-               </tr>
-            </thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Booking Date</th>
+                    <th>Client Name</th>
+                    <th>Client Contact</th>
+                    <th>Lead Source</th>
+                    <th>Project</th>
+                    <th>Developer</th>
+
+                    <th>Booking Amount</th>
+                    <th>Agreement Value</th>
+
+                    <th>Total Brokerage %</th>
+                    <th>Revenue</th>
+                    <th>Final Revenue</th>
+
+                    <th>Team Hierarchy</th>
+                    <th>Booking Status</th>
+
+                    <!-- Invoice Summary -->
+                    <th>Total Invoice %</th>
+                    <th>Total Invoice Amount</th>
+                    <th>Total GST</th>
+                    <th>Grand Invoice</th>
+
+                    <!-- Collection Summary -->
+                    <th>Amount Received from Developer (Incl. GST)</th>
+                    <th>Brokerage Received (After TDS)</th>
+                    <th>Pending Collection</th>
+
+                    <!-- Brokerage Summary -->
+                    <th>Pending %</th>
+                    <th>Pending Brokerage</th>
+
+                    <th>Payment Status</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
             <tbody></tbody>
          </table>
       </div>
@@ -206,22 +220,26 @@
                <h6>Invoice History</h6>
                <div class="table-responsive">
                <table class="table table-bordered table-sm">
-                  <thead>
-                     <tr>
+                <thead>
+                    <tr>
+                        <th>Invoice</th>
+                        <th>Type</th>
                         <th>%</th>
-                        <th>Invoice Amount</th>
-                        <th>Invoice Date</th>
-                        <th>Received</th>
+                        <th>Invoice</th>
+                        <th>GST</th>
+                        <th>Grand</th>
+                        <th>Amount Received from Developer (Incl. GST)</th>
+                        <th>Brokerage Received (After TDS)</th>
+                        <th>Pending</th>
+                        <th>TDS</th>
                         <th>Status</th>
+                        <th>Date</th>
                         <th>Action</th>
-                     </tr>
-                  </thead>
-                  <tbody id="paymentHistory">
-                     <tr>
-                        <td colspan="6" class="text-center">Loading...</td>
-                     </tr>
-                  </tbody>
-               </table>
+                    </tr>
+                </thead>
+                <tbody id="paymentHistory">
+                </tbody>
+            </table>
                 </div>
                <hr>
                <h6>Add New Invoice</h6>
@@ -315,6 +333,14 @@
                         class="form-control">
                   </div>
                   <div class="col-md-6 mb-3">
+                    <label>Amount Received from Developer (Incl. GST)</label>
+                    <input type="number"
+                        name="actual_receipt_amount"
+                        id="actual_receipt_amount"
+                        class="form-control" step="0.01"
+                        >
+                </div>
+                  <div class="col-md-6 mb-3">
                      <label>Developer Billing Entity</label>
                      <select name="developer_billing_entity_id" 
                         class="form-control">
@@ -349,7 +375,7 @@
                   </div>
                   {{-- Payment --}}
                   <div class="col-md-6 mb-3">
-                     <label>Bank Received Amount</label>
+                     <label>Brokerage Received (After TDS)</label>
                      <input type="number"
                         name="bank_received_amount"
                         class="form-control"
@@ -541,6 +567,14 @@
                             class="form-control">
                     </div>
                     <div class="col-md-6 mb-3">
+                        <label>Amount Received from Developer (Incl. GST)</label>
+                        <input type="number"
+                            name="actual_receipt_amount"
+                            id="edit_actual_receipt_amount"
+                            class="form-control" step="0.01"
+                            >
+                    </div>
+                    <div class="col-md-6 mb-3">
                     <label>Invoice Date</label>
                     <input type="date"
                         name="invoice_date"
@@ -555,7 +589,7 @@
                         <div id="existingInvoiceFile"></div>
                     </div>
                     <div class="col-md-6 mb-3">
-                    <label>Bank Received Amount</label>
+                    <label>Brokerage Received (After TDS)</label>
                     <input type="number"
                         step="0.01"
                         name="bank_received_amount"
@@ -701,7 +735,12 @@
 
                 { data: 'total_invoice_percent' },
                 { data: 'total_invoice_amount' },
+                { data: 'total_gst_amount' },
+                { data: 'total_grand_invoice_amount' },
+
+                { data: 'total_actual_receipt_amount' },
                 { data: 'total_received_amount' },
+                { data: 'pending_collection_amount' },
 
                 { data: 'pending_brokerage_percent' },
                 { data: 'pending_brokerage_amount' },
@@ -795,24 +834,59 @@
 
                     let totalPercent = 0;
                     let totalInvoice = 0;
-                    let totalReceived = 0;
+                    let totalGST = 0;
+                    let totalGrand = 0;
+                    let totalActualReceipt = 0;
+                    let totalBankReceipt = 0;
+                    let totalPending = 0;
                     let totalTds = 0;
 
                     data.forEach(function (p) {
 
                         totalPercent += parseFloat(p.invoice_percent || 0);
-                        totalInvoice += parseFloat(p.invoice_amount || 0);
-                        totalReceived += parseFloat(p.bank_received_amount || 0);
-                        totalTds += parseFloat(p.tds_amount || 0);
+
+                        let invoice = Number(p.invoice_amount || 0);
+                        let gst = Number(p.total_gst_amount || 0);
+                        let grand = invoice + gst;
+
+                        let actualReceipt = Number(p.actual_receipt_amount || 0);
+                        let bankReceipt = Number(p.bank_received_amount || 0);
+                        let tds = Number(p.tds_amount || 0);
+
+                        // Pending after considering TDS deducted by client
+                        let pending = grand - (actualReceipt + tds);
+
+                        if (pending < 0) {
+                            pending = 0;
+                        }
+
+                        totalInvoice += invoice;
+                        totalGST += gst;
+                        totalGrand += grand;
+                        totalActualReceipt += actualReceipt;
+                        totalBankReceipt += bankReceipt;
+                        totalPending += pending;
+                        totalTds += tds;
 
                         totalInvoiceUsed += parseFloat(
                             p.invoice_percent || 0
                         );
 
-                        let badge =
-                            p.status === 'received'
-                                ? '<span class="badge bg-success">Received</span>'
-                                : '<span class="badge bg-warning">Invoice Raised</span>';
+                        let badge = '';
+
+                        switch (p.status) {
+
+                            case 'received':
+                                badge = '<span class="badge bg-success">Received</span>';
+                                break;
+
+                            case 'partial':
+                                badge = '<span class="badge bg-info">Partial</span>';
+                                break;
+
+                            default:
+                                badge = '<span class="badge bg-warning">Invoice Raised</span>';
+                        }
 
                         let fileBtn = '';
 
@@ -820,9 +894,9 @@
 
                             fileBtn = `
                                 <a href="{{ asset('storage') }}/${p.invoice_file}"
-                                target="_blank"
-                                class="btn btn-sm btn-info">
-                                View File
+                                    target="_blank"
+                                    class="btn btn-sm btn-info">
+                                    View File
                                 </a>
                             `;
                         }
@@ -857,6 +931,7 @@
                                 data-invoice_date="${p.invoice_date || ''}"
 
                                 data-bank_received_amount="${p.bank_received_amount || ''}"
+                                data-actual_receipt_amount="${p.actual_receipt_amount || ''}"
                                 data-bank_received_date="${p.bank_received_date || ''}"
 
                                 data-tds_amount="${p.tds_amount || ''}"
@@ -874,34 +949,60 @@
                         html += `
                             <tr>
 
+                                <td>${p.invoice_number ?? '-'}</td>
+
+                                <td>${p.invoice_type ?? '-'}</td>
+
                                 <td>
                                     ${
                                         parseFloat(p.invoice_percent || 0) > 0
                                         ? p.invoice_percent + '%'
-                                        : 'Additional Revenue'
+                                        : 'Additional'
                                     }
                                 </td>
 
                                 <td>
-                                    ₹ ${Number(p.invoice_amount || 0).toLocaleString()}
-                                    <br>
-                                    <small class="text-muted">
-                                        TDS: ₹ ${Number(p.tds_amount || 0).toLocaleString()}
-                                    </small>
+                                    ₹ ${invoice.toLocaleString()}
+                                </td>
+
+                                <td>
+                                    ₹ ${gst.toLocaleString()}
+                                </td>
+
+                                <td>
+                                    <strong>₹ ${grand.toLocaleString()}</strong>
+                                </td>
+
+                                <td>
+                                    ₹ ${actualReceipt.toLocaleString()}
+                                </td>
+
+                                <td>
+                                    ₹ ${bankReceipt.toLocaleString()}
+                                </td>
+
+                                <td>
+                                    <span class="${
+                                        pending > 0
+                                            ? 'text-danger fw-bold'
+                                            : 'text-success fw-bold'
+                                    }">
+                                        ₹ ${pending.toLocaleString()}
+                                    </span>
+                                </td>
+
+                                <td>
+                                    ₹ ${tds.toLocaleString()}
+                                </td>
+
+                                <td>
+                                    ${badge}
                                 </td>
 
                                 <td>
                                     ${p.invoice_date || '-'}
                                     <br>
                                     ${fileBtn}
-                                </td>
-
-                                <td>
-                                    ₹ ${Number(p.bank_received_amount || 0).toLocaleString()}
-                                </td>
-
-                                <td>
-                                    ${badge}
                                 </td>
 
                                 <td>
@@ -914,19 +1015,40 @@
 
                     html += `
                         <tr class="table-dark fw-bold">
+
+                            <td colspan="2" class="text-center">
+                                Total
+                            </td>
+
                             <td>${totalPercent.toFixed(2)}%</td>
-                            <td>₹ ${Number(totalInvoice).toLocaleString()}</td>
-                            <td>Total</td>
-                            <td>₹ ${Number(totalReceived).toLocaleString()}</td>
-                            <td>TDS: ₹ ${Number(totalTds).toLocaleString()}</td>
-                            <td>-</td>
+
+                            <td>₹ ${totalInvoice.toLocaleString()}</td>
+
+                            <td>₹ ${totalGST.toLocaleString()}</td>
+
+                            <td>₹ ${totalGrand.toLocaleString()}</td>
+
+                            <td>₹ ${totalActualReceipt.toLocaleString()}</td>
+
+                            <td>₹ ${totalBankReceipt.toLocaleString()}</td>
+
+                            <td>
+                                <span class="text-warning">
+                                    ₹ ${totalPending.toLocaleString()}
+                                </span>
+                            </td>
+
+                            <td>₹ ${totalTds.toLocaleString()}</td>
+
+                            <td colspan="3"></td>
+
                         </tr>
                     `;
 
                 } else {
 
                     html =
-                        '<tr><td colspan="6" class="text-center">No history found</td></tr>';
+                        '<tr><td colspan="13" class="text-center">No history found</td></tr>';
                 }
 
                 $('#paymentHistory').html(html);
@@ -934,11 +1056,10 @@
         ).fail(function () {
 
             $('#paymentHistory').html(
-                '<tr><td colspan="6" class="text-center text-danger">Failed to load payment history.</td></tr>'
+                '<tr><td colspan="13" class="text-center text-danger">Failed to load payment history.</td></tr>'
             );
 
         });
-
         /* ================= DISABLE IF COMPLETED ================= */
 
         // if (status === 'completed') {
@@ -1076,6 +1197,9 @@
         $('#edit_received_amount').val(
             $(this).data('bank_received_amount')
         );
+        $('#edit_actual_receipt_amount').val(
+            $(this).data('actual_receipt_amount')
+        );
 
         $('#edit_received_date').val(
             $(this).data('bank_received_date')
@@ -1125,6 +1249,44 @@
 
     });
 
+    $(document).on('change', 'select[name="invoice_type"]', function () {
+
+        let type = $(this).val();
+
+        if (type === 'proforma') {
+
+            $('#cgst_percent').val(0);
+            $('#sgst_percent').val(0);
+
+        } else {
+
+            $('#cgst_percent').val(9);
+            $('#sgst_percent').val(9);
+
+        }
+
+        calculateGST();
+
+    });
+    $(document).on('change', '#edit_invoice_type', function () {
+
+        let type = $(this).val();
+
+        if (type === 'proforma') {
+
+            $('#edit_cgst_percent').val(0);
+            $('#edit_sgst_percent').val(0);
+
+        } else {
+
+            $('#edit_cgst_percent').val(9);
+            $('#edit_sgst_percent').val(9);
+
+        }
+
+        calculateEditGST();
+
+    });
     /* ================= CREDIT NOTE TOGGLE ================= */
 
     $(document).on('change', '#edit_invoice_type', function () {
@@ -1258,33 +1420,25 @@
         let grandTotal =
             invoiceAmount + totalGST;
 
-        $('#cgst_amount').val(
-            cgstAmount.toFixed(2)
-        );
+        $('#cgst_amount').val(cgstAmount.toFixed(2));
+        $('#sgst_amount').val(sgstAmount.toFixed(2));
+        $('#total_gst_amount').val(totalGST.toFixed(2));
+        $('#grand_invoice_amount').val(grandTotal.toFixed(2));
 
-        $('#sgst_amount').val(
-            sgstAmount.toFixed(2)
-        );
+        // TDS
+        let tds = invoiceAmount * 0.02;
 
-        $('#total_gst_amount').val(
-            totalGST.toFixed(2)
-        );
+        // Amount received from developer (after TDS deduction)
+        let actualReceipt = grandTotal - tds;
 
-        $('#grand_invoice_amount').val(
-            grandTotal.toFixed(2)
-        );
+        // Brokerage received after TDS
+        let bankReceipt = invoiceAmount - tds;
 
-        let received =
-            (invoiceAmount * 0.98).toFixed(2);
+        $('#actual_receipt_amount').val(actualReceipt.toFixed(2));
 
-        let tds =
-            (invoiceAmount * 0.02).toFixed(2);
+        $('input[name="tds_amount"]').val(tds.toFixed(2));
 
-        $('input[name="bank_received_amount"]')
-            .val(received);
-
-        $('input[name="tds_amount"]')
-            .val(tds);
+        $('input[name="bank_received_amount"]').val(bankReceipt.toFixed(2));
     }
     $(document).on(
         'keyup change',
@@ -1314,21 +1468,23 @@
         let grandTotal =
             invoiceAmount + totalGST;
 
-        $('#edit_cgst_amount').val(
-            cgstAmount.toFixed(2)
-        );
+        $('#edit_cgst_amount').val(cgstAmount.toFixed(2));
+        $('#edit_sgst_amount').val(sgstAmount.toFixed(2));
+        $('#edit_total_gst_amount').val(totalGST.toFixed(2));
+        $('#edit_grand_invoice_amount').val(grandTotal.toFixed(2));
 
-        $('#edit_sgst_amount').val(
-            sgstAmount.toFixed(2)
-        );
+        // TDS
+        let tds = invoiceAmount * 0.02;
 
-        $('#edit_total_gst_amount').val(
-            totalGST.toFixed(2)
-        );
+        // Amount received from developer (after TDS deduction)
+        let actualReceipt = grandTotal - tds;
 
-        $('#edit_grand_invoice_amount').val(
-            grandTotal.toFixed(2)
-        );
+        // Brokerage received after TDS
+        let bankReceipt = invoiceAmount - tds;
+
+        $('#edit_actual_receipt_amount').val(actualReceipt.toFixed(2));
+        $('#edit_tds_amount').val(tds.toFixed(2));
+        $('#edit_received_amount').val(bankReceipt.toFixed(2));
     }
 
 

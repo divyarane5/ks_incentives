@@ -8,6 +8,7 @@ use App\Models\Project;
 use App\Models\Developer;
 use App\Models\BusinessUnit;
 use App\Models\CompanyBankAccount;
+use App\Models\BookingBrokeragePayment;
 use App\Models\DeveloperBillingEntity;
 use App\Traits\UserHierarchyTrait;
 use App\Http\Requests\BookingRequest;
@@ -196,13 +197,23 @@ class BookingController extends Controller
                 })
 
                 ->addColumn('booking_amount', fn($row) => number_format($row->booking_amount ?? 0, 0))
+
                 ->addColumn('agreement_value', fn($row) => number_format($row->agreement_value ?? 0, 0))
+
                 ->addColumn('current_effective_amount', fn($row) => number_format($row->current_effective_amount ?? 0, 0))
+
                 ->addColumn('additional_kicker', fn($row) => number_format($row->additional_kicker ?? 0, 0))
+
                 ->addColumn('passback', fn($row) => number_format($row->passback ?? 0, 0))
+
                 ->addColumn('final_revenue', fn($row) => number_format($row->final_revenue ?? 0, 0))
-                // ->addColumn('total_paid_amount', fn($row) => number_format($row->total_paid_amount ?? 0, 0))
-                // ->addColumn('pending_amount', fn($row) => number_format($row->pending_amount ?? 0, 0))
+
+                /*
+                |--------------------------------------------------------------------------
+                | Invoice Summary
+                |--------------------------------------------------------------------------
+                */
+
                 ->addColumn('total_invoice_percent', function ($row) {
                     return number_format($row->total_invoice_percent ?? 0, 2) . '%';
                 })
@@ -211,9 +222,37 @@ class BookingController extends Controller
                     return number_format($row->total_invoice_amount ?? 0, 0);
                 })
 
+                ->addColumn('total_gst_amount', function ($row) {
+                    return number_format($row->total_gst_amount ?? 0, 0);
+                })
+
+                ->addColumn('total_grand_invoice_amount', function ($row) {
+                    return number_format($row->total_grand_invoice_amount ?? 0, 0);
+                })
+
+                /*
+                |--------------------------------------------------------------------------
+                | Collection Summary
+                |--------------------------------------------------------------------------
+                */
+
+                ->addColumn('total_actual_receipt_amount', function ($row) {
+                    return number_format($row->total_actual_receipt_amount ?? 0, 0);
+                })
+
                 ->addColumn('total_received_amount', function ($row) {
                     return number_format($row->total_received_amount ?? 0, 0);
                 })
+
+                ->addColumn('pending_collection_amount', function ($row) {
+                    return number_format($row->pending_collection_amount ?? 0, 0);
+                })
+
+                /*
+                |--------------------------------------------------------------------------
+                | Brokerage Summary
+                |--------------------------------------------------------------------------
+                */
 
                 ->addColumn('pending_brokerage_percent', function ($row) {
                     return number_format($row->pending_brokerage_percent ?? 0, 2) . '%';
@@ -223,13 +262,19 @@ class BookingController extends Controller
                     return number_format($row->pending_brokerage_amount ?? 0, 0);
                 })
 
+                /*
+                |--------------------------------------------------------------------------
+                | Payment Status
+                |--------------------------------------------------------------------------
+                */
+
                 ->addColumn('payment_status', function ($row) {
 
-                    if($row->payment_status == 'completed'){
+                    if ($row->payment_status == 'completed') {
                         return '<span class="badge bg-success">Completed</span>';
                     }
 
-                    if($row->payment_status == 'partial'){
+                    if ($row->payment_status == 'partial') {
                         return '<span class="badge bg-warning">Partial</span>';
                     }
 
@@ -531,8 +576,11 @@ class BookingController extends Controller
             'user.reportingManager.reportingManager.reportingManager',
             'brokeragePayments'
         ])->findOrFail($id);
-
-        return view('booking.show', compact('booking'));
+        $timeline = BookingBrokeragePayment::where('booking_id', $booking->id)
+            ->orderBy('invoice_date')
+            ->get();
+        $payments = $booking->brokeragePayments;
+        return view('booking.show', compact('booking', 'timeline', 'payments'));
     }
 
     public function sendBookingMail($id){
