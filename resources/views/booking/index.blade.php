@@ -280,6 +280,7 @@
                         name="invoice_amount"
                         id="invoice_amount"
                         class="form-control"
+                        step="0.01"
                         >
                   </div>
                   <div class="col-md-3 mb-3">
@@ -329,6 +330,7 @@
                      <input type="number"
                         name="grand_invoice_amount"
                         id="grand_invoice_amount"
+                        step="0.01"
                         readonly
                         class="form-control">
                   </div>
@@ -512,6 +514,7 @@
                         name="invoice_amount"
                         id="edit_invoice_amount"
                         class="form-control"
+                        step="0.01"
                         readonly>
                     </div>
                     <div class="col-md-6 mb-3">
