@@ -10,43 +10,32 @@ use App\Models\DeveloperLadder;
 class BrokerageCalculationService
 {
     /**
-     * Re-run brokerage after a booking changes. The site ladder is per project, but the AOP
-     * ladder counts all of a developer's bookings, so every project of the developer (old and
-     * new, if the booking moved) is recalculated.
+     * Re-run brokerage after a booking is saved or deleted (called from the Booking model, so it
+     * also covers changes made outside BookingController). Site ladder is per project; the AOP
+     * ladder is per developer, so the old and new project and developer are all redone.
      */
     public function recalculateForBooking(Booking $booking): void
     {
-        $developerIds = array_filter(array_unique([
-            $booking->developer_id,
-            $booking->getOriginal('developer_id'),
-        ]));
         $projectIds = array_filter(array_unique([
             $booking->project_id,
             $booking->getOriginal('project_id'),
         ]));
+        $developerIds = array_filter(array_unique([
+            $booking->developer_id,
+            $booking->getOriginal('developer_id'),
+        ]));
 
-        foreach ($developerIds as $developerId) {
-            $projectIds = array_merge($projectIds, $this->projectsOfDeveloper((int) $developerId));
-        }
-
-        foreach (array_unique($projectIds) as $projectId) {
+        foreach ($projectIds as $projectId) {
             $this->recalculateAll($projectId);
+            // recalculateAll leaves AOP at 0, so redo AOP for every developer on these projects.
+            $developerIds = array_merge($developerIds, Booking::where('project_id', $projectId)
+                ->whereNotNull('developer_id')->distinct()->pluck('developer_id')->all());
+        }
+
+        foreach (array_unique(array_map('intval', $developerIds)) as $developerId) {
+            $this->recalculateDeveloperAop($developerId);
         }
     }
-
-    public function recalculateDeveloper(int $developerId): void
-    {
-        foreach ($this->projectsOfDeveloper($developerId) as $projectId) {
-            $this->recalculateAll($projectId);
-        }
-    }
-
-    private function projectsOfDeveloper(int $developerId): array
-    {
-        return Booking::where('developer_id', $developerId)
-            ->distinct()->pluck('project_id')->map(fn ($id) => (int) $id)->all();
-    }
-
 
     public function recalculateAll($projectId)
     {
@@ -113,37 +102,36 @@ class BrokerageCalculationService
 
             $aopPercent = 0;
 
-            $aopWindow = DeveloperLadder::where('developer_id', $booking->developer_id)
-                ->where('status', 1)
-                ->whereDate('aop_s_date', '<=', $booking->booking_date)
-                ->whereDate('aop_e_date', '>=', $booking->booking_date)
-                ->orderByDesc('aop_s_date')
-                ->first();
+            // $aopWindow = DeveloperLadder::where('developer_id', $booking->developer_id)
+            //     ->where('status', 1)
+            //     ->whereDate('aop_s_date', '<=', $booking->booking_date)
+            //     ->whereDate('aop_e_date', '>=', $booking->booking_date)
+            //     ->orderByDesc('aop_s_date')
+            //     ->first();
 
-            if ($aopWindow) {
+            // if ($aopWindow) {
 
-                $developerRevenue = Booking::where('developer_id', $booking->developer_id)
-                    ->where('booking_confirm', 'approved')
-                    ->whereBetween('booking_date', [
-                        $aopWindow->aop_s_date,
-                        $aopWindow->aop_e_date
-                    ])
-                    // Whole AOP period, like the site ladder: once the developer's total for the
-                    // year reaches a step, every booking in that year gets the higher rate.
-                    ->sum('agreement_value');
+            //     $developerRevenue = Booking::where('developer_id', $booking->developer_id)
+            //         ->where('booking_confirm', 'approved')
+            //         ->whereBetween('booking_date', [
+            //             $aopWindow->aop_s_date,
+            //             $aopWindow->aop_e_date
+            //         ])
+            //         ->whereDate('booking_date', '<=', $booking->booking_date)
+            //         ->sum('agreement_value');
 
-                $aopPercent = DeveloperLadder::where('developer_id', $booking->developer_id)
-                    ->where('status', 1)
-                    ->whereDate('aop_s_date', '<=', $booking->booking_date)
-                    ->whereDate('aop_e_date', '>=', $booking->booking_date)
-                    ->where('min_aop', '<=', $developerRevenue)
-                    ->where(function ($q) use ($developerRevenue) {
-                        $q->where('max_aop', '>=', $developerRevenue)
-                        ->orWhereNull('max_aop');
-                    })
-                    ->orderByDesc('min_aop')
-                    ->value('ladder') ?? 0;
-            }
+            //     $aopPercent = DeveloperLadder::where('developer_id', $booking->developer_id)
+            //         ->where('status', 1)
+            //         ->whereDate('aop_s_date', '<=', $booking->booking_date)
+            //         ->whereDate('aop_e_date', '>=', $booking->booking_date)
+            //         ->where('min_aop', '<=', $developerRevenue)
+            //         ->where(function ($q) use ($developerRevenue) {
+            //             $q->where('max_aop', '>=', $developerRevenue)
+            //             ->orWhereNull('max_aop');
+            //         })
+            //         ->orderByDesc('min_aop')
+            //         ->value('ladder') ?? 0;
+            // }
 
             /* =========================================================
             * STEP 3: FINAL CALCULATION
@@ -175,42 +163,126 @@ class BrokerageCalculationService
             $booking->save();
         }
     }
-
-    // private function getProjectLadderPercent($projectId, $dealCount, $bookingDate)
-    // {
-    //     return ProjectLadder::where('project_id', $projectId)
-    //         ->where('status', 1)
-
-    //         // ✅ TIME WINDOW FILTER (MOST IMPORTANT FIX)
-    //         ->whereDate('project_s_date', '<=', $bookingDate)
-    //         ->whereDate('project_e_date', '>=', $bookingDate)
-
-    //         // optional fallback safety
-    //         ->where('s_booking', '<=', $dealCount)
-    //         ->where(function ($q) use ($dealCount) {
-    //             $q->where('e_booking', '>=', $dealCount)
-    //             ->orWhereNull('e_booking');
-    //         })
-
-    //         ->orderBy('s_booking', 'desc')
-    //         ->first()
-    //         ?->ladder ?? 0;
-    // }
-
-    private function getAopPercent($developerId, $revenue, $bookingDate)
+    public function recalculateDeveloperAop($developerId)
     {
-        $ladder = DeveloperLadder::where('developer_id', $developerId)
+        /*
+        |--------------------------------------------------------------------------
+        | Get all active AOP periods for this developer
+        |--------------------------------------------------------------------------
+        */
+    
+        $aopPeriods = DeveloperLadder::where('developer_id', $developerId)
             ->where('status', 1)
-            ->whereDate('aop_s_date', '<=', $bookingDate)
-            ->whereDate('aop_e_date', '>=', $bookingDate)
-            ->where('min_aop', '<=', $revenue)
-            ->where(function ($q) use ($revenue) {
-                $q->where('max_aop', '>=', $revenue)
-                  ->orWhereNull('max_aop');
-            })
-            ->orderBy('min_aop', 'desc')
-            ->first();
-
-        return $ladder ? $ladder->ladder : 0;
+            ->whereNull('deleted_at')
+            ->select('aop_s_date', 'aop_e_date')
+            ->distinct()
+            ->get();
+    
+        if ($aopPeriods->isEmpty()) {
+            return;
+        }
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Process each AOP period separately
+        |--------------------------------------------------------------------------
+        */
+    
+        foreach ($aopPeriods as $period) {
+    
+            /*
+            |--------------------------------------------------------------------------
+            | Get ALL approved bookings of this developer
+            | within this AOP period
+            |--------------------------------------------------------------------------
+            */
+    
+            $bookings = Booking::where('developer_id', $developerId)
+                ->where('booking_confirm', 'approved')
+                ->whereNotNull('booking_date')
+                ->whereBetween('booking_date', [
+                    $period->aop_s_date,
+                    $period->aop_e_date
+                ])
+                ->orderBy('booking_date')
+                ->orderBy('id')
+                ->get();
+    
+            if ($bookings->isEmpty()) {
+                continue;
+            }
+    
+            /*
+            |--------------------------------------------------------------------------
+            | Calculate TOTAL agreement value for the entire AOP period
+            |--------------------------------------------------------------------------
+            */
+    
+            $totalAgreement = $bookings->sum('agreement_value');
+    
+            /*
+            |--------------------------------------------------------------------------
+            | Find the applicable AOP ladder
+            |--------------------------------------------------------------------------
+            */
+    
+            $ladder = DeveloperLadder::where('developer_id', $developerId)
+                ->where('status', 1)
+                ->whereNull('deleted_at')
+                ->where('aop_s_date', $period->aop_s_date)
+                ->where('aop_e_date', $period->aop_e_date)
+                ->where('min_aop', '<=', $totalAgreement)
+                ->where(function ($q) use ($totalAgreement) {
+                    $q->where('max_aop', '>=', $totalAgreement)
+                        ->orWhereNull('max_aop');
+                })
+                ->orderByDesc('min_aop')
+                ->first();
+    
+            /*
+            |--------------------------------------------------------------------------
+            | AOP percentage for ALL bookings in this period
+            |--------------------------------------------------------------------------
+            */
+    
+            $aopPercent = $ladder ? (float) $ladder->ladder : 0;
+    
+            /*
+            |--------------------------------------------------------------------------
+            | Update every booking in this AOP period
+            |--------------------------------------------------------------------------
+            */
+    
+            foreach ($bookings as $booking) {
+    
+                $basePercent = (float) $booking->base_brokerage_percent;
+                $sitePercent = (float) $booking->site_ladder_percent;
+    
+                $totalPercent = $basePercent
+                    + $sitePercent
+                    + $aopPercent;
+    
+                $agreementValue = (float) $booking->agreement_value;
+    
+                $brokerageAmount = round(
+                    ($agreementValue * $totalPercent) / 100,
+                    2
+                );
+    
+                $finalRevenue = $brokerageAmount
+                    + ($booking->additional_kicker ?? 0)
+                    - ($booking->passback ?? 0);
+    
+                $booking->aop_ladder_percent = $aopPercent;
+                $booking->total_brokerage_percent = $totalPercent;
+                $booking->current_effective_amount = $brokerageAmount;
+                $booking->final_revenue = $finalRevenue;
+                $booking->amount_receivable = round($finalRevenue * 0.98, 2);
+                $booking->tds_amount = round($finalRevenue * 0.02, 2);
+    
+                $booking->save();
+            }
+        }
     }
+
 }

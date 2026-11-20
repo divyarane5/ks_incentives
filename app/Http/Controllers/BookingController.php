@@ -492,8 +492,11 @@ class BookingController extends Controller
 
         $booking->save();
 
-        // Recalculate ladders
+        // Recalculate Site Ladder
         $service->recalculateAll($booking->project_id);
+        
+        // Recalculate Developer AOP
+        $service->recalculateDeveloperAop($booking->developer_id);
 
         return redirect()
             ->route('booking.index')
@@ -522,28 +525,35 @@ class BookingController extends Controller
             'teamOptions'
         ));
     }
-    public function update(BookingRequest $request, $id, BrokerageCalculationService $service)
-    {
+    public function update(
+        BookingRequest $request,
+        $id,
+        BrokerageCalculationService $service
+        ) {
         $booking = Booking::findOrFail($id);
-
+    
+        // Store old values before updating
+        $oldProjectId   = $booking->project_id;
+        $oldDeveloperId = $booking->developer_id;
+    
         $booking->update([
-            'project_id'        => $request->project_id,
-            'developer_id'      => $request->developer_id,
-            'client_name'       => $request->client_name,
-            'booking_date'      => $request->booking_date,
-            'client_contact'    => $request->client_contact,
-            'lead_source'       => $request->lead_source,
-            'tower' => $request->tower ?? '',
-            'wing' => $request->wing ?? '',
-            'flat_no' => $request->flat_no ?? '',
-            'configuration' => $request->configuration ?? '',
-            'booking_amount'    => $request->booking_amount,
-            'agreement_value'   => $request->agreement_value,
-            'passback'          => $request->passback,
-            'additional_kicker' => $request->additional_kicker,
-            'registration_date' => $request->registration_date,
-            'sales_user_id'     => $request->sales_user_id,
-            'remark'            => $request->remark,
+            'project_id'         => $request->project_id,
+            'developer_id'       => $request->developer_id,
+            'client_name'        => $request->client_name,
+            'booking_date'       => $request->booking_date,
+            'client_contact'     => $request->client_contact,
+            'lead_source'        => $request->lead_source,
+            'tower'              => $request->tower ?? '',
+            'wing'               => $request->wing ?? '',
+            'flat_no'            => $request->flat_no ?? '',
+            'configuration'      => $request->configuration ?? '',
+            'booking_amount'     => $request->booking_amount,
+            'agreement_value'    => $request->agreement_value,
+            'passback'           => $request->passback,
+            'additional_kicker'  => $request->additional_kicker,
+            'registration_date'  => $request->registration_date,
+            'sales_user_id'      => $request->sales_user_id,
+            'remark'             => $request->remark,
         ]);
 
         // Team at the time of booking: refill from the reporting chain, or keep what was picked by hand.
@@ -568,11 +578,43 @@ class BookingController extends Controller
             }
         }
 
-        $service = new BrokerageCalculationService();
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Recalculate OLD project
+        |--------------------------------------------------------------------------
+        */
+    
+        if ($oldProjectId != $booking->project_id) {
+            $service->recalculateAll($oldProjectId);
+        }
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Recalculate NEW project
+        |--------------------------------------------------------------------------
+        */
+    
         $service->recalculateAll($booking->project_id);
-        //dd($booking->project_id);
-       // dd(Booking::where('project_id',$booking->project_id)->count());
-       
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Recalculate OLD developer AOP
+        |--------------------------------------------------------------------------
+        */
+    
+        if ($oldDeveloperId != $booking->developer_id) {
+            $service->recalculateDeveloperAop($oldDeveloperId);
+        }
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Recalculate NEW developer AOP
+        |--------------------------------------------------------------------------
+        */
+    
+        $service->recalculateDeveloperAop($booking->developer_id);
+    
         return redirect()
             ->route('booking.index')
             ->with('success', 'Booking Updated Successfully');
@@ -658,16 +700,26 @@ class BookingController extends Controller
         $booking->save();
 
         if ($request->booking_confirm === 'approved') {
-
+        
+            // Recalculate Site Ladder
             app(\App\Services\BrokerageCalculationService::class)
                 ->recalculateAll($booking->project_id);
-
+        
+            // Recalculate Developer AOP
+            app(\App\Services\BrokerageCalculationService::class)
+                ->recalculateDeveloperAop($booking->developer_id);
+        
         } else {
-
+        
             $this->resetBrokerage($booking);
-
+        
+            // Recalculate Site Ladder
             app(\App\Services\BrokerageCalculationService::class)
                 ->recalculateAll($booking->project_id);
+        
+            // Recalculate Developer AOP
+            app(\App\Services\BrokerageCalculationService::class)
+                ->recalculateDeveloperAop($booking->developer_id);
         }
 
         return response()->json([
