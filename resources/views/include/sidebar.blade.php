@@ -157,7 +157,7 @@
             'incentive-ledger-view'
         ])
 
-        <li class="menu-item {{ in_array(Request::segment(1), ['incentives', 'incentive-slabs']) ? 'active open' : '' }}">
+        <li class="menu-item {{ in_array(Request::segment(1), ['incentives', 'incentive-slabs', 'incentive-ledger']) ? 'active open' : '' }}">
 
             <a href="javascript:void(0);" class="menu-link menu-toggle">
                 <i class="menu-icon tf-icons bx bx-rupee"></i>
@@ -186,8 +186,8 @@
 
                 {{-- Ledger --}}
                 @can('incentive-ledger-view')
-                <li class="menu-item">
-                    <a href="javascript:void(0);" class="menu-link">
+                <li class="menu-item {{ Request::segment(1) == 'incentive-ledger' ? 'active' : '' }}">
+                    <a href="{{ route('incentive-ledger.index') }}" class="menu-link">
                         <div>Ledger & Freeze</div>
                     </a>
                 </li>

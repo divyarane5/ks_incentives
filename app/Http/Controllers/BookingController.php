@@ -508,11 +508,18 @@ class BookingController extends Controller
         $project_name   = Project::all();
         $salesManagers  = User::all();   // <-- FIXED
 
+        // People who can be picked as TL / Sr. TL / CH on this booking
+        $teamOptions = [];
+        foreach (['TL' => 'TL', 'Sr. TL' => 'Sr. TL', 'CH' => 'CH'] as $key => $role) {
+            $teamOptions[$key] = User::role($role)->orderBy('name')->get(['id', 'name', 'status']);
+        }
+
         return view('booking.edit', compact(
             'booking',
             'developer_name',
             'project_name',
-            'salesManagers'
+            'salesManagers',
+            'teamOptions'
         ));
     }
     public function update(BookingRequest $request, $id, BrokerageCalculationService $service)
@@ -538,6 +545,29 @@ class BookingController extends Controller
             'sales_user_id'     => $request->sales_user_id,
             'remark'            => $request->remark,
         ]);
+
+        // Team at the time of booking: refill from the reporting chain, or keep what was picked by hand.
+        if ($request->boolean('team_auto')) {
+            $booking->team_source = null; // the model refills it on save
+            $booking->save();
+        } elseif ($request->hasAny(['tl_user_id', 'sr_tl_user_id', 'ch_user_id'])) {
+            $picked = [
+                'tl_user_id' => $request->input('tl_user_id') ?: null,
+                'sr_tl_user_id' => $request->input('sr_tl_user_id') ?: null,
+                'ch_user_id' => $request->input('ch_user_id') ?: null,
+            ];
+            $current = [
+                'tl_user_id' => $booking->tl_user_id,
+                'sr_tl_user_id' => $booking->sr_tl_user_id,
+                'ch_user_id' => $booking->ch_user_id,
+            ];
+            if (array_map('intval', $picked) != array_map('intval', $current)) {
+                $booking->fill($picked);
+                $booking->team_source = 'manual';
+                $booking->save();
+            }
+        }
+
         $service = new BrokerageCalculationService();
         $service->recalculateAll($booking->project_id);
         //dd($booking->project_id);

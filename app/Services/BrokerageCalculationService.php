@@ -9,10 +9,52 @@ use App\Models\DeveloperLadder;
 
 class BrokerageCalculationService
 {
+    /**
+     * Re-run brokerage after a booking changes. The site ladder is per project, but the AOP
+     * ladder counts all of a developer's bookings, so every project of the developer (old and
+     * new, if the booking moved) is recalculated.
+     */
+    public function recalculateForBooking(Booking $booking): void
+    {
+        $developerIds = array_filter(array_unique([
+            $booking->developer_id,
+            $booking->getOriginal('developer_id'),
+        ]));
+        $projectIds = array_filter(array_unique([
+            $booking->project_id,
+            $booking->getOriginal('project_id'),
+        ]));
+
+        foreach ($developerIds as $developerId) {
+            $projectIds = array_merge($projectIds, $this->projectsOfDeveloper((int) $developerId));
+        }
+
+        foreach (array_unique($projectIds) as $projectId) {
+            $this->recalculateAll($projectId);
+        }
+    }
+
+    public function recalculateDeveloper(int $developerId): void
+    {
+        foreach ($this->projectsOfDeveloper($developerId) as $projectId) {
+            $this->recalculateAll($projectId);
+        }
+    }
+
+    private function projectsOfDeveloper(int $developerId): array
+    {
+        return Booking::where('developer_id', $developerId)
+            ->distinct()->pluck('project_id')->map(fn ($id) => (int) $id)->all();
+    }
+
 
     public function recalculateAll($projectId)
     {
-        $project = Project::findOrFail($projectId);
+        $project = Project::find($projectId);
+
+        if (! $project) {
+            return;
+        }
 
         $basePercent = (float) $project->base_brokerage_percent;
 
@@ -86,7 +128,8 @@ class BrokerageCalculationService
                         $aopWindow->aop_s_date,
                         $aopWindow->aop_e_date
                     ])
-                    ->whereDate('booking_date', '<=', $booking->booking_date)
+                    // Whole AOP period, like the site ladder: once the developer's total for the
+                    // year reaches a step, every booking in that year gets the higher rate.
                     ->sum('agreement_value');
 
                 $aopPercent = DeveloperLadder::where('developer_id', $booking->developer_id)

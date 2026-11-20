@@ -19,33 +19,45 @@ class Booking extends Model
             $model->created_by = is_object(Auth::user()) ? Auth::user()->id : 1;
         });
 
-        // ✅ AFTER CREATE
-        static::created(function ($booking) {
-            app(\App\Services\BrokerageCalculationService::class)
-                ->recalculateAll($booking->project_id);
-        });
-
-        // ✅ AFTER UPDATE (only important fields)
-        static::updated(function ($booking) {
-
-            if (
-                $booking->isDirty([
-                    'agreement_value',
-                    'developer_id',
-                    'booking_date',
-                    'project_id',
-                    'booking_confirm'
-                ])
-            ) {
-                app(\App\Services\BrokerageCalculationService::class)
-                    ->recalculateAll($booking->project_id);
+        // Save the TL / Sr. TL / CH as they were on the booking date, unless someone set them by hand.
+        static::saving(function ($booking) {
+            if (! $booking->sales_user_id) {
+                return;
+            }
+            $teamTouched = $booking->isDirty(['tl_user_id', 'sr_tl_user_id', 'ch_user_id']);
+            if ($teamTouched && $booking->team_source === 'manual') {
+                return;
+            }
+            $needsTeam = ! $booking->exists
+                || $booking->isDirty(['sales_user_id', 'booking_date'])
+                || $booking->team_source === null;
+            if ($needsTeam && $booking->team_source !== 'manual') {
+                $team = app(\App\Services\BookingTeamResolver::class)
+                    ->teamFor((int) $booking->sales_user_id, $booking->booking_date);
+                $booking->fill($team);
+                $booking->team_source = 'auto';
             }
         });
 
-        // ✅ AFTER DELETE
+        // Brokerage: re-run the project's site ladder and the developer's AOP across all its projects.
+        static::created(function ($booking) {
+            app(\App\Services\BrokerageCalculationService::class)->recalculateForBooking($booking);
+        });
+
+        static::updated(function ($booking) {
+            if ($booking->wasChanged([
+                'agreement_value',
+                'developer_id',
+                'booking_date',
+                'project_id',
+                'booking_confirm',
+            ])) {
+                app(\App\Services\BrokerageCalculationService::class)->recalculateForBooking($booking);
+            }
+        });
+
         static::deleted(function ($booking) {
-            app(\App\Services\BrokerageCalculationService::class)
-                ->recalculateAll($booking->project_id);
+            app(\App\Services\BrokerageCalculationService::class)->recalculateForBooking($booking);
         });
     }
 
@@ -66,6 +78,10 @@ class Booking extends Model
         'additional_kicker',
         'registration_date',
         'sales_user_id',
+        'tl_user_id',
+        'sr_tl_user_id',
+        'ch_user_id',
+        'team_source',
         'remark',
         'base_brokerage_percent',
         'site_ladder_percent',
@@ -97,6 +113,21 @@ class Booking extends Model
     {
         return $this->belongsTo(User::class, 'sales_user_id');
     }
+    public function teamLeader()
+    {
+        return $this->belongsTo(User::class, 'tl_user_id');
+    }
+
+    public function seniorTeamLeader()
+    {
+        return $this->belongsTo(User::class, 'sr_tl_user_id');
+    }
+
+    public function clusterHead()
+    {
+        return $this->belongsTo(User::class, 'ch_user_id');
+    }
+
     public function brokeragePayments()
     {
         return $this->hasMany(BookingBrokeragePayment::class);

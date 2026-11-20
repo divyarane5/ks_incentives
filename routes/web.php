@@ -389,6 +389,12 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::resource('incentive-slabs',App\Http\Controllers\IncentiveSlabController::class);
 
+    // Quarterly incentives on the year so far, with freeze
+    Route::get('incentive-ledger', [App\Http\Controllers\IncentiveLedgerController::class, 'index'])->name('incentive-ledger.index');
+    Route::post('incentive-ledger/freeze', [App\Http\Controllers\IncentiveLedgerController::class, 'freeze'])->name('incentive-ledger.freeze');
+    Route::post('incentive-ledger/unfreeze', [App\Http\Controllers\IncentiveLedgerController::class, 'unfreeze'])->name('incentive-ledger.unfreeze');
+    Route::get('incentive-ledger/export', [App\Http\Controllers\IncentiveLedgerController::class, 'export'])->name('incentive-ledger.export');
+
     Route::prefix('incentives')->group(function () {
 
         Route::get('/preview', [App\Http\Controllers\IncentiveController::class, 'preview'])
