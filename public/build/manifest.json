@@ -1,0 +1,17 @@
+{
+  "resources/css/crm.css": {
+    "file": "assets/crm-Bs0PEM0i.css",
+    "name": "crm",
+    "names": [
+      "crm.css"
+    ],
+    "src": "resources/css/crm.css",
+    "isEntry": true
+  },
+  "resources/js/crm.js": {
+    "file": "assets/crm-DElevJBS.js",
+    "name": "crm",
+    "src": "resources/js/crm.js",
+    "isEntry": true
+  }
+}

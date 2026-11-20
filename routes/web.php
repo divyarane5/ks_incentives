@@ -112,6 +112,12 @@ Route::group(['middleware' => 'auth'], function () {
     // Dashboard
     Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
         ->name('dashboard');
+
+    // RealtySuite: who can open which module (KeyPeople), and a person's own incentive (KeyEarn)
+    Route::get('/module-access', [App\Http\Controllers\ModuleAccessController::class, 'index'])->name('module-access.index');
+    Route::post('/module-access/roles', [App\Http\Controllers\ModuleAccessController::class, 'updateRoles'])->name('module-access.roles');
+    Route::post('/module-access/user', [App\Http\Controllers\ModuleAccessController::class, 'updateUser'])->name('module-access.user');
+    Route::get('/my-incentive', [App\Http\Controllers\MyIncentiveController::class, 'show'])->name('my-incentive');
     Route::match(['get','post'],'/incentive-dashboard-view',[App\Http\Controllers\DashboardController::class,'dashboardTwo']);
     Route::get('/incentive-dashboard-view-reset',[App\Http\Controllers\DashboardController::class,'resetDashboard']);
 

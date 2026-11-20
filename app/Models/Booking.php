@@ -113,6 +113,11 @@ class Booking extends Model
     {
         return $this->belongsTo(User::class, 'sales_user_id');
     }
+    public function lead()
+    {
+        return $this->belongsTo(Lead::class);
+    }
+
     public function teamLeader()
     {
         return $this->belongsTo(User::class, 'tl_user_id');

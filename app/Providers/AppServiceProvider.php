@@ -16,8 +16,21 @@ class AppServiceProvider extends ServiceProvider
 
     public function boot()
     {
+        // `php artisan serve` hides the Windows temp folder from PHP, so file uploads fail
+        // on a laptop. Pass it through. (Has no effect on the real server.)
+        array_push(\Illuminate\Foundation\Console\ServeCommand::$passthroughVariables, 'TEMP', 'TMP', 'TMPDIR');
+
         // Share business unit with all views
         View::composer('*', function ($view) {
+            // KeyLeads screens don't use it, and they render many small views per page.
+            if (str_starts_with($view->getName(), 'crm.')) {
+                return;
+            }
+            static $resolved = false, $cached = null;
+            if ($resolved) {
+                $view->with('activeBusinessUnit', $cached);
+                return;
+            }
             $unit = null;
 
             if (Auth::check()) {
@@ -30,6 +43,8 @@ class AppServiceProvider extends ServiceProvider
                 $unit = BusinessUnit::first();
             }
 
+            $resolved = true;
+            $cached = $unit;
             $view->with('activeBusinessUnit', $unit);
         });
     }

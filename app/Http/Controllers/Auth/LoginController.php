@@ -23,15 +23,56 @@ class LoginController extends Controller
     protected function credentials(Request $request)
     {
         return [
-            'email' => $request->email,
+            'email' => $this->loginEmail($request),
             'password' => $request->password,
             'status' => 'active',
         ];
     }
 
+    /**
+     * Sales staff can also sign in with their mobile number (official or personal contact).
+     */
+    private function loginEmail(Request $request): ?string
+    {
+        $login = trim((string) $request->email);
+        if ($login === '' || str_contains($login, '@')) {
+            return $login;
+        }
+
+        $digits = substr(preg_replace('/\D+/', '', $login), -10);
+        if (strlen($digits) !== 10) {
+            return $login;
+        }
+
+        $user = User::where('status', 'Active')
+            ->where(fn ($q) => $q->where('official_contact', 'like', '%'.$digits)->orWhere('personal_contact', 'like', '%'.$digits))
+            ->get(['id', 'email'])->first();
+
+        return $user?->email ?? $login;
+    }
+
+    /** Email or a 10-digit mobile number. */
+    protected function validateLogin(Request $request)
+    {
+        $request->validate([
+            $this->username() => 'required|string',
+            'password' => 'required|string',
+        ]);
+    }
+
+    /** Sales staff (FOS, TL, Sr. TL, CH) start on KeyLeads; everyone else on the back office. */
+    protected function authenticated(Request $request, $user)
+    {
+        if ($user->usesCrm() && ! $user->isAdmin()) {
+            return redirect()->intended(route('crm.dashboard'));
+        }
+
+        return null;
+    }
+
     protected function sendFailedLoginResponse(Request $request)
     {
-        $user = \App\Models\User::where('email', $request->email)->first();
+        $user = \App\Models\User::where('email', $this->loginEmail($request))->first();
 
         if ($user && $user->status === 'inactive') {
             throw \Illuminate\Validation\ValidationException::withMessages([

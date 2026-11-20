@@ -14,6 +14,7 @@ class IncentiveSlabController extends Controller
      */
     public function index()
     {
+        abort_unless(auth()->user()->can('incentive-slab-view'), 403);
         $slabs = IncentiveSlab::orderBy('financial_year', 'desc')
             ->orderBy('role')
             ->orderBy('from_times')
@@ -24,11 +25,13 @@ class IncentiveSlabController extends Controller
 
     public function create()
     {
+        abort_unless(auth()->user()->can('incentive-slab-create'), 403);
         return view('incentive_slabs.create');
     }
 
     public function store(Request $request)
     {
+        abort_unless(auth()->user()->can('incentive-slab-create'), 403);
         $request->validate([
             'financial_year' => 'required',
             'role' => 'required',
@@ -47,6 +50,7 @@ class IncentiveSlabController extends Controller
 
     public function edit($id)
     {
+        abort_unless(auth()->user()->can('incentive-slab-edit'), 403);
         $slab = IncentiveSlab::findOrFail($id);
 
         return view('incentive_slabs.edit', compact('slab'));
@@ -54,6 +58,7 @@ class IncentiveSlabController extends Controller
 
     public function update(Request $request, $id)
     {
+        abort_unless(auth()->user()->can('incentive-slab-edit'), 403);
         $request->validate([
             'financial_year' => 'required',
             'role' => 'required',
@@ -74,6 +79,7 @@ class IncentiveSlabController extends Controller
 
     public function destroy($id)
     {
+        abort_unless(auth()->user()->can('incentive-slab-delete'), 403);
         $slab = IncentiveSlab::findOrFail($id);
 
         $slab->delete();

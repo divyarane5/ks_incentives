@@ -11,6 +11,7 @@
     }
 </style>
 <div class="container-xxl flex-grow-1 container-p-y">
+    @include('include.modules')
 
 <h4 class="fw-bold mb-4">Brokerage CRM Dashboard</h4>
 

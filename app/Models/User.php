@@ -256,4 +256,143 @@ class User extends Authenticatable
 
         return $manager;
     }
+
+    /* =====================================================================
+     * KeyLeads (CRM) bridge
+     *
+     * KeyLeads thinks in four levels: admin, general manager, manager, sales.
+     * They come from the HR roles here, so there is one employee list:
+     * Superadmin/Admin = admin, CH and Sr. TL = general manager, TL = manager,
+     * FOS = sales. Others only if given the KeyLeads module (they act as admin).
+     * ===================================================================== */
+
+    public const ROLE_ADMIN = 'admin';
+    public const ROLE_GENERAL_MANAGER = 'general_manager';
+    public const ROLE_MANAGER = 'manager';
+    public const ROLE_SALES = 'sales';
+
+    /** HR role name => KeyLeads level, strongest first. */
+    public const CRM_ROLE_MAP = [
+        'Superadmin' => self::ROLE_ADMIN,
+        'Admin' => self::ROLE_ADMIN,
+        'CH' => self::ROLE_GENERAL_MANAGER,
+        'Sr. TL' => self::ROLE_GENERAL_MANAGER,
+        'TL' => self::ROLE_MANAGER,
+        'FOS' => self::ROLE_SALES,
+    ];
+
+    private ?string $crmRoleCache = null;
+
+    private bool $crmRoleLoaded = false;
+
+    /** KeyLeads level for this person, or null if they don't use KeyLeads. */
+    public function crmRole(): ?string
+    {
+        if (! $this->crmRoleLoaded) {
+            $names = $this->getRoleNames()->all();
+            $this->crmRoleCache = null;
+            foreach (self::CRM_ROLE_MAP as $hrRole => $level) {
+                if (in_array($hrRole, $names, true)) {
+                    $this->crmRoleCache = $level;
+                    break;
+                }
+            }
+            // Anyone else given KeyLeads (e.g. Marketing) works on all leads, like an admin.
+            if ($this->crmRoleCache === null && $this->can('module-keyleads')) {
+                $this->crmRoleCache = self::ROLE_ADMIN;
+            }
+            $this->crmRoleLoaded = true;
+        }
+
+        return $this->crmRoleCache;
+    }
+
+    /** KeyLeads code reads $user->role. */
+    public function getRoleAttribute(): ?string
+    {
+        return $this->crmRole();
+    }
+
+    /** KeyLeads is a RealtySuite module: the person needs the module and a KeyLeads level. */
+    public function usesCrm(): bool
+    {
+        return $this->can('module-keyleads') && $this->crmRole() !== null;
+    }
+
+    public function isAdmin(): bool
+    {
+        return $this->crmRole() === self::ROLE_ADMIN;
+    }
+
+    public function getIsActiveAttribute(): bool
+    {
+        return strcasecmp((string) $this->status, 'Active') === 0;
+    }
+
+    /** Phone used for sign-in, WhatsApp {my_phone} and Excel owner matching. */
+    public function getPhoneAttribute(): ?string
+    {
+        return $this->official_contact ?: ($this->personal_contact ?: null);
+    }
+
+    public function scopeActive($query)
+    {
+        return $query->where($this->getTable().'.status', 'Active');
+    }
+
+    /** People who use KeyLeads, optionally only some levels. */
+    public function scopeCrmUsers($query, ?array $levels = null)
+    {
+        $hrRoles = array_keys(array_filter(self::CRM_ROLE_MAP, fn ($l) => $levels === null || in_array($l, $levels, true)));
+
+        return $query->whereHas('roles', fn ($q) => $q->whereIn('name', $hrRoles));
+    }
+
+    public function manager()
+    {
+        return $this->belongsTo(User::class, 'reporting_manager_id');
+    }
+
+    public function reportees()
+    {
+        return $this->hasMany(User::class, 'reporting_manager_id');
+    }
+
+    public function leads()
+    {
+        return $this->hasMany(Lead::class, 'owner_id');
+    }
+
+    /**
+     * This user plus everyone below them in the reporting tree.
+     * A manager sees their own leads and their whole team's.
+     *
+     * @return array<int>
+     */
+    public function teamUserIds(): array
+    {
+        $ids = [$this->id];
+        $frontier = [$this->id];
+
+        while ($frontier) {
+            $frontier = User::whereIn('reporting_manager_id', $frontier)
+                ->whereNotIn('id', $ids)
+                ->pluck('id')
+                ->all();
+            $ids = array_merge($ids, $frontier);
+        }
+
+        return $ids;
+    }
+
+    /** Active people this user may hand leads to: everyone in KeyLeads for admins, otherwise their own team. */
+    public static function assignableBy(User $user)
+    {
+        $q = self::active()->crmUsers()->orderBy('name');
+        if (! $user->isAdmin()) {
+            $q->whereIn('id', $user->teamUserIds());
+        }
+
+        return $q->get(['id', 'name']);
+    }
 }

@@ -25,6 +25,137 @@
             </a>
         </li>
 
+        @php
+            $isSAorAdmin = isSuperAdmin() || isAdmin();
+            $krea = $isSAorAdmin || auth()->user()->businessUnit?->code === 'KREA';
+        @endphp
+
+        {{-- ================= KeyLeads ================= --}}
+        @if(auth()->user()?->usesCrm())
+        <li class="menu-header small text-uppercase"><span class="menu-header-text">KeyLeads</span></li>
+        <li class="menu-item">
+            <a href="{{ route('crm.dashboard') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-phone-call"></i>
+                <div>Leads</div>
+            </a>
+        </li>
+        @endif
+
+        {{-- ================= KeyBookings ================= --}}
+        @can('module-keybookings')
+        <li class="menu-header small text-uppercase"><span class="menu-header-text">KeyBookings</span></li>
+        @if($krea)
+            @can('booking-view')
+            <li class="menu-item {{ Request::segment(1) == 'booking' ? 'active' : '' }}">
+                <a href="{{ route('booking.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-book"></i>
+                    <div>Bookings</div>
+                </a>
+            </li>
+            @endcan
+            @can('project-view')
+            <li class="menu-item {{ Request::segment(1) == 'project' ? 'active' : '' }}">
+                <a href="{{ route('project.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-buildings"></i>
+                    <div>Projects</div>
+                </a>
+            </li>
+            @endcan
+            @can('developer-view')
+            <li class="menu-item {{ Request::segment(1) == 'developer' ? 'active' : '' }}">
+                <a href="{{ route('developer.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-briefcase"></i>
+                    <div>Developers</div>
+                </a>
+            </li>
+            @endcan
+        @endif
+        {{-- Mandate Section (unchanged) --}}
+        @if($isSAorAdmin || auth()->user()->businessUnit?->code === 'AI')
+            <li class="menu-item {{ in_array(Request::segment(1), ['mandate_projects','channel_partners','client-enquiries']) ? 'active open' : '' }}">
+                <a href="javascript:void(0);" class="menu-link menu-toggle">
+                    <i class="menu-icon tf-icons bx bx-briefcase"></i>
+                    <div>Mandate</div>
+                </a>
+
+                <ul class="menu-sub">
+
+                    @if($isSAorAdmin || canAccessModule('mandate_project-view', ['AI']))
+                        <li class="menu-item {{ Request::segment(1) == 'mandate_projects' ? 'active' : '' }}">
+                            <a href="{{ route('mandate_projects.index') }}" class="menu-link">
+                                <div>Mandate Projects</div>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if($isSAorAdmin || canAccessModule('channel-partner-view', ['AI']))
+                        <li class="menu-item {{ Request::segment(1) == 'channel_partners' ? 'active' : '' }}">
+                            <a href="{{ route('channel_partners.index') }}" class="menu-link">
+                                <div>Channel Partner</div>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if($isSAorAdmin || canAccessModule('client-enquiry-view', ['AI']))
+                        <li class="menu-item {{ Request::segment(1) == 'client-enquiries' ? 'active' : '' }}">
+                            <a href="{{ route('client-enquiries.index') }}" class="menu-link">
+                                <div>Client Enquiries</div>
+                            </a>
+                        </li>
+                    @endif
+
+                    @if(canAccessModule('mandate-booking-view', ['AI']))
+                        <li class="menu-item {{ Request::segment(1) == 'mandate_bookings' ? 'active' : '' }}">
+                            <a href="{{ route('mandate_bookings.index') }}" class="menu-link">
+                                <div>Mandate Bookings</div>
+                            </a>
+                        </li>
+                    @endif
+
+
+
+                </ul>
+            </li>
+        @endif
+        @endcan
+
+        {{-- ================= KeyAccounts ================= --}}
+        @can('module-keyaccounts')
+        <li class="menu-header small text-uppercase"><span class="menu-header-text">KeyAccounts</span></li>
+        @if($krea)
+            @can('payment-view')
+            <li class="menu-item">
+                <a href="{{ route('brokerage-payments.index') }}"
+                class="menu-link">
+
+                <i class="menu-icon tf-icons bx bx-money"></i>
+
+                <div>Brokerage Payments</div>
+                </a>
+            </li>
+            @endcan
+            @can('company-bank-view')
+            <li class="menu-item {{ Request::segment(1) == 'company-bank' ? 'active' : '' }}">
+                <a href="{{ route('company-bank.index') }}" class="menu-link">
+                    <i class="menu-icon tf-icons bx bx-bank"></i>
+                    <div>Company Bank Accounts</div>
+                </a>
+            </li>
+            @endcan
+        @endif
+                    @can('mandate-booking-view')
+                        <li class="menu-item {{ Request::segment(1) == 'brokerage-ledgers' ? 'active' : '' }}">
+                            <a href="{{ url('/brokerage-ledgers') }}" class="menu-link">
+                                <i class="menu-icon tf-icons bx bx-spreadsheet"></i>
+                                <div>Brokerage Ledgers</div>
+                            </a>
+                        </li>
+                    @endcan
+        @endcan
+
+        {{-- ================= KeyPeople ================= --}}
+        @can('module-keypeople')
+        <li class="menu-header small text-uppercase"><span class="menu-header-text">KeyPeople</span></li>
         @can('user-view')
         <li class="menu-item {{ (Request::segment(1) == 'users') ? 'active': '' }}">
             <a href="{{ route('users.index') }}" class="menu-link">
@@ -94,61 +225,25 @@
         </li>
         @endcanany
 
-        @php
-            $isSAorAdmin = isSuperAdmin() || isAdmin();
-        @endphp
-
-        {{-- ✅ CP items as separate menu items --}}
-        @if($isSAorAdmin || auth()->user()->businessUnit?->code === 'KREA')
-
-            @can('project-view')
-            <li class="menu-item {{ Request::segment(1) == 'project' ? 'active' : '' }}">
-                <a href="{{ route('project.index') }}" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-buildings"></i>
-                    <div>Projects</div>
-                </a>
-            </li>
-            @endcan
-
-            @can('developer-view')
-            <li class="menu-item {{ Request::segment(1) == 'developer' ? 'active' : '' }}">
-                <a href="{{ route('developer.index') }}" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-briefcase"></i>
-                    <div>Developers</div>
-                </a>
-            </li>
-            @endcan
-            @can('company-bank-view')
-            <li class="menu-item {{ Request::segment(1) == 'company-bank' ? 'active' : '' }}">
-                <a href="{{ route('company-bank.index') }}" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-bank"></i>
-                    <div>Company Bank Accounts</div>
-                </a>
-            </li>
-            @endcan
-
-            @can('booking-view')
-            <li class="menu-item {{ Request::segment(1) == 'booking' ? 'active' : '' }}">
-                <a href="{{ route('booking.index') }}" class="menu-link">
-                    <i class="menu-icon tf-icons bx bx-book"></i>
-                    <div>Bookings</div>
-                </a>
-            </li>
-            @endcan
-            @can('payment-view')
-            <li class="menu-item">
-                <a href="{{ route('brokerage-payments.index') }}"
-                class="menu-link">
-
-                <i class="menu-icon tf-icons bx bx-money"></i>
-
-                <div>Brokerage Payments</div>
-                </a>
-            </li>
-            @endcan
-
+        @if($isSAorAdmin)
+        <li class="menu-item {{ Request::segment(1) == 'module-access' ? 'active' : '' }}">
+            <a href="{{ route('module-access.index') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-lock-open"></i>
+                <div>Module access</div>
+            </a>
+        </li>
         @endif
+        @endcan
 
+        {{-- ================= KeyEarn ================= --}}
+        @can('module-keyearn')
+        <li class="menu-header small text-uppercase"><span class="menu-header-text">KeyEarn</span></li>
+        <li class="menu-item {{ Request::segment(1) == 'my-incentive' ? 'active' : '' }}">
+            <a href="{{ route('my-incentive') }}" class="menu-link">
+                <i class="menu-icon tf-icons bx bx-wallet"></i>
+                <div>My incentive</div>
+            </a>
+        </li>
         {{-- Incentives --}}
         @canany([
             'incentive-slab-view',
@@ -197,60 +292,7 @@
         </li>
 
         @endcanany
-
-        {{-- Mandate Section (unchanged) --}}
-        @if($isSAorAdmin || auth()->user()->businessUnit?->code === 'AI')
-            <li class="menu-item {{ in_array(Request::segment(1), ['mandate_projects','channel_partners','client-enquiries']) ? 'active open' : '' }}">
-                <a href="javascript:void(0);" class="menu-link menu-toggle">
-                    <i class="menu-icon tf-icons bx bx-briefcase"></i>
-                    <div>Mandate</div>
-                </a>
-
-                <ul class="menu-sub">
-
-                    @if($isSAorAdmin || canAccessModule('mandate_project-view', ['AI']))
-                        <li class="menu-item {{ Request::segment(1) == 'mandate_projects' ? 'active' : '' }}">
-                            <a href="{{ route('mandate_projects.index') }}" class="menu-link">
-                                <div>Mandate Projects</div>
-                            </a>
-                        </li>
-                    @endif
-
-                    @if($isSAorAdmin || canAccessModule('channel-partner-view', ['AI']))
-                        <li class="menu-item {{ Request::segment(1) == 'channel_partners' ? 'active' : '' }}">
-                            <a href="{{ route('channel_partners.index') }}" class="menu-link">
-                                <div>Channel Partner</div>
-                            </a>
-                        </li>
-                    @endif
-
-                    @if($isSAorAdmin || canAccessModule('client-enquiry-view', ['AI']))
-                        <li class="menu-item {{ Request::segment(1) == 'client-enquiries' ? 'active' : '' }}">
-                            <a href="{{ route('client-enquiries.index') }}" class="menu-link">
-                                <div>Client Enquiries</div>
-                            </a>
-                        </li>
-                    @endif
-
-                    @if(canAccessModule('mandate-booking-view', ['AI']))
-                        <li class="menu-item {{ Request::segment(1) == 'mandate_bookings' ? 'active' : '' }}">
-                            <a href="{{ route('mandate_bookings.index') }}" class="menu-link">
-                                <div>Mandate Bookings</div>
-                            </a>
-                        </li>
-                    @endif
-
-                    @can('mandate-booking-view')
-                        <li class="menu-item {{ Request::segment(1) == 'brokerage-ledgers' ? 'active' : '' }}">
-                            <a href="{{ url('/brokerage-ledgers') }}" class="menu-link">
-                                <div>Brokerage Ledgers</div>
-                            </a>
-                        </li>
-                    @endcan
-
-                </ul>
-            </li>
-        @endif
+        @endcan
 
     </ul>
 </aside>

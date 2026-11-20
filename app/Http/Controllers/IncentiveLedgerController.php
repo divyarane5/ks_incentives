@@ -136,7 +136,7 @@ class IncentiveLedgerController extends Controller
     }
 
     /** Financial years that have slabs, salaries or bookings, newest first. */
-    private function financialYears(): array
+    protected function financialYears(): array
     {
         $years = IncentiveSlab::distinct()->pluck('financial_year')
             ->merge(\DB::table('user_salaries')->distinct()->pluck('financial_year'))
@@ -146,7 +146,7 @@ class IncentiveLedgerController extends Controller
         return $years ?: ['2025-26'];
     }
 
-    private function currentQuarter(string $fy): int
+    protected function currentQuarter(string $fy): int
     {
         $startYear = (int) substr($fy, 0, 4);
         $today = now();

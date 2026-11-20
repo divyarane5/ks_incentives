@@ -46,6 +46,10 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware('web')
                 ->namespace($this->namespace)
                 ->group(base_path('routes/web.php'));
+
+            // KeyLeads (leads / sales CRM)
+            Route::middleware('web')
+                ->group(base_path('routes/crm.php'));
         });
     }
 

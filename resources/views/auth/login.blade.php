@@ -15,8 +15,8 @@
         <form id="formAuthentication" class="mb-3" action="{{ route('login') }}" method="POST">
             @csrf
             <div class="mb-3">
-                <label for="email" class="form-label">{{ __('Email Address') }}</label>
-                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" placeholder="Enter your email or username" autofocus>
+                <label for="email" class="form-label">Email or mobile number</label>
+                <input id="email" type="text" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="username" placeholder="Email or mobile number" autofocus>
                 @error('email')
                     <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>
