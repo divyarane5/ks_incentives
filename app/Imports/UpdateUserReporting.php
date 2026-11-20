@@ -12,7 +12,7 @@ class UpdateUserReporting implements ToModel
     *
     * @return \Illuminate\Database\Eloquent\Model|null
     */
-    public function model(array $row)
+    public function model(array $row): \Illuminate\Database\Eloquent\Model|array|null
     {
         if ($row[0] != "Employee ID") {
             $employeeCode = $row[0];
@@ -22,5 +22,7 @@ class UpdateUserReporting implements ToModel
                User::where('employee_code', $employeeCode)->update(['reporting_manager_id' => $reportingToUser->id]);
             }
         }
+
+        return null;
     }
 }

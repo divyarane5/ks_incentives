@@ -19,7 +19,7 @@ class ImportUser implements ToCollection
     private $userMap = [];
     private $managerMap = [];
 
-    public function collection(Collection $rows)
+    public function collection(Collection $rows): void
     {
         $header = $rows->first()->map(fn($item) => strtolower(trim($item)));
         $rows = $rows->slice(1);
