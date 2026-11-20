@@ -44,8 +44,9 @@
             $u->can('incentive-ledger-view') ? ['Ledger & freeze', route('incentive-ledger.index'), false] : null,
         ]));
     }
-    $logo = $suiteUnit?->logo_path
-        ? asset('storage/'.str_replace('public/', '', $suiteUnit->logo_path))
+    $logoFile = $suiteUnit?->logo_path ? 'storage/'.str_replace('public/', '', $suiteUnit->logo_path) : null;
+    $logo = $logoFile && is_file(public_path($logoFile))
+        ? asset($logoFile)
         : asset('assets/img/logo/ks-logos.webp');
 @endphp
 <div class="flex h-full flex-col overflow-y-auto bg-[var(--rs-theme)] text-white">

@@ -2,8 +2,11 @@
     <div class="app-brand demo">
         <a href="{{ url('/') }}" class="app-brand-link">
             @php
-                $logoPath = isset($activeBusinessUnit) && $activeBusinessUnit->logo_path
-                    ? asset('storage/' . str_replace('public/', '', $activeBusinessUnit->logo_path))
+                // Use the business unit logo when its file is reachable here, else the default logo.
+                $logoFile = isset($activeBusinessUnit) && $activeBusinessUnit->logo_path
+                    ? 'storage/' . str_replace('public/', '', $activeBusinessUnit->logo_path) : null;
+                $logoPath = $logoFile && is_file(public_path($logoFile))
+                    ? asset($logoFile)
                     : asset('assets/img/logo/ks-logos.webp');
             @endphp
             <img src="{{ $logoPath }}" alt="Logo" class="img-fluid">
