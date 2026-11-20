@@ -831,4 +831,15 @@ class BookingBrokeragePaymentController extends Controller
             'aging90plus' => $aging90plus,
         ]);
     }
+    public function getDeveloperBillingEntities($developerId)
+    {
+        return \App\Models\DeveloperBillingEntity::where(
+            'developer_id',
+            $developerId
+        )->get();
+    }
+    public function getCompanyBankAccounts()
+    {
+        return \App\Models\CompanyBankAccount::all();
+    }
 }

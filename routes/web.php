@@ -315,6 +315,18 @@ Route::group(['middleware' => 'auth'], function () {
         [App\Http\Controllers\BookingBrokeragePaymentController::class,'update']
     )->name('booking.payment.update');
 
+    Route::get(
+        'developer-billing/{developer}',
+        [BookingBrokeragePaymentController::class,
+        'getDeveloperBillingEntities']
+    );
+
+    Route::get(
+        'company-bank-accounts',
+        [BookingBrokeragePaymentController::class,
+        'getCompanyBankAccounts']
+    );
+
     /*
     |--------------------------------------------------------------------------
     | AJAX dropdown routes (IMPORTANT: must be before resource)
