@@ -10,13 +10,46 @@
     <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <title>{{ $title ?? config('app.name') }} · {{ config('app.name') }}</title>
     @vite(['resources/css/crm.css', 'resources/js/crm.js'])
+    @php($suiteUnit = auth()->user()?->businessUnit ?? \App\Models\BusinessUnit::first())
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    {{-- Same colours as the back office (set per business unit) --}}
+    <style>
+        :root {
+            --rs-theme: {{ $suiteUnit->theme_color ?? '#011e48' }};
+            --rs-accent: {{ $suiteUnit->secondary_color ?? '#c3b246' }};
+            --color-brand-50: color-mix(in srgb, var(--rs-theme) 7%, white);
+            --color-brand-100: color-mix(in srgb, var(--rs-theme) 14%, white);
+            --color-brand-200: color-mix(in srgb, var(--rs-theme) 28%, white);
+            --color-brand-500: color-mix(in srgb, var(--rs-theme) 75%, white);
+            --color-brand-600: color-mix(in srgb, var(--rs-theme) 88%, white);
+            --color-brand-700: var(--rs-theme);
+            --color-brand-800: color-mix(in srgb, var(--rs-theme) 85%, black);
+            --color-gold-100: color-mix(in srgb, var(--rs-accent) 20%, white);
+            --color-gold-400: color-mix(in srgb, var(--rs-accent) 85%, white);
+            --color-gold-500: var(--rs-accent);
+            --color-gold-600: color-mix(in srgb, var(--rs-accent) 85%, black);
+            --font-sans: 'Public Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+        }
+    </style>
 </head>
-<body class="min-h-screen bg-slate-100 font-sans text-slate-900 antialiased">
+<body class="min-h-screen bg-[#f5f5f9] font-sans text-slate-900 antialiased">
+@auth
+    {{-- RealtySuite menu: fixed on tablets and computers, a slide-in drawer on phones --}}
+    <aside class="fixed inset-y-0 left-0 z-40 hidden w-64 md:block">@include('crm.partials.suite-nav')</aside>
+    <div data-drawer class="fixed inset-0 z-50 hidden md:hidden">
+        <div data-drawer-close class="absolute inset-0 bg-black/40"></div>
+        <aside class="absolute inset-y-0 left-0 w-72 max-w-[85%] shadow-xl">@include('crm.partials.suite-nav')</aside>
+    </div>
+@endauth
+<div class="@auth md:pl-64 @endauth">
 @auth
     <header class="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
-        <div class="mx-auto flex max-w-5xl items-center gap-3 px-4 py-3">
+        <div class="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
             @unless(isset($back))
-                <img src="/icon.svg" alt="" class="h-8 w-8 rounded-lg ring-1 ring-slate-200">
+                <button type="button" data-drawer-open class="-ml-1 rounded-lg p-1 text-slate-600 hover:bg-slate-100 md:hidden" aria-label="Menu">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
             @endunless
             @isset($back)
                 <a href="{{ $back }}" class="-ml-1 rounded-lg p-1 text-slate-500 hover:bg-slate-100" aria-label="Back">
@@ -24,17 +57,6 @@
                 </a>
             @endisset
             <h1 class="flex-1 truncate text-lg font-semibold">{{ $title ?? config('app.name') }}</h1>
-            <nav class="hidden items-center gap-1 text-sm font-medium md:flex">
-                <a href="{{ route('crm.dashboard') }}" class="rounded-lg px-3 py-2 hover:bg-slate-100">Today</a>
-                <a href="{{ route('crm.leads.index') }}" class="rounded-lg px-3 py-2 hover:bg-slate-100">Leads</a>
-                <a href="{{ route('crm.projects.index') }}" class="rounded-lg px-3 py-2 hover:bg-slate-100">Projects</a>
-                <a href="{{ route('crm.properties.index') }}" class="rounded-lg px-3 py-2 hover:bg-slate-100">Properties</a>
-                <a href="{{ route('crm.reports.index') }}" class="rounded-lg px-3 py-2 hover:bg-slate-100">Reports</a>
-                @if(auth()->user()->isAdmin())
-                    <a href="{{ route('crm.team.index') }}" class="rounded-lg px-3 py-2 hover:bg-slate-100">Team</a>
-                @endif
-            </nav>
-            <a href="{{ route('dashboard') }}" class="rounded-lg px-2 py-1 text-sm font-medium text-slate-600 hover:bg-slate-100" title="Bookings, accounts, people and incentives">RealtySuite</a>
             @php($unread = auth()->user()->unreadNotifications()->count())
             <a href="{{ route('crm.alerts.index') }}" class="relative rounded-lg p-1.5 text-slate-600 hover:bg-slate-100" aria-label="Alerts{{ $unread ? ' ('.$unread.' new)' : '' }}">
                 <svg class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 00-4-5.7V5a2 2 0 10-4 0v.3A6 6 0 006 11v3.2a2 2 0 01-.6 1.4L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
@@ -47,7 +69,7 @@
     </header>
 @endauth
 
-<main class="mx-auto max-w-5xl px-4 pt-4 pb-28 md:pb-10">
+<main class="mx-auto max-w-6xl px-4 pt-4 pb-28 md:pb-10">
     @if (session('status'))
         <div class="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">{{ session('status') }}</div>
     @endif
@@ -82,5 +104,6 @@
         </div>
     </nav>
 @endauth
+</div>
 </body>
 </html>

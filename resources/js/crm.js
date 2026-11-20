@@ -46,3 +46,10 @@ if (stageSelect) {
         b.addEventListener('click', () => (followUp.querySelector('input').value = b.dataset.quickTime)),
     );
 }
+
+// RealtySuite menu drawer on phones.
+const drawer = document.querySelector('[data-drawer]');
+if (drawer) {
+    document.querySelectorAll('[data-drawer-open]').forEach((b) => b.addEventListener('click', () => drawer.classList.remove('hidden')));
+    drawer.querySelectorAll('[data-drawer-close]').forEach((b) => b.addEventListener('click', () => drawer.classList.add('hidden')));
+}

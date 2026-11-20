@@ -1,6 +1,6 @@
 {
   "resources/css/crm.css": {
-    "file": "assets/crm-Bs0PEM0i.css",
+    "file": "assets/crm-Ch0mAZH5.css",
     "name": "crm",
     "names": [
       "crm.css"
@@ -9,7 +9,7 @@
     "isEntry": true
   },
   "resources/js/crm.js": {
-    "file": "assets/crm-DElevJBS.js",
+    "file": "assets/crm-Bx4InueE.js",
     "name": "crm",
     "src": "resources/js/crm.js",
     "isEntry": true

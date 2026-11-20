@@ -20,6 +20,10 @@ class AppServiceProvider extends ServiceProvider
         // on a laptop. Pass it through. (Has no effect on the real server.)
         array_push(\Illuminate\Foundation\Console\ServeCommand::$passthroughVariables, 'TEMP', 'TMP', 'TMPDIR');
 
+        // KeyLeads CSS/JS (public/build) always load from this site, even when ASSET_URL
+        // in .env points the old back-office assets somewhere else.
+        \Illuminate\Support\Facades\Vite::createAssetPathsUsing(fn ($path, $secure = null) => url($path));
+
         // Share business unit with all views
         View::composer('*', function ($view) {
             // KeyLeads screens don't use it, and they render many small views per page.
