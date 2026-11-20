@@ -143,7 +143,7 @@
     {
         $.ajax({
             type: 'GET',
-            url: "{{ route('indent.close', '') }}/"+indentId,
+            url: "{{ url('close-indent') }}/"+indentId,
             dataType: "html",
             success: function (res) {
                 $('#indent-approval').DataTable().ajax.reload();

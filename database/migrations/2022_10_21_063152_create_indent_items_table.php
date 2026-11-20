@@ -23,9 +23,9 @@ class CreateIndentItemsTable extends Migration
             $table->foreign('vendor_id')->references('id')->on('vendors');
             $table->unsignedInteger('quantity');
             $table->unsignedInteger('unit_price');
-            $table->unsignedDouble('gst');
-            $table->unsignedDouble('tds');
-            $table->unsignedDouble('total');
+            $table->double('gst')->unsigned();
+            $table->double('tds')->unsigned();
+            $table->double('total')->unsigned();
             $table->enum('status', ['pending', 'approved', 'rejected', 'approve1', 'approve2', 'approve3', 'approve4', 'approve5'])->default('pending');
             $table->string('next_approver_id')->default(0)->nullable();
             $table->unsignedInteger('created_by');

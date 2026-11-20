@@ -317,13 +317,13 @@ Route::group(['middleware' => 'auth'], function () {
 
     Route::get(
         'developer-billing/{developer}',
-        [BookingBrokeragePaymentController::class,
+        [App\Http\Controllers\BookingBrokeragePaymentController::class,
         'getDeveloperBillingEntities']
     );
 
     Route::get(
         'company-bank-accounts',
-        [BookingBrokeragePaymentController::class,
+        [App\Http\Controllers\BookingBrokeragePaymentController::class,
         'getCompanyBankAccounts']
     );
 

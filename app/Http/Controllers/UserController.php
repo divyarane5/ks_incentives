@@ -82,9 +82,11 @@ class UserController extends Controller
                     $actions = '<a class="dropdown-item" href="'.route('users.show', $row->id).'">
                                     <i class="bx bx-show me-1"></i> View
                                 </a>';
-                    $actions .= '<a class="dropdown-item" target="_blank" href="'.route('users.card', $slug).'">
+                    if ($slug !== '') {
+                        $actions .= '<a class="dropdown-item" target="_blank" href="'.route('users.card', $slug).'">
                                     <i class="bx bx-show me-1"></i> Card
                                 </a>';
+                    }
                     if (auth()->user()->can('user-edit')) {
                         $actions .= '<a class="dropdown-item" href="'.route('users.edit', $row->id).'">
                                         <i class="bx bx-edit-alt me-1"></i> Edit
