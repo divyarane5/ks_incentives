@@ -10,13 +10,13 @@
         </div>
         <!-- /Logo -->
         <h4 class="mb-1 text-center">Sign in to RealtySuite</h4>
-        <p class="mb-4 text-center text-muted">Use your email or mobile number</p>
+        <p class="mb-4 text-center text-muted">Use your employee ID, email or mobile number</p>
 
         <form id="formAuthentication" class="mb-3" action="{{ route('login') }}" method="POST">
             @csrf
             <div class="mb-3">
-                <label for="email" class="form-label">Email or mobile number</label>
-                <input id="email" type="text" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="username" placeholder="Email or mobile number" autofocus>
+                <label for="email" class="form-label">Email, employee ID or mobile</label>
+                <input id="email" type="text" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="username" placeholder="Email, employee ID or mobile" autofocus>
                 @error('email')
                     <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>

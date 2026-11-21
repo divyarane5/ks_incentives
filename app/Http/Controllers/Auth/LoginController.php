@@ -22,36 +22,55 @@ class LoginController extends Controller
 
     protected function credentials(Request $request)
     {
+        $user = $this->loginUser($request);
+
+        // Found by employee ID or mobile: sign in that exact person (works even without an email).
+        if ($user) {
+            return ['id' => $user->id, 'password' => $request->password, 'status' => 'active'];
+        }
+
         return [
-            'email' => $this->loginEmail($request),
+            'email' => trim((string) $request->email),
             'password' => $request->password,
             'status' => 'active',
         ];
     }
 
     /**
-     * Sales staff can also sign in with their mobile number (official or personal contact).
+     * Besides email, people can sign in with their employee ID (e.g. KRE001) or their
+     * 10-digit mobile number (official or personal contact). Only Active employees.
      */
-    private function loginEmail(Request $request): ?string
+    private function loginUser(Request $request): ?User
     {
         $login = trim((string) $request->email);
         if ($login === '' || str_contains($login, '@')) {
-            return $login;
+            return null;
+        }
+
+        $byCode = User::where('status', 'Active')
+            ->whereRaw('UPPER(TRIM(employee_code)) = ?', [strtoupper($login)])
+            ->get(['id', 'email']);
+        if ($byCode->count() === 1) {
+            return $byCode->first();
         }
 
         $digits = substr(preg_replace('/\D+/', '', $login), -10);
         if (strlen($digits) !== 10) {
-            return $login;
+            return null;
         }
 
-        $user = User::where('status', 'Active')
+        return User::where('status', 'Active')
             ->where(fn ($q) => $q->where('official_contact', 'like', '%'.$digits)->orWhere('personal_contact', 'like', '%'.$digits))
             ->get(['id', 'email'])->first();
-
-        return $user?->email ?? $login;
     }
 
-    /** Email or a 10-digit mobile number. */
+    /** The email of whoever is signing in, for messages. */
+    private function loginEmail(Request $request): ?string
+    {
+        return $this->loginUser($request)?->email ?? trim((string) $request->email);
+    }
+
+    /** Email, employee ID or a 10-digit mobile number. */
     protected function validateLogin(Request $request)
     {
         $request->validate([
