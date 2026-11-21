@@ -353,12 +353,10 @@ class UserController extends Controller
             // Reporting Manager History
             // -------------------------
             if($user->reporting_manager_id){
-                \App\Models\EmployeeReportingManagerHistory::create([
-                    'user_id' => $user->id,
-                    'reporting_manager_id' => $user->reporting_manager_id,
-                    'effective_from' => now(),
-                    'changed_by' => auth()->id(),
-                ]);
+                // New joiner: their first manager applies from the joining date.
+                \App\Models\EmployeeReportingManagerHistory::record(
+                    $user, (int) $user->reporting_manager_id, $user->joining_date ?: now(), 'On joining'
+                );
             }
 
             // -------------------------
@@ -393,7 +391,9 @@ class UserController extends Controller
        // $designations = Designation::all();
         $designations = Designation::select(['id', 'name'])->orderBy('name')->get();
         $roles = Role::all();
-        $reportingUsers = User::all();
+        // Active people (plus the current manager, even if they have left), A-Z.
+        $reportingUsers = User::where(fn ($q) => $q->where('status', 'Active')->orWhere('id', $user->reporting_manager_id))
+            ->where('id', '!=', $user->id)->orderBy('name')->get();
         $locations = Location::all();
         $businessUnits = BusinessUnit::where('status', 1)->pluck('name', 'id');
         $users = User::where('id', '!=', $id)->get(); // for reporting user dropdown
@@ -543,21 +543,13 @@ class UserController extends Controller
             | REPORTING MANAGER HISTORY
             ========================= */
             if ($user->wasChanged('reporting_manager_id')) {
-
-                // Close previous active manager
-                \App\Models\EmployeeReportingManagerHistory::where('user_id', $user->id)
-                    ->whereNull('effective_to')
-                    ->update([
-                        'effective_to' => now()->toDateString(),
-                    ]);
-
-                // Create new history
-                \App\Models\EmployeeReportingManagerHistory::create([
-                    'user_id' => $user->id,
-                    'reporting_manager_id' => $user->reporting_manager_id,
-                    'effective_from' => now()->toDateString(),
-                    'changed_by' => auth()->id(),
-                ]);
+                // HR can say from which date the new manager applies (defaults to today).
+                \App\Models\EmployeeReportingManagerHistory::record(
+                    $user,
+                    $user->reporting_manager_id ? (int) $user->reporting_manager_id : null,
+                    $request->input('manager_effective_from') ?: now(),
+                    $request->input('manager_change_note')
+                );
             }
 
 
@@ -645,6 +637,8 @@ class UserController extends Controller
             'salaryHistories',
             'latestExitHistory',
             'reportingManagerHistories.manager',
+            'reportingManagerHistories.changedBy',
+            'reporteeHistories.employee',
             'currentReportingManagerHistory.manager' // ADD THIS
         ])->findOrFail($id);
 

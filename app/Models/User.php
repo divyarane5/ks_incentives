@@ -163,7 +163,13 @@ class User extends Authenticatable
     // ========================
     public function reportingManagerHistories()
     {
-        return $this->hasMany(EmployeeReportingManagerHistory::class);
+        return $this->hasMany(EmployeeReportingManagerHistory::class)->orderByDesc('effective_from')->orderByDesc('id');
+    }
+
+    /** History rows where this person was the manager (who reported to them, and when). */
+    public function reporteeHistories()
+    {
+        return $this->hasMany(EmployeeReportingManagerHistory::class, 'reporting_manager_id')->orderByDesc('effective_from');
     }
 
     public function latestReportingManagerHistory()

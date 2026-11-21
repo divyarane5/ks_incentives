@@ -236,6 +236,19 @@
                                     </select>
                                 </div>
 
+                                <!-- When a new manager applies (saved in the manager history) -->
+                                <div class="col-md-3">
+                                    <label class="form-label">New manager from</label>
+                                    <input type="date" name="manager_effective_from" class="form-control"
+                                           value="{{ old('manager_effective_from', now()->toDateString()) }}">
+                                    <small class="text-muted">Only used if you change the manager.</small>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label">Reason for change</label>
+                                    <input type="text" name="manager_change_note" maxlength="190" class="form-control"
+                                           value="{{ old('manager_change_note') }}" placeholder="e.g. Team restructure">
+                                </div>
+
                                 <!-- Joining Date -->
                                 <div class="col-md-6">
                                     <label class="form-label">Joining Date</label>

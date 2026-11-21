@@ -309,30 +309,56 @@
         </div>
         <div class="tab-pane fade" id="history">
             <!-- REPORTING MANAGER HISTORY -->
-            @if($user->reportingManagerHistories->count())
             <div class="card mb-4">
-                <div class="card-header fw-bold">👔 Reporting Manager History</div>
+                <div class="card-header fw-bold">👔 Reporting manager history</div>
                 <div class="card-body">
-                    <table class="table table-bordered table-sm">
+                    @if($user->reportingManagerHistories->count())
+                    <div class="table-responsive">
+                    <table class="table table-sm">
                         <thead>
-                            <tr>
-                                <th>Manager</th>
-                                <th>From</th>
-                                <th>To</th>
-                            </tr>
+                            <tr><th>Reported to</th><th>From</th><th>To</th><th>Changed by</th><th>Note</th></tr>
                         </thead>
                         <tbody>
                         @foreach($user->reportingManagerHistories as $history)
-                                <tr>
-                                    <td>
-                                        {{ $history->manager?->name ?? 'N/A' }}
-                                    </td>
-                                    <td>{{ $history->effective_from }}</td>
-                                    <td>{{ $history->effective_to ?? 'Present' }}</td>
-                                </tr>
-                            @endforeach
+                            <tr>
+                                <td>{{ $history->manager?->name ?? 'N/A' }}{{ $history->manager?->employee_code ? ' ('.$history->manager->employee_code.')' : '' }}</td>
+                                <td>{{ $history->effective_from?->format('d M Y') }}</td>
+                                <td>{!! $history->effective_to ? e($history->effective_to->format('d M Y')) : '<span class="badge bg-label-success">Current</span>' !!}</td>
+                                <td>{{ $history->changedBy?->name ?? '—' }}</td>
+                                <td class="text-muted small">{{ $history->remarks }}</td>
+                            </tr>
+                        @endforeach
                         </tbody>
                     </table>
+                    </div>
+                    @php($first = $user->reportingManagerHistories->last())
+                    @if($first && $user->joining_date && $first->effective_from?->gt(\Carbon\Carbon::parse($user->joining_date)))
+                        <div class="small text-muted mt-2">Before {{ $first->effective_from->format('d M Y') }}: not recorded.</div>
+                    @endif
+                    @else
+                        <div class="text-muted small">No manager recorded yet.</div>
+                    @endif
+                </div>
+            </div>
+
+            @if($user->reporteeHistories->count())
+            <div class="card mb-4">
+                <div class="card-header fw-bold">👥 People who reported to {{ \Illuminate\Support\Str::of($user->name)->before(' ') }}</div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead><tr><th>Employee</th><th>From</th><th>To</th></tr></thead>
+                        <tbody>
+                        @foreach($user->reporteeHistories as $h)
+                            <tr>
+                                <td>{{ $h->employee?->name ?? 'N/A' }}{{ $h->employee?->employee_code ? ' ('.$h->employee->employee_code.')' : '' }}</td>
+                                <td>{{ $h->effective_from?->format('d M Y') }}</td>
+                                <td>{!! $h->effective_to ? e($h->effective_to->format('d M Y')) : '<span class="badge bg-label-success">Current</span>' !!}</td>
+                            </tr>
+                        @endforeach
+                        </tbody>
+                    </table>
+                    </div>
                 </div>
             </div>
             @endif
