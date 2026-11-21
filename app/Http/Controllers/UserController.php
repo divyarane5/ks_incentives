@@ -767,26 +767,114 @@ class UserController extends Controller
 
     //     return response()->download($filePath, 'user_import_template.csv');
     // }
-    public function orgTree()
+    /**
+     * Org chart: who reports to whom, today or on any past date (from the manager history).
+     * Built here as a tree; the page shows it as an expandable list that works on phones.
+     */
+    public function orgTree(Request $request)
     {
-        $users = User::with('designation')->get();
+        $today = now()->toDateString();
+        try {
+            $date = $request->filled('date') ? \Carbon\Carbon::parse($request->date)->toDateString() : $today;
+        } catch (\Throwable $e) {
+            $date = $today;
+        }
+        if ($date > $today) {
+            $date = $today;
+        }
+        $isToday = $date === $today;
 
-        $nodes = [];
+        // People employed on that date.
+        $people = User::with('designation:id,name')
+            ->where(fn ($q) => $q->whereNull('joining_date')->orWhere('joining_date', '<=', $date))
+            ->when($isToday,
+                fn ($q) => $q->where('status', 'Active'),
+                // Past date: had not left yet. People who left without a leaving date can't be placed.
+                fn ($q) => $q->where(fn ($w) => $w->where('leaving_date', '>', $date)
+                    ->orWhere(fn ($x) => $x->whereNull('leaving_date')->where('status', 'Active'))))
+            ->get(['id', 'name', 'employee_code', 'designation_id', 'reporting_manager_id', 'status', 'photo']);
 
-        foreach ($users as $user) {
-            $nodes[] = [
-                'id' => $user->id,
-                'pid' => $user->reporting_manager_id,
-                'name' => $user->name,
-                'title' => optional($user->designation)->name,
-                'emp_id' => $user->employee_code,
-                'count' => $user->subordinates()->count()
-            ];
+        // Manager on that date: from the history; today (or no history) falls back to the profile.
+        $histManager = [];
+        if (! $isToday) {
+            $histManager = \App\Models\EmployeeReportingManagerHistory::where('effective_from', '<=', $date)
+                ->where(fn ($q) => $q->whereNull('effective_to')->orWhere('effective_to', '>=', $date))
+                ->orderBy('effective_from')->get(['user_id', 'reporting_manager_id'])
+                ->pluck('reporting_manager_id', 'user_id')->all();
         }
 
-        return view('users.org-tree', compact('nodes'));
+        $ids = $people->pluck('id')->flip();
+        $managerOf = [];
+        $children = [];
+        foreach ($people as $p) {
+            $m = $histManager[$p->id] ?? $p->reporting_manager_id;
+            $managerOf[$p->id] = $m;
+            if ($m && isset($ids[$m]) && $m !== $p->id) {
+                $children[$m][] = $p->id;
+            }
+        }
+
+        $byId = $people->keyBy('id');
+        $sortByName = fn ($list) => collect($list)->sortBy(fn ($id) => $byId[$id]->name)->values()->all();
+        foreach ($children as $m => $list) {
+            $children[$m] = $sortByName($list);
+        }
+
+        // Team size (everyone below), with a guard against loops in bad data.
+        $total = [];
+        $count = function ($id, $seen = []) use (&$count, &$total, $children) {
+            if (isset($total[$id])) return $total[$id];
+            if (isset($seen[$id])) return 0;
+            $seen[$id] = true;
+            $n = 0;
+            foreach ($children[$id] ?? [] as $c) { $n += 1 + $count($c, $seen); }
+            return $total[$id] = $n;
+        };
+
+        // Tops of the tree: no manager, or a manager who is not employed on that date.
+        $roots = [];
+        $orphans = [];
+        foreach ($people as $p) {
+            $m = $managerOf[$p->id];
+            if (! $m) {
+                $roots[] = $p->id;
+            } elseif (! isset($ids[$m])) {
+                $orphans[] = $p->id;
+            }
+        }
+        // People in a reporting loop never reach a top: list them with the orphans.
+        $reached = [];
+        $walk = function ($id) use (&$walk, &$reached, $children) {
+            if (isset($reached[$id])) return;
+            $reached[$id] = true;
+            foreach ($children[$id] ?? [] as $c) $walk($c);
+        };
+        foreach (array_merge($roots, $orphans) as $r) $walk($r);
+        foreach ($people as $p) {
+            if (! isset($reached[$p->id])) { $orphans[] = $p->id; $walk($p->id); }
+        }
+        foreach ($people as $p) $count($p->id);
+
+        // Big teams first at the top level.
+        usort($roots, fn ($a, $b) => ($total[$b] ?? 0) <=> ($total[$a] ?? 0) ?: strcmp($byId[$a]->name, $byId[$b]->name));
+        $orphans = $sortByName(array_unique($orphans));
+        $formerManagers = User::whereIn('id', collect($orphans)->map(fn ($id) => $managerOf[$id])->filter()->unique())
+            ->get(['id', 'name', 'employee_code', 'status'])->keyBy('id');
+
+        return view('users.org-tree', [
+            'date' => $date,
+            'isToday' => $isToday,
+            'byId' => $byId,
+            'children' => $children,
+            'total' => $total,
+            'roots' => $roots,
+            'orphans' => $orphans,
+            'managerOf' => $managerOf,
+            'formerManagers' => $formerManagers,
+            'headcount' => $people->count(),
+        ]);
     }
-    
+
     public function showImportForm()
     {
         return view('users.import'); // the blade above
