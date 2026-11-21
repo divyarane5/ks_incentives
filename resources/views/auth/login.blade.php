@@ -9,8 +9,8 @@
             <img src="{{ asset("assets/img/logo/ks-logos.webp") }}" class="logo">
         </div>
         <!-- /Logo -->
-        <h4 class="mb-2">Welcome to Realty Suite 👋</h4>
-        <p class="mb-4">Please login to your account</p>
+        <h4 class="mb-1 text-center">Sign in to RealtySuite</h4>
+        <p class="mb-4 text-center text-muted">Use your email or mobile number</p>
 
         <form id="formAuthentication" class="mb-3" action="{{ route('login') }}" method="POST">
             @csrf
@@ -52,6 +52,9 @@
             <button class="btn btn-primary d-grid w-100" type="submit">{{ __('Login') }}</button>
             </div>
         </form>
+        <div class="rs-modules">
+            <span>KeyLeads</span><span>KeyBookings</span><span>KeyAccounts</span><span>KeyPeople</span><span>KeyEarn</span>
+        </div>
         </div>
     </div>
     <!-- /Register -->

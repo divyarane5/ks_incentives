@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css">
+<link rel="stylesheet" href="{{ asset('assets/vendor/rs/toastr.min.css') }}">
 
 <div class="container-xxl flex-grow-1 container-p-y">
     <div class="row">
@@ -153,7 +153,7 @@
 @endsection
 
 @section('script')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="{{ asset('assets/vendor/rs/toastr.min.js') }}"></script>
 
 <script type="text/javascript">
 $(document).ready(function () {

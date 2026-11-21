@@ -774,22 +774,22 @@
                     @if($booking->brokerage)
 
                         {{-- STATUS BOX --}}
-                        <div class="alert {{ $booking->brokerage->is_eligible ? 'alert-success' : 'alert-warning' }}">
+                        <div class="alert {{ $booking->brokerage?->is_eligible ? 'alert-success' : 'alert-warning' }}">
                             <h6 class="mb-2">
                                 Brokerage Status:
                                 <span class="fw-bold">
-                                    {{ $booking->brokerage->is_eligible ? 'Eligible' : 'Not Eligible' }}
+                                    {{ $booking->brokerage?->is_eligible ? 'Eligible' : 'Not Eligible' }}
                                 </span>
                             </h6>
 
                             <p class="mb-1">
                                 <strong>Scenario:</strong>
-                                {{ $booking->brokerage->eligibility_scenario ?? '—' }}
+                                {{ $booking->brokerage?->eligibility_scenario ?? '—' }}
                             </p>
 
                             <p class="mb-0">
                                 <strong>Reason:</strong>
-                                {{ $booking->brokerage->eligibility_reason ?? '—' }}
+                                {{ $booking->brokerage?->eligibility_reason ?? '—' }}
                             </p>
                         </div>
 
@@ -801,28 +801,28 @@
                                 <table class="table table-sm table-bordered w-75">
                                     <tr>
                                         <th>Total Agreement Value</th>
-                                        <td>{{ number_format($booking->brokerage->agreement_value, 2) }}</td>
+                                        <td>{{ number_format($booking->brokerage?->agreement_value, 2) }}</td>
                                     </tr>
                                     <tr>
                                         <th>Total Paid</th>
-                                        <td>{{ number_format($booking->brokerage->total_paid, 2) }}</td>
+                                        <td>{{ number_format($booking->brokerage?->total_paid, 2) }}</td>
                                     </tr>
                                     <tr>
                                         <th>Payment Completion %</th>
-                                        <td>{{ $booking->brokerage->payment_percent }}%</td>
+                                        <td>{{ $booking->brokerage?->payment_percent }}%</td>
                                     </tr>
                                     <tr>
                                         <th>Threshold %</th>
-                                        <td>{{ $booking->brokerage->threshold_percentage }}%</td>
+                                        <td>{{ $booking->brokerage?->threshold_percentage }}%</td>
                                     </tr>
                                     <tr>
                                         <th>Current Due %</th>
-                                        <td>{{ $booking->brokerage->current_due_percentage }}%</td>
+                                        <td>{{ $booking->brokerage?->current_due_percentage }}%</td>
                                     </tr>
                                     <tr>
                                         <th>Project Registered</th>
                                         <td>
-                                            {{ $booking->brokerage->is_registered ? 'Yes' : 'No' }}
+                                            {{ $booking->brokerage?->is_registered ? 'Yes' : 'No' }}
                                         </td>
                                     </tr>
                                 </table>
@@ -839,28 +839,28 @@
                                         <tr>
                                             <th>Brokerage %</th>
                                             <td>
-                                                {{ $booking->brokerage->brokerage_percent ?? '—' }}
+                                                {{ $booking->brokerage?->brokerage_percent ?? '—' }}
                                             </td>
                                         </tr>
                                         <tr>
                                             <th>Brokerage Amount</th>
                                             <td>
-                                                {{ $booking->brokerage->brokerage_amount
-                                                    ? number_format($booking->brokerage->brokerage_amount, 2)
+                                                {{ $booking->brokerage?->brokerage_amount
+                                                    ? number_format($booking->brokerage?->brokerage_amount, 2)
                                                     : '—' }}
                                             </td>
                                         </tr>
                                         <tr>
                                             <th>Status</th>
-                                            <td>{{ ucfirst($booking->brokerage->status) }}</td>
+                                            <td>{{ ucfirst($booking->brokerage?->status) }}</td>
                                         </tr>
                                         <tr>
                                             <th>Eligible At</th>
-                                            <td>{{ $booking->brokerage->eligible_at ?? '—' }}</td>
+                                            <td>{{ $booking->brokerage?->eligible_at ?? '—' }}</td>
                                         </tr>
                                         <tr>
                                             <th>Paid At</th>
-                                            <td>{{ $booking->brokerage->paid_at ?? '—' }}</td>
+                                            <td>{{ $booking->brokerage?->paid_at ?? '—' }}</td>
                                         </tr>
                                     </table>
                                 </div>
@@ -906,10 +906,10 @@
                             <div class="mb-3">
                             <label for="bill_copy" class="form-label">Upload Bill Copy</label>
                             <input type="file" name="bill_copy" id="bill_copy" class="form-control">
-                            @if($booking->brokerage->bill_copy)
+                            @if($booking->brokerage?->bill_copy)
                                 <p class="mt-1">
                                     Uploaded: 
-                                    <a href="{{ asset('storage/'.$booking->brokerage->bill_copy) }}" target="_blank">View Bill Copy</a>
+                                    <a href="{{ asset('storage/'.$booking->brokerage?->bill_copy) }}" target="_blank">View Bill Copy</a>
                                 </p>
                             @endif
                         </div>
@@ -917,10 +917,10 @@
                         <div class="mb-3">
                             <label for="acceptance_copy" class="form-label">Upload Acceptance Copy</label>
                             <input type="file" name="acceptance_copy" id="acceptance_copy" class="form-control">
-                            @if($booking->brokerage->acceptance_copy)
+                            @if($booking->brokerage?->acceptance_copy)
                                 <p class="mt-1">
                                     Uploaded: 
-                                    <a href="{{ asset('storage/'.$booking->brokerage->acceptance_copy) }}" target="_blank">View Acceptance Copy</a>
+                                    <a href="{{ asset('storage/'.$booking->brokerage?->acceptance_copy) }}" target="_blank">View Acceptance Copy</a>
                                 </p>
                             @endif
                         </div>

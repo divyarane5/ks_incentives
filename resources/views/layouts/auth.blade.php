@@ -43,6 +43,13 @@
     <!-- Page -->
     <link rel="stylesheet" href="{{ asset("assets/vendor/css/pages/page-auth.css") }}" />
     <!-- Helpers -->
+    <style>
+        :root {
+            --rs-navy: {{ $activeBusinessUnit->theme_color ?? '#011e48' }};
+            --rs-gold: {{ $activeBusinessUnit->secondary_color ?? '#c3b246' }};
+        }
+    </style>
+    <link rel="stylesheet" href="{{ asset('assets/css/realtysuite.css') }}?v={{ @filemtime(public_path('assets/css/realtysuite.css')) }}" />
     <script src="{{ asset("assets/vendor/js/helpers.js") }}"></script>
 
     <!--! Template customizer & Theme config files MUST be included after core stylesheets and helpers.js") }} in the <head> section -->
@@ -50,7 +57,7 @@
     <script src="{{ asset("assets/js/config.js") }}"></script>
   </head>
 
-  <body>
+  <body class="rs-auth">
     <!-- Content -->
     <div class="container-xxl">
         <div class="authentication-wrapper authentication-basic container-p-y">
@@ -80,6 +87,5 @@
     <!-- Page JS -->
 
     <!-- Place this tag in your head or just before your close body tag. -->
-    <script async defer src="https://buttons.github.io/buttons.js") }}"></script>
   </body>
 </html>

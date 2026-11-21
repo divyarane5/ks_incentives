@@ -152,14 +152,14 @@ Route::group(['middleware' => 'auth'], function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('location', App\Http\Controllers\LocationController::class);
-    Route::resource('project', App\Http\Controllers\ProjectController::class);
-    Route::resource('developer', App\Http\Controllers\DeveloperController::class);
-    Route::resource('company-bank',  App\Http\Controllers\CompanyBankAccountController::class);
-    Route::resource('department', App\Http\Controllers\DepartmentController::class);
-    Route::resource('designation', App\Http\Controllers\DesignationController::class);
-    Route::resource('business_unit', App\Http\Controllers\BusinessUnitController::class);
-    Route::resource('mandate_projects', App\Http\Controllers\MandateProjectController::class);
+    Route::resource('location', App\Http\Controllers\LocationController::class)->except(['show']); // no detail page
+    Route::resource('project', App\Http\Controllers\ProjectController::class)->except(['show']); // no detail page
+    Route::resource('developer', App\Http\Controllers\DeveloperController::class)->except(['show']); // no detail page
+    Route::resource('company-bank',  App\Http\Controllers\CompanyBankAccountController::class)->except(['show']); // no detail page
+    Route::resource('department', App\Http\Controllers\DepartmentController::class)->except(['show']); // no detail page
+    Route::resource('designation', App\Http\Controllers\DesignationController::class)->except(['show']); // no detail page
+    Route::resource('business_unit', App\Http\Controllers\BusinessUnitController::class)->except(['show']); // no detail page
+    Route::resource('mandate_projects', App\Http\Controllers\MandateProjectController::class)->except(['show']); // no detail page
 
     /*
     |--------------------------------------------------------------------------
@@ -167,7 +167,7 @@ Route::group(['middleware' => 'auth'], function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('channel_partners', App\Http\Controllers\ChannelPartnerController::class);
+    Route::resource('channel_partners', App\Http\Controllers\ChannelPartnerController::class)->except(['show']); // no detail page
 
     Route::post('channel-partners/quick-store', [
         App\Http\Controllers\ChannelPartnerController::class,
@@ -362,7 +362,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource(
         'brokerage-payments',
         App\Http\Controllers\BookingBrokeragePaymentController::class
-    );
+    )->except(['show']);
     Route::get(
         'brokerage-payments-aging',
         [App\Http\Controllers\BookingBrokeragePaymentController::class,'agingReport']
@@ -390,10 +390,10 @@ Route::group(['middleware' => 'auth'], function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('invoice', App\Http\Controllers\InvoiceController::class);
+    Route::resource('invoice', App\Http\Controllers\InvoiceController::class)->except(['show']); // no detail page
 
 
-    Route::resource('incentive-slabs',App\Http\Controllers\IncentiveSlabController::class);
+    Route::resource('incentive-slabs',App\Http\Controllers\IncentiveSlabController::class)->except(['show']); // no detail page
 
     // Quarterly incentives on the year so far, with freeze
     Route::get('incentive-ledger', [App\Http\Controllers\IncentiveLedgerController::class, 'index'])->name('incentive-ledger.index');
@@ -440,7 +440,7 @@ Route::group(['middleware' => 'auth'], function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('expense', App\Http\Controllers\ExpenseController::class);
+    Route::resource('expense', App\Http\Controllers\ExpenseController::class)->except(['show']); // no detail page
 
     Route::post('expense/ajax/store', [
         App\Http\Controllers\ExpenseController::class,
@@ -483,7 +483,7 @@ Route::group(['middleware' => 'auth'], function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('payment_method', App\Http\Controllers\PaymentMethodController::class);
+    Route::resource('payment_method', App\Http\Controllers\PaymentMethodController::class)->except(['show']); // no detail page
 
     /*
     |--------------------------------------------------------------------------
@@ -512,7 +512,7 @@ Route::group(['middleware' => 'auth'], function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('client_response', App\Http\Controllers\ReferralClientController::class);
+    Route::resource('client_response', App\Http\Controllers\ReferralClientController::class)->only(['index', 'show', 'update']); // responses come from the public form
 
     Route::get('client_response_service', [
         App\Http\Controllers\ReferralClientController::class,
@@ -606,7 +606,7 @@ Route::group(['middleware' => 'auth'], function () {
     */
 
     Route::resource('joining_form', App\Http\Controllers\JoiningFormController::class)
-        ->except(['create', 'store']);
+        ->except(['index', 'create', 'store', 'destroy']);
 
     Route::get('joining_form/download_pdf/{id}', [
         App\Http\Controllers\JoiningFormController::class,
@@ -619,7 +619,7 @@ Route::group(['middleware' => 'auth'], function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('candidate', App\Http\Controllers\CandidateController::class);
+    Route::resource('candidate', App\Http\Controllers\CandidateController::class)->except(['show']); // no detail page
 
     Route::get('send_joining_form/{id}', [
         App\Http\Controllers\CandidateController::class,

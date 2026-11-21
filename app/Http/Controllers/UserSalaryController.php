@@ -10,6 +10,12 @@ use Carbon\Carbon;
 
 class UserSalaryController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:user-salary-view', ['only' => ['index']]);
+        $this->middleware('permission:user-salary-create|user-salary-edit', ['only' => ['store']]);
+    }
+
     // 1️⃣ SHOW SALARY PAGE
     public function index(User $user, Request $request)
     {

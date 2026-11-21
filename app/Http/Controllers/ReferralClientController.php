@@ -82,13 +82,13 @@ class ReferralClientController extends Controller
 
     // public function edit($id)
     // {
-    //     $location = Location::find($id);
+    //     $location = Location::findOrFail($id);
     //     return view('location.edit', compact('id', 'location'));
     // }
 
     public function update(ReferralClientRequest $request, $id)
     {
-        $rclient = ReferralClient::find($id);
+        $rclient = ReferralClient::findOrFail($id);
         $rclient->status = $request->input('status');
         $rclient->save();
 
@@ -99,7 +99,7 @@ class ReferralClientController extends Controller
 
     public function show($id)
     {
-        $rclient = ReferralClient::find($id);
+        $rclient = ReferralClient::findOrFail($id);
         $creferences = ClientReference::where('referral_client_id','=',$id)->get();
 
         return view('response.show', compact('id', 'rclient','creferences'));

@@ -27,7 +27,8 @@ class BookingController extends Controller
     use UserHierarchyTrait; // ✅ MUST ADD THIS
     function __construct()
     {
-        $this->middleware('permission:booking-view', ['only' => ['index']]);
+        $this->middleware('permission:booking-view', ['only' => ['index', 'show']]);
+        $this->middleware('permission:booking-send-mail', ['only' => ['sendBookingMail']]);
         $this->middleware('permission:booking-create', ['only' => ['create','store']]);
         $this->middleware('permission:booking-edit', ['only' => ['edit','update']]);
         $this->middleware('permission:booking-delete', ['only' => ['destroy']]);
@@ -629,6 +630,13 @@ class BookingController extends Controller
             'brokeragePayments'
         ])->findOrFail($id);
 
+        // Same rule as the list: sales people only open their own team's bookings.
+        $viewer = auth()->user();
+        if (! $viewer->hasAnyRole(['Superadmin', 'Super Admin', 'Admin', 'CRM', 'Accounts'])
+            && ! in_array($booking->sales_user_id, $this->getAccessibleUserIds($viewer))) {
+            abort(403, 'This booking belongs to another team.');
+        }
+
         $pdf = Pdf::loadView('booking.pdf', compact('booking'))
             ->setPaper('a4', 'portrait');
 
@@ -655,23 +663,11 @@ class BookingController extends Controller
         return view('booking.show', compact('booking', 'timeline', 'payments'));
     }
 
-    public function sendBookingMail($id){
-        $booking = Booking::find($id);
-        //echo $booking->created_by; exit;
-        $user = DB::table('users')
-                    ->select('users.name as u_name','users.id as u_id','users.email as u_email','designations.name as d_name','users.mobile')
-                   ->join('designations', 'users.designation_id','=','designations.id','left')
-	               ->where('users.id',$booking->created_by)
-	               ->first();
-                //   print_r($user); exit;
-        $arr = [
-            'id' => $id,
-            'booking' => $booking,
-            'user' => $user
-        ];
-        
-        Mail::to('keystonedivya@gmail.com')->send(new BookingMail($arr)); //$approvalTo->email
-        return redirect()->route('booking.index')->with('success', 'Mail Sent Successfully');
+    public function sendBookingMail($id)
+    {
+        // The old version mailed the whole booking page to a fixed test address. Not linked
+        // from any screen; switched off until booking emails get a proper template.
+        return redirect()->route('booking.index')->with('error', 'Booking emails are not set up yet.');
     }
 
     public function updateStatus(Request $request)

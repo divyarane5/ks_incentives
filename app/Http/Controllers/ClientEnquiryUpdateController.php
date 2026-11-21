@@ -16,6 +16,9 @@ class ClientEnquiryUpdateController extends Controller
 
     public function store(Request $request, $enquiryId)
     {
+        abort_unless(auth()->user()->can('client-enquiry-edit'), 403);
+        \App\Models\ClientEnquiry::findOrFail($enquiryId);
+
         // Validate input
         $request->validate([
             'feedback' => 'nullable|string',

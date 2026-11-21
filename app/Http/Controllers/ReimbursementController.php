@@ -177,13 +177,13 @@ class ReimbursementController extends Controller
     public function edit($id)
     {
         $users = User::select(['id', 'name'])->get();
-        $reimbursement = Reimbursement::find($id);
+        $reimbursement = Reimbursement::findOrFail($id);
         return view('reimbursement.edit', compact('users', 'reimbursement'));
     }
 
     public function update(ReimbursementRequest $request, $id)
     {
-        $reimbursement = Reimbursement::find($id);
+        $reimbursement = Reimbursement::findOrFail($id);
         $reimbursement->client_name = $request->input('client_name');
         $reimbursement->project_name = $request->input('project_name');
         $reimbursement->visit_attended_of_id = $request->input('visit_attended_of_id');
@@ -220,7 +220,7 @@ class ReimbursementController extends Controller
 
     public function destroy($id)
     {
-        $reimbursement = Reimbursement::find($id);
+        $reimbursement = Reimbursement::findOrFail($id);
         if ($reimbursement->file_path != "") {
             unlink(storage_path('app/'.$reimbursement->file_path));
         }
@@ -242,7 +242,7 @@ class ReimbursementController extends Controller
         $ids = $request->input('reimbursement_approval');
         if (!empty($ids)) {
             foreach ($ids as $id) {
-                $reimbursement = Reimbursement::find($id);
+                $reimbursement = Reimbursement::findOrFail($id);
                 $this->reimbursementRepository->updateReimbursementStatus($reimbursement, $status, $request);
             }
         }

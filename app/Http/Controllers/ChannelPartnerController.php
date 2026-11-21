@@ -11,6 +11,14 @@ use App\Traits\UserHierarchyTrait;
 
 class ChannelPartnerController extends Controller
 {   
+    public function __construct()
+    {
+        $this->middleware('permission:channel-partner-view', ['only' => ['index']]);
+        $this->middleware('permission:channel-partner-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:channel-partner-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:channel-partner-delete', ['only' => ['destroy']]);
+    }
+
     use UserHierarchyTrait;
 
     public function index(Request $request)

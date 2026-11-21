@@ -24,7 +24,7 @@
         <li class="menu-item {{ ((Request::segment(1) == 'dashboard')||(Request::segment(1) == '')) ? 'active': '' }}">
             <a href="{{ route('dashboard') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-home-circle"></i>
-                <div>Dashboard</div>
+                <div>Home</div>
             </a>
         </li>
 

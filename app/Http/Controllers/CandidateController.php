@@ -13,6 +13,14 @@ use Exception;
 
 class CandidateController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:candidate-view', ['only' => ['index']]);
+        $this->middleware('permission:candidate-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:candidate-edit', ['only' => ['edit', 'update', 'sendJoiningForm']]);
+        $this->middleware('permission:candidate-approval', ['only' => ['changeStatus', 'destroy']]);
+    }
+
     public function index(Request $request)
     {
         if ($request->ajax()) {
@@ -105,13 +113,13 @@ class CandidateController extends Controller
 
     public function edit($id)
     {
-        $candidate = Candidate::find($id);
+        $candidate = Candidate::findOrFail($id);
         return view('candidate.edit', compact('id', 'candidate'));
     }
 
     public function update(CandidateRequest $request, $id)
     {
-        $candidate = Candidate::find($id);
+        $candidate = Candidate::findOrFail($id);
         $candidate->name = $request->input('name');
         $candidate->email = $request->input('email');
         $candidate->phone = $request->input('phone');
@@ -131,7 +139,7 @@ class CandidateController extends Controller
     public function sendJoiningForm($id)
     {
         try {
-            $candidate = Candidate::find($id);
+            $candidate = Candidate::findOrFail($id);
             $encodedId = base64_encode($id);
             $url = route('joining_form.create', $encodedId);
             $candidate->url = $url;
@@ -150,7 +158,7 @@ class CandidateController extends Controller
 
     public function changeStatus($id, $status)
     {
-        $candidate = Candidate::find($id);
+        $candidate = Candidate::findOrFail($id);
         $candidate->status = $status;
         $candidate->save();
         return redirect()->back()->with('success', 'Status Changed Successfully');

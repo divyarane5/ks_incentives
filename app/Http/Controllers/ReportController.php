@@ -23,19 +23,19 @@ class ReportController extends Controller
                 $indents = $indents->where('indents.created_by', auth()->user()->id);
             }
 
-            if ($indentRequest['location_id'] != "") {
+            if (($indentRequest['location_id'] ?? '') != "") {
                 $indents = $indents->where('indents.location_id', $indentRequest['location_id']);
             }
 
-            if ($indentRequest['bill_mode'] != "") {
+            if (($indentRequest['bill_mode'] ?? '') != "") {
                 $indents = $indents->where('bill_mode', $indentRequest['bill_mode']);
             }
 
-            if ($indentRequest['business_unit_id'] != "") {
+            if (($indentRequest['business_unit_id'] ?? '') != "") {
                 $indents = $indents->where('business_unit_id', $indentRequest['business_unit_id']);
             }
 
-            if ($indentRequest['status'] != "") {
+            if (($indentRequest['status'] ?? '') != "") {
                 $indents = $indents->where('indents.status', $indentRequest['status']);
             }
 

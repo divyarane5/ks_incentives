@@ -10,10 +10,10 @@
         <!-- Search -->
         <div class="navbar-nav align-items-center">
             <div class="nav-item d-flex align-items-center">
-                <h5 class="mb-0">
-                   Hi {{ auth()->user()->name }}, Welcome To 
-                    {{ auth()->user()->businessUnit ? auth()->user()->businessUnit->name : 'Keystone Real Estate' }}!
-                </h5>
+                <div class="rs-hello">
+                    <div class="rs-hello-name">Hi {{ \Illuminate\Support\Str::of(auth()->user()->name)->before(' ') }}</div>
+                    <div class="rs-hello-sub">{{ auth()->user()->businessUnit ? auth()->user()->businessUnit->name : 'Keystone Real Estate' }} · {{ now()->format('D, j M') }}</div>
+                </div>
             </div>
         </div>
         <!-- /Search -->

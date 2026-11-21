@@ -431,13 +431,13 @@ class InvoiceController extends Controller
 
     public function edit($id)
     {
-        $invoice = Invoice::find($id);
+        $invoice = Invoice::findOrFail($id);
         return view('invoice.edit', compact('id', 'invoice'));
     }
 
     public function update(InvoiceRequest $request, $id)
     {
-        $invoice = Invoice::find($id);
+        $invoice = Invoice::findOrFail($id);
         $invoice->name = $request->input('name');
         $invoice->brokerage = $request->input('brokerage');
         $invoice->save();

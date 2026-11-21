@@ -46,8 +46,10 @@
     <link href="https://cdn.datatables.net/1.10.21/css/dataTables.bootstrap4.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jquery-confirm/3.3.2/jquery-confirm.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.1/css/bootstrap-select.css" />
+    <style>:root { --rs-navy: {{ $activeBusinessUnit->theme_color ?? '#011e48' }}; --rs-gold: {{ $activeBusinessUnit->secondary_color ?? '#c3b246' }}; }</style>
+    <link rel="stylesheet" href="{{ asset('assets/css/realtysuite.css') }}?v={{ @filemtime(public_path('assets/css/realtysuite.css')) }}" />
 </head>
-<body>
+<body class="rs-app">
     <div class="preloader" style="display: none">
         <div class="spinner-border text-primary" role="status">
             <span class="visually-hidden">Loading...</span>
@@ -103,8 +105,6 @@
     <!-- Main JS -->
     <script src="{{ asset("assets/js/main.js") }}"></script>
 
-    <!-- Place this tag in your head or just before your close body tag. -->
-    <script async defer src="https://buttons.github.io/buttons.js"></script>
 
     <script src="{{ asset('assets/vendor/dataTable/jquery.dataTables.min.js') }}"></script>
     <script src="{{ asset('assets/vendor/dataTable/dataTables.bootstrap4.min.js') }}"></script>

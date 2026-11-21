@@ -21,7 +21,11 @@ class ModuleAccessController extends Controller
     {
         $this->authorizeAdmin();
 
-        $roles = Role::with('permissions:id,name')->withCount('users')->orderBy('name')->get();
+        // Count people per role straight from the pivot (Spatie's users() relation needs a guard on the instance).
+        $counts = \DB::table('model_has_roles')->where('model_type', User::class)
+            ->selectRaw('role_id, count(*) as total')->groupBy('role_id')->pluck('total', 'role_id');
+        $roles = Role::with('permissions:id,name')->orderBy('name')->get()
+            ->each(fn ($r) => $r->users_count = (int) ($counts[$r->id] ?? 0));
         $extras = User::whereHas('permissions', fn ($q) => $q->where('name', 'like', 'module-%'))
             ->with(['permissions:id,name', 'roles:id,name'])->orderBy('name')->get();
         $people = User::active()->orderBy('name')->get(['id', 'name', 'employee_code']);

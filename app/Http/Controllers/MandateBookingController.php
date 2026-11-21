@@ -16,6 +16,15 @@ use App\Traits\UserHierarchyTrait;
 
 class MandateBookingController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:mandate-booking-view', ['only' => ['index', 'show']]);
+        $this->middleware('permission:mandate-booking-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:mandate-booking-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:mandate-booking-approve', ['only' => ['updateStatus']]);
+        $this->middleware('permission:mandate-booking-delete', ['only' => ['destroy']]);
+    }
+
     use UserHierarchyTrait;
     /**
      * Display a listing of the resource.
@@ -113,22 +122,22 @@ class MandateBookingController extends Controller
                 })
                 ->addColumn('action', function ($row) {
                     $actions = '';
-                    if (auth()->user()->can('mandate_bookings-view')) {
+                    if (auth()->user()->can('mandate-booking-view')) {
                         $actions .= '<a class="dropdown-item" href="'.route('mandate_bookings.show', $row->id).'">
                                         <i class="bx bx-show me-1"></i> View
                                     </a>';
                     }
-                    if (auth()->user()->can('mandate_bookings-edit')) {
+                    if (auth()->user()->can('mandate-booking-edit')) {
                         $actions .= '<a class="dropdown-item" href="'.route('mandate_bookings.edit', $row->id).'">
                                         <i class="bx bx-edit-alt me-1"></i> Edit
                                     </a>';
                     }
-                    if (auth()->user()->can('mandate_bookings-edit')) {
+                    if (auth()->user()->can('mandate-booking-ledger-view')) {
                         $actions .= '<a class="dropdown-item" href="'.route('mandate_bookings.ledgers', $row->id).'" class="btn btn-sm btn-outline-primary">
                                         <i class="bx bx-edit-alt me-1"></i> Ledger
                                     </a>';
                     }
-                    if (auth()->user()->can('mandate_bookings-delete')) {
+                    if (auth()->user()->can('mandate-booking-delete')) {
                         $actions .= '<button class="dropdown-item" onclick="deleteLocation('.$row->id.')">
                                         <i class="bx bx-trash me-1"></i> Delete</button>
                                     <form id="'.$row->id.'" action="'.route('mandate_bookings.destroy', $row->id).'" method="POST" class="d-none">

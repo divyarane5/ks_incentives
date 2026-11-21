@@ -150,7 +150,7 @@ class ClientController extends Controller
 
     public function edit($id)
     {
-        $client = Client::find($id);
+        $client = Client::findOrFail($id);
         $template = Template::select(['id', 'name'])->orderBy('name', 'asc')->get();
         return view('client.edit', compact('id', 'client','template'));
     }
@@ -178,7 +178,7 @@ class ClientController extends Controller
       //die;
        //     echo $json['status']; exit;
         if($json['result'] == 'valid'){
-        $client = Client::find($id);
+        $client = Client::findOrFail($id);
         $client->template_id = $request->input('template_id');
         $client->sales_person = $request->input('sales_person');
         $client->client_name = $request->input('client_name');
@@ -203,6 +203,7 @@ class ClientController extends Controller
     public function show($id)
     {
         $client = $this->clientRepository->getClientDetails($id);
+        abort_if(! $client, 404);
         return view('client.show', compact('id', 'client'));
     }
 

@@ -12,6 +12,15 @@ use App\Models\ChannelPartner;
 
 class BookingLedgerController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:mandate-booking-ledger-view', ['only' => ['index']]);
+        $this->middleware('permission:mandate-booking-ledger-create', ['only' => ['store']]);
+        $this->middleware('permission:mandate-booking-ledger-delete', ['only' => ['destroy']]);
+        $this->middleware('permission:mandate-booking-view', ['only' => ['cpIndex']]);
+        $this->middleware('permission:brokerage-ledgers-pay', ['only' => ['markPaid']]);
+    }
+
     /**
      * Show ledger page for a booking
      */
