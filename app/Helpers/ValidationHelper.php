@@ -17,6 +17,16 @@ if (!function_exists('validateUserForm')) {
             }
         }
 
+        // Employee ID and official email sign people in, so they must be unique.
+        if ($request->filled('employee_code')
+            && \App\Models\User::whereRaw('UPPER(TRIM(employee_code)) = ?', [strtoupper(trim($request->employee_code))])->exists()) {
+            $errors[] = "Employee code {$request->employee_code} is already used by another employee";
+        }
+        if ($request->filled('official_email')
+            && \App\Models\User::where('email', trim($request->official_email))->orWhere('official_email', trim($request->official_email))->exists()) {
+            $errors[] = "Official email {$request->official_email} is already used by another employee";
+        }
+
         // Probation & Confirmation Dates
         if (!$request->filled('probation_period_days')) {
             $errors[] = "Probation period is required";

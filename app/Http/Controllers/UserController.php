@@ -54,6 +54,10 @@ class UserController extends Controller
             $users = $this->userRepository->getUsers($filters);
 
             return DataTables::of($users)
+                ->addColumn('status_badge', function ($row) {
+                    $cls = ['Active' => 'bg-label-success', 'Exited' => 'bg-label-secondary', 'Inactive' => 'bg-label-warning'][$row->status] ?? 'bg-label-secondary';
+                    return '<span class="badge '.$cls.'">'.e($row->status ?: '-').'</span>';
+                })
                 ->addColumn('role', function ($row) {
                         // If Spatie roles exist, display them
                         if ($row->roles && $row->roles->count()) {
@@ -121,12 +125,13 @@ class UserController extends Controller
                                 <div class="dropdown-menu">'.$actions.'</div>
                             </div>';
                 })
-                ->rawColumns(['action'])
+                ->rawColumns(['action', 'status_badge'])
                 ->make(true);
         }
-        $reportingUsers = User::select('id', 'first_name', 'middle_name', 'last_name')
-        ->orderBy('first_name')
-        ->get();
+        // Only people who actually have someone reporting to them.
+        $reportingUsers = User::whereIn('id', User::whereNotNull('reporting_manager_id')->select('reporting_manager_id'))
+            ->orderByRaw("status = 'Active' desc")->orderBy('name')
+            ->get(['id', 'name', 'employee_code', 'status']);
         $locations = Location::select(['id', 'name'])->orderBy('name')->get();
         $departments = Department::select(['id', 'name'])->orderBy('name')->get();
         $designations = Designation::select(['id', 'name'])->orderBy('name')->get();
@@ -229,7 +234,7 @@ class UserController extends Controller
 
             // ✅ Calculate confirmation date from joining + probation
             $user->confirm_date = $request->probation_period_days 
-                ? \Carbon\Carbon::parse($request->joining_date)->addDays($request->probation_period_days)
+                ? \Carbon\Carbon::parse($request->joining_date)->addDays((int) $request->probation_period_days)
                 : $request->confirm_date;
 
             // Employment status (default probation)
@@ -305,6 +310,11 @@ class UserController extends Controller
             $user->password = \Hash::make('Welcome@123');
 
             $user->save();
+
+            // Give the chosen role (permissions and modules come from it).
+            if ($request->filled('role_id')) {
+                $user->syncRoles([Role::findById((int) $request->role_id, 'web')]);
+            }
 
             // -------------------------
             // Previous Employment Documents
@@ -456,6 +466,12 @@ class UserController extends Controller
             | EMPLOYMENT LOGIC
             ========================= */
 
+            // Official email is also the login email: keep them together when it changes.
+            if ($user->isDirty('official_email') && $user->official_email
+                && ! User::where('email', $user->official_email)->where('id', '!=', $user->id)->exists()) {
+                $user->email = $user->official_email;
+            }
+
             // Normalize employment status
             if ($request->filled('employment_status')) {
                 $user->employment_status = strtolower($request->employment_status);
@@ -569,7 +585,9 @@ class UserController extends Controller
             | ROLE SYNC
             ========================= */
             if ($request->filled('role_id')) {
-                $user->syncRoles([$request->role_id]);
+                // role_id is a number: look the role up by id (a plain "4" is read as a role name).
+                $role = Role::findById((int) $request->role_id, 'web');
+                $user->syncRoles([$role]);
             }
         });
 

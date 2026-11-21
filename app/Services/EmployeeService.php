@@ -123,7 +123,7 @@ class EmployeeService
                 'joining_date'             => $joiningDate,
                 'probation_period_days'    => $probationDays,
                 'confirm_date'             => $probationDays
-                    ? $joiningDate->copy()->addDays($probationDays)
+                    ? $joiningDate->copy()->addDays((int) $probationDays)
                     : null,
                 'employment_status'        => 'Probation',
                 'leaving_date'             => null,

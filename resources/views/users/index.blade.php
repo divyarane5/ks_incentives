@@ -61,7 +61,7 @@
                     <option value="">Select Manager</option>
                     @foreach ($reportingUsers as $user)
                         <option value="{{ $user->id }}">
-                            {{ $user->full_name ?? $user->name }}
+                            {{ $user->name }}{{ $user->employee_code ? ' ('.$user->employee_code.')' : '' }}{{ $user->status !== 'Active' ? ' - '.$user->status : '' }}
                         </option>
                     @endforeach
                 </select>
@@ -109,6 +109,7 @@
                         <th>Department</th>
                         <th>Location</th>
                         <th>Company</th>
+                        <th>Status</th>
                         <th>Action</th>
                     </tr>
                 </thead>
@@ -154,8 +155,11 @@ $(document).ready(function () {
             {data: 'department', name: 'department', sortable: false},
             {data: 'location', name: 'location', sortable: false},
             {data: 'company', name: 'users.entity'},
+            {data: 'status_badge', name: 'users.status'},
             {data: 'action', sortable: false},
-        ]
+        ],
+        // "All" lets HR export everyone that matches the filters, not only the page shown.
+        lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']]
 
     });
 
@@ -165,8 +169,7 @@ $(document).ready(function () {
 
     $("#clear").on('click', function () {
         $("#UserFilter select").val('');
-        // Uncomment below line only if using Bootstrap Select
-        // $("#UserFilter select").selectpicker('refresh');
+        $("#UserFilter select").selectpicker('refresh');
         table.ajax.reload();
     });
 
@@ -174,7 +177,7 @@ $(document).ready(function () {
         buttons: [{
             extend: 'excelHtml5',
             title: 'user_export',
-            exportOptions: { columns: [0,1,2,3,4,5,6,7] }
+            exportOptions: { columns: [0,1,2,3,4,5,6,7,8] }
         }]
     }).container().appendTo($('.datatableButtons'));
 
