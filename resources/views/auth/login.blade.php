@@ -6,7 +6,7 @@
         <div class="card-body">
         <!-- Logo -->
         <div class="app-brand justify-content-center">
-            <img src="{{ asset("assets/img/logo/ks-logos.webp") }}" class="logo">
+            <img src="{{ asset('assets/img/logo/realtysuite.svg') }}" class="logo" alt="RealtySuite">
         </div>
         <!-- /Logo -->
         <h4 class="mb-1 text-center">Sign in to RealtySuite</h4>

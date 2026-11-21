@@ -66,12 +66,10 @@ body.rs-auth {
 .rs-app #layout-menu .app-brand-link {
     display: block;
     width: 100%;
-    background: #fff;
-    border-radius: var(--rs-radius);
-    padding: 10px 14px;
-    text-align: center;
+    padding: 8px 6px 14px;
+    border-bottom: 1px solid rgba(255, 255, 255, .12);
 }
-.rs-app #layout-menu .app-brand-link img { max-height: 64px; width: auto; }
+.rs-app #layout-menu .app-brand-link img { height: 44px; width: auto; max-width: 100%; }
 .rs-app #layout-menu .layout-menu-toggle { color: #fff !important; }
 .rs-app #layout-menu .menu-inner-shadow { display: none !important; }
 .rs-app #layout-menu .menu-inner { padding: 6px 10px 24px !important; }
@@ -303,7 +301,8 @@ body.rs-auth {
 }
 .rs-auth .card-body { padding: 2rem 1.75rem !important; }
 .rs-auth .app-brand { margin-bottom: 1.25rem !important; }
-.rs-auth .app-brand img, .rs-auth .logo { max-height: 72px; width: auto; }
+.rs-auth .app-brand img, .rs-auth .card img.logo { height: 52px; width: auto; max-width: 100%; background: none; }
+.rs-app #layout-menu .app-brand-link img { background: none; }
 .rs-auth h4 { color: var(--rs-navy); font-weight: 700; }
 .rs-auth a { color: var(--rs-navy); }
 .rs-auth .form-label { font-size: .8rem; font-weight: 600; text-transform: none; letter-spacing: 0; }

@@ -44,14 +44,11 @@
             $u->can('incentive-ledger-view') ? ['Ledger & freeze', route('incentive-ledger.index'), false] : null,
         ]));
     }
-    $logoFile = $suiteUnit?->logo_path ? 'storage/'.str_replace('public/', '', $suiteUnit->logo_path) : null;
-    $logo = $logoFile && is_file(public_path($logoFile))
-        ? asset($logoFile)
-        : asset('assets/img/logo/ks-logos.webp');
+    $logo = asset('assets/img/logo/realtysuite-white.svg');
 @endphp
 <div class="flex h-full flex-col overflow-y-auto bg-[var(--rs-theme)] text-white">
     <a href="{{ route('dashboard') }}" class="block px-5 py-5">
-        <img src="{{ $logo }}" alt="{{ $suiteUnit?->name ?? 'RealtySuite' }}" class="max-h-14 max-w-full rounded bg-white/95 p-1">
+        <img src="{{ $logo }}" alt="RealtySuite" style="height:44px;width:auto;max-width:100%">
     </a>
     <nav class="flex-1 px-3 pb-6 text-sm">
         <a href="{{ route('dashboard') }}" class="mb-2 flex items-center rounded-lg px-3 py-2.5 font-medium hover:bg-[var(--rs-accent)]">Dashboard</a>

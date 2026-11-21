@@ -13,8 +13,7 @@
     <meta name="description" content="" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon"
-      href="{{ asset('storage/' . ltrim($activeBusinessUnit->favicon_path ?? 'assets/img/favicon/favicon.webp', '/')) }}">
+    @include('include.favicon')
 
     
     <!-- Fonts -->

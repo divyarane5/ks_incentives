@@ -7,7 +7,7 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <link rel="manifest" href="/manifest.webmanifest">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
+    @include('include.favicon')
     <title>{{ $title ?? config('app.name') }} · {{ config('app.name') }}</title>
     @vite(['resources/css/crm.css', 'resources/js/crm.js'])
     @php($suiteUnit = auth()->user()?->businessUnit ?? \App\Models\BusinessUnit::first())

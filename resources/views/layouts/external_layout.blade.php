@@ -12,7 +12,7 @@
     <meta name="description" content="" />
 
     <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="{{ asset('assets/img/favicon/favicon.webp') }}" />
+    @include('include.favicon')
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -60,7 +60,7 @@
         <div class="">
             <div class="m-3">
                 <a href="{{ url('/') }}" class="app-brand-link">
-                    <img class="auto_margin" src="{{ asset("assets/img/logo/ks-logos.webp") }}" >
+                    <img class="auto_margin" src="{{ asset('assets/img/logo/realtysuite.svg') }}" alt="RealtySuite" style="max-height:56px">
                 </a>
             </div>
             <!-- Layout container -->

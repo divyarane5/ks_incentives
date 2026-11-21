@@ -10,16 +10,13 @@
     <!-- CSRF Token -->
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>Realty Suite</title>
+    <title>RealtySuite</title>
 
 
     <meta name="description" content="" />
 
     <!-- Favicon -->
-  <link rel="icon" type="image/png"
-      href="{{ isset($activeBusinessUnit) && $activeBusinessUnit->favicon_path
-          ? asset('storage/' . str_replace('public/', '', $activeBusinessUnit->favicon_path))
-          : asset('assets/img/favicon/favicon.webp') }}">
+    @include('include.favicon')
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
