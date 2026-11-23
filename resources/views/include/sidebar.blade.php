@@ -148,6 +148,29 @@
                     @endcan
         @endcan
 
+        {{-- ================= KeyMe (everyone: own leave, payslips, letters) ================= --}}
+        @php
+            $teamLeavePending = \App\Models\LeaveRequest::where('approver_id', auth()->id())->where('status', 'pending')->count();
+            $isManager = $teamLeavePending > 0 || \App\Models\User::where('reporting_manager_id', auth()->id())->where('status', 'Active')->exists();
+        @endphp
+        <li class="menu-header small text-uppercase"><span class="menu-header-text">KeyMe</span></li>
+        <li class="menu-item {{ Request::is('me/leave*') ? 'active' : '' }}">
+            <a href="{{ route('leave.my') }}" class="menu-link"><i class="menu-icon tf-icons bx bx-calendar-event"></i><div>My leave</div></a>
+        </li>
+        @if($isManager)
+        <li class="menu-item {{ Request::is('me/team-leave*') ? 'active' : '' }}">
+            <a href="{{ route('leave.team') }}" class="menu-link"><i class="menu-icon tf-icons bx bx-calendar-check"></i><div>Team leave</div>
+                @if($teamLeavePending)<span class="badge rounded-pill bg-danger ms-auto">{{ $teamLeavePending }}</span>@endif
+            </a>
+        </li>
+        @endif
+        <li class="menu-item {{ Request::is('me/payslips*') ? 'active' : '' }}">
+            <a href="{{ route('payslip.mine') }}" class="menu-link"><i class="menu-icon tf-icons bx bx-receipt"></i><div>My payslips</div></a>
+        </li>
+        <li class="menu-item {{ Request::is('me/letters*') ? 'active' : '' }}">
+            <a href="{{ route('letters.mine') }}" class="menu-link"><i class="menu-icon tf-icons bx bx-envelope"></i><div>My letters</div></a>
+        </li>
+
         {{-- ================= KeyPeople ================= --}}
         @can('module-keypeople')
         <li class="menu-header small text-uppercase"><span class="menu-header-text">KeyPeople</span></li>
@@ -157,6 +180,26 @@
                 <i class="menu-icon tf-icons bx bx-user"></i>
                 <div>User</div>
             </a>
+        </li>
+        @endcan
+
+        @can('user-edit')
+        <li class="menu-item {{ Request::is('hr/leave*') ? 'active' : '' }}">
+            <a href="{{ route('leave.hr') }}" class="menu-link"><i class="menu-icon tf-icons bx bx-calendar"></i><div>Leave</div>
+                @php $hrLeavePending = \App\Models\LeaveRequest::where('status', 'pending')->count(); @endphp
+                @if($hrLeavePending)<span class="badge rounded-pill bg-label-warning ms-auto">{{ $hrLeavePending }}</span>@endif
+            </a>
+        </li>
+        <li class="menu-item {{ Request::is('hr/letter*') ? 'active' : '' }}">
+            <a href="{{ route('letters.index') }}" class="menu-link"><i class="menu-icon tf-icons bx bx-file"></i><div>Letters</div></a>
+        </li>
+        <li class="menu-item {{ Request::is('hr/celebrations*') ? 'active' : '' }}">
+            <a href="{{ route('celebrations.index') }}" class="menu-link"><i class="menu-icon tf-icons bx bx-cake"></i><div>Celebrations</div></a>
+        </li>
+        @endcan
+        @can('user-salary-view')
+        <li class="menu-item {{ Request::is('hr/salary-register*') ? 'active' : '' }}">
+            <a href="{{ route('payslip.register') }}" class="menu-link"><i class="menu-icon tf-icons bx bx-spreadsheet"></i><div>Salary register</div></a>
         </li>
         @endcan
 

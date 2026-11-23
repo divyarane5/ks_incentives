@@ -13,6 +13,6 @@ class EmployeeSalaryHistory extends Model
         'user_id', 'annual_ctc', 'monthly_basic', 'monthly_hra', 
         'special_allowance', 'conveyance_allowance', 'medical_reimbursement',
         'professional_tax', 'pf_employer', 'pf_employee', 'net_deductions',
-        'net_salary', 'effective_from', 'changed_by'
+        'net_salary', 'change_reason', 'effective_from', 'changed_by'
     ];
 }

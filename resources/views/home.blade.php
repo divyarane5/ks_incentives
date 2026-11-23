@@ -46,6 +46,8 @@
         @endif
     </div>
 
+    @include('hr.celebrations._dashboard')
+
     @if (! count($mods))
         <div class="card"><div class="card-body text-muted">
             You don't have any modules yet. Ask your admin to give you access.

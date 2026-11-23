@@ -657,3 +657,6 @@ Route::get('already_responded_joining_form', [
     App\Http\Controllers\JoiningFormController::class,
     'alreadyResponded'
 ])->name('joining_form.already_responded');
+
+// KeyPeople: leave, payslips, letters
+require __DIR__.'/hr.php';

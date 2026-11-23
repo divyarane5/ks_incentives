@@ -54,6 +54,32 @@ class UserController extends Controller
             $users = $this->userRepository->getUsers($filters);
 
             return DataTables::of($users)
+                // One "person" cell: photo, name, designation, code and a tap-to-call number (used on phones too).
+                ->addColumn('person', function ($row) {
+                    $fmt = \App\Support\PeopleFormat::class;
+                    $name = trim($row->first_name.' '.$row->last_name) ?: $row->name;
+                    $avatar = $row->photo
+                        ? '<img class="ul-av" src="'.e(asset('storage/'.$row->photo)).'" alt="">'
+                        : '<span class="ul-av ul-ini">'.e($fmt::initials($name)).'</span>';
+                    $phone = $row->official_contact ?: $row->personal_contact;
+                    $intl = $fmt::intlPhone($phone);
+                    $sub = e($row->designation->name ?? 'No designation').($row->employee_code ? ' · '.e($row->employee_code) : '');
+                    $meta = e(trim(($row->department->name ?? '').(($row->department->name ?? null) && ($row->location->name ?? null) ? ' · ' : '').($row->location->name ?? '')));
+                    $cls = ['Active' => 'ok', 'Exited' => 'bad'][$row->status] ?? 'warn';
+                    $chips = '<span class="kp-chip '.$cls.'">'.e($row->status ?: '—').'</span>';
+                    if (strtolower((string) $row->employment_status) === 'probation') {
+                        $chips .= ' <span class="kp-chip warn">Probation</span>';
+                    }
+
+                    return '<div class="ul-person">'.$avatar.'<div class="ul-txt">'
+                        .'<a class="ul-name" href="'.route('users.show', $row->id).'">'.e($name).'</a>'
+                        .'<div class="ul-sub">'.$sub.'</div>'
+                        .($meta !== '' ? '<div class="ul-meta">'.$meta.'</div>' : '')
+                        .'<div class="ul-chips">'.$chips.'</div>'
+                        .'</div>'
+                        .($intl ? '<a class="ul-call" href="tel:+'.$intl.'" title="Call '.e($phone).'"><i class="bx bx-phone"></i></a>' : '')
+                        .'</div>';
+                })
                 ->addColumn('status_badge', function ($row) {
                     $cls = ['Active' => 'bg-label-success', 'Exited' => 'bg-label-secondary', 'Inactive' => 'bg-label-warning'][$row->status] ?? 'bg-label-secondary';
                     return '<span class="badge '.$cls.'">'.e($row->status ?: '-').'</span>';
@@ -81,8 +107,7 @@ class UserController extends Controller
                     return $row->location->name ?? '';
                 })
                 ->addColumn('action', function ($row) {
-                    $fullName = preg_replace('/\s+/', ' ', trim($row->first_name .' '. $row->middle_name .' '. $row->last_name));
-                    $slug = strtolower(str_replace(' ', '-', $fullName));
+                    $slug = Str::slug(trim($row->first_name.' '.$row->last_name));
                     $actions = '<a class="dropdown-item" href="'.route('users.show', $row->id).'">
                                     <i class="bx bx-show me-1"></i> View
                                 </a>';
@@ -125,7 +150,7 @@ class UserController extends Controller
                                 <div class="dropdown-menu">'.$actions.'</div>
                             </div>';
                 })
-                ->rawColumns(['action', 'status_badge'])
+                ->rawColumns(['action', 'status_badge', 'person'])
                 ->make(true);
         }
         // Only people who actually have someone reporting to them.
@@ -137,7 +162,14 @@ class UserController extends Controller
         $designations = Designation::select(['id', 'name'])->orderBy('name')->get();
         $roles = Role::select(['id', 'name'])->orderBy('name')->get();
         $businessUnits = BusinessUnit::where('status', 1)->pluck('name', 'id');
-        return view('users.index', compact('locations', 'departments', 'designations', 'roles','businessUnits','reportingUsers'));
+        // Head-count tiles at the top of the list.
+        $counts = [
+            'active' => User::where('status', 'Active')->count(),
+            'probation' => User::where('status', 'Active')->where('employment_status', 'probation')->count(),
+            'joined' => User::where('status', 'Active')->where('joining_date', '>=', now()->startOfMonth()->subMonths(2))->count(),
+            'exited' => User::where('status', 'Exited')->count(),
+        ];
+        return view('users.index', compact('locations', 'departments', 'designations', 'roles','businessUnits','reportingUsers','counts'));
     }
 
 
@@ -452,6 +484,10 @@ class UserController extends Controller
                 'offer_letter_file',
                 'joining_letter_file',
                 'previous_documents',
+                'salary_effective_from',
+                'salary_change_reason',
+                'manager_effective_from',
+                'manager_change_note',
             ]));
 
             // Full Name
@@ -521,6 +557,9 @@ class UserController extends Controller
             | SALARY HISTORY
             ========================= */
             if ($user->wasChanged('annual_ctc')) {
+                // HR can say from when the new CTC applies and why (defaults: today, "Revision").
+                $salaryFrom = $request->input('salary_effective_from') ?: now()->toDateString();
+                $salaryReason = trim((string) $request->input('salary_change_reason')) ?: 'Revision';
                 \App\Models\EmployeeSalaryHistory::create([
                     'user_id' => $user->id,
                     'annual_ctc' => $user->annual_ctc,
@@ -534,7 +573,8 @@ class UserController extends Controller
                     'pf_employee' => $user->pf_employee,
                     'net_deductions' => $user->net_deductions,
                     'net_salary' => $user->net_salary,
-                    'effective_from' => now(),
+                    'change_reason' => mb_substr($salaryReason, 0, 190),
+                    'effective_from' => $salaryFrom,
                     'changed_by' => auth()->id(),
                 ]);
             }
@@ -629,17 +669,26 @@ class UserController extends Controller
     
     public function show($id)
     {
+        // HR (user-view) can open anyone; everyone else only their own profile.
+        $me = auth()->user();
+        abort_unless($me && ($me->can('user-view') || (int) $me->id === (int) $id), 403);
+
         $user = User::with([
             'department',
             'designation',
             'location',
             'businessUnit',
+            'roles',
             'salaryHistories',
             'latestExitHistory',
+            'exitHistories',
+            'previousEmploymentDocuments',
+            'reportingManager.designation',
+            'teamMembers.designation',
             'reportingManagerHistories.manager',
             'reportingManagerHistories.changedBy',
             'reporteeHistories.employee',
-            'currentReportingManagerHistory.manager' // ADD THIS
+            'currentReportingManagerHistory.manager.designation',
         ])->findOrFail($id);
 
         return view('users.view', compact('user'));
@@ -647,63 +696,92 @@ class UserController extends Controller
 
 
 
+    /** Public digital visiting card: /card/first-last (e.g. /card/jagruti-patil). */
     public function card($slug)
     {
-        // Convert - to spaces
-        $slug = str_replace('-', ' ', strtolower($slug));
+        $user = $this->findCardUser($slug);
 
-        // Split slug into words
-        $parts = explode(' ', $slug);
-
-        // Build query
-        $query = User::query();
-
-        foreach ($parts as $part) {
-            $query->whereRaw("LOWER(CONCAT_WS(' ', first_name, middle_name, last_name)) LIKE ?", ["%{$part}%"]);
+        if (! $user) {
+            abort(404);
         }
 
-        $user = $query->firstOrFail();
+        // People who have left: no contact details, only a short note.
+        if (strcasecmp((string) $user->status, 'Exited') === 0) {
+            return response()->view('users.card-inactive', compact('user'), 410);
+        }
+
+        $user->loadMissing(['designation', 'businessUnit', 'location']);
 
         return view('users.card', compact('user'));
     }
 
+    /**
+     * Find the person for a card link. Exact "first last" (or "first middle last") wins,
+     * then the old loose match; active people come before people who have left.
+     */
+    private function findCardUser(string $slug): ?User
+    {
+        $slug = Str::slug($slug);
+        if ($slug === '') {
+            return null;
+        }
+        $words = explode('-', $slug);
+        $activeFirst = fn ($q) => $q->orderByRaw("CASE WHEN status = 'Active' THEN 0 ELSE 1 END")->orderBy('id');
+
+        $exact = $activeFirst(User::query()->where(function ($q) use ($slug) {
+            $q->whereRaw("LOWER(REPLACE(TRIM(CONCAT_WS(' ', first_name, last_name)), ' ', '-')) = ?", [$slug])
+              ->orWhereRaw("LOWER(REPLACE(TRIM(CONCAT_WS(' ', first_name, middle_name, last_name)), ' ', '-')) = ?", [$slug]);
+        }))->first();
+        if ($exact) {
+            return $exact;
+        }
+
+        $query = User::query();
+        foreach ($words as $part) {
+            $query->whereRaw("LOWER(CONCAT_WS(' ', first_name, middle_name, last_name)) LIKE ?", ["%{$part}%"]);
+        }
+
+        return $activeFirst($query)->first();
+    }
+
     public function downloadVcf($id)
     {
-        $user = User::findOrFail($id);
+        $user = User::with(['designation', 'businessUnit'])->findOrFail($id);
 
-        // Build vCard
+        // No public contact file for people who have left.
+        abort_if(strcasecmp((string) $user->status, 'Exited') === 0, 404);
+
+        $esc = fn ($v) => str_replace(["\\", ',', ';', "\n"], ["\\\\", '\\,', '\\;', '\\n'], (string) $v);
+        $first = trim((string) $user->first_name);
+        $last = trim((string) $user->last_name);
+        $phone = \App\Support\PeopleFormat::intlPhone($user->official_contact ?: $user->personal_contact);
+        $email = $user->official_email ?: $user->email;
+
         $vcf = "BEGIN:VCARD\r\n";
         $vcf .= "VERSION:3.0\r\n";
-        $vcf .= "FN:{$user->first_name} {$user->last_name}\r\n";
-
-        // Optional: Add organization or title
+        $vcf .= 'N:'.$esc($last).';'.$esc($first).";;;\r\n";
+        $vcf .= 'FN:'.$esc(trim($first.' '.$last))."\r\n";
         if ($user->businessUnit) {
-            $vcf .= "ORG:{$user->businessUnit->name}\r\n";
+            $vcf .= 'ORG:'.$esc($user->businessUnit->name)."\r\n";
         }
         if ($user->designation) {
-            $vcf .= "TITLE:{$user->designation->name}\r\n";
+            $vcf .= 'TITLE:'.$esc($user->designation->name)."\r\n";
         }
-
-        // Phone numbers
-        if ($user->phone) {
-            $vcf .= "TEL;TYPE=CELL:{$user->phone}\r\n";
+        if ($phone) {
+            $vcf .= "TEL;TYPE=CELL,WORK:+{$phone}\r\n";
         }
-
-        // Email
-        if ($user->email) {
-            $vcf .= "EMAIL;TYPE=INTERNET:{$user->email}\r\n";
+        if ($email) {
+            $vcf .= 'EMAIL;TYPE=INTERNET,WORK:'.$esc($email)."\r\n";
         }
-
-        // Optional: website
         if ($user->businessUnit && $user->businessUnit->domain) {
-            $vcf .= "URL:{$user->businessUnit->domain}\r\n";
+            $vcf .= 'URL:'.$esc($user->businessUnit->domain)."\r\n";
         }
-
+        $vcf .= 'NOTE:'.$esc('Digital card: '.route('users.card', Str::slug(trim($first.' '.$last))))."\r\n";
         $vcf .= "END:VCARD\r\n";
 
         return response($vcf)
-            ->header('Content-Type', 'text/vcard')
-            ->header('Content-Disposition', 'attachment; filename="'.Str::slug($user->first_name.'-'.$user->last_name).'.vcf"');
+            ->header('Content-Type', 'text/vcard; charset=utf-8')
+            ->header('Content-Disposition', 'attachment; filename="'.Str::slug($first.'-'.$last).'.vcf"');
     }
 
     // ✅ Show the import page (upload form)

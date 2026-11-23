@@ -20,6 +20,9 @@ class UserSalaryController extends Controller
     public function index(User $user, Request $request)
     {
         $fy = $request->get('fy', $this->previousFY()); // Example: 2025-26
+        if (! preg_match('/^\d{4}-\d{2}$/', (string) $fy)) {
+            $fy = $this->previousFY();
+        }
         [$startYear, $shortEndYear] = explode('-', $fy);
 
         $startYear = (int) $startYear;
@@ -65,8 +68,22 @@ class UserSalaryController extends Controller
 
         $total = $existing->sum('salary_credited');
 
+        // Financial years to pick from: joining year (or 2022) up to the current year.
+        [$curStart] = explode('-', $this->currentFY());
+        $firstStart = $user->joining_date ? Carbon::parse($user->joining_date) : Carbon::create(2022, 4, 1);
+        $firstStart = $firstStart->month >= 4 ? $firstStart->year : $firstStart->year - 1;
+        $firstStart = min($firstStart, (int) $curStart, $startYear);
+        $fyOptions = [];
+        for ($y = max((int) $curStart, $startYear); $y >= $firstStart; $y--) {
+            $fyOptions[] = $y.'-'.substr((string) ($y + 1), 2);
+        }
+
+        // Approved unpaid leave per month (from KeyPeople leave), shown as a hint next to loss of pay.
+        $unpaidLeave = \Illuminate\Support\Facades\Schema::hasTable('leave_requests')
+            ? \App\Services\LeaveService::unpaidDaysByMonth($user, $fy) : [];
+
         return view('users.salary.index', compact(
-            'user', 'fy', 'months', 'total'
+            'user', 'fy', 'months', 'total', 'fyOptions', 'unpaidLeave'
         ));
     }
 

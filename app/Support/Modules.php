@@ -45,6 +45,7 @@ class Modules
         'business_unit' => ['keypeople'],
         'candidate' => ['keypeople'],
         'module-access' => ['keypeople'],
+        'hr' => ['keypeople'], // leave, salary register, letters (HR side)
         'incentive-slabs' => ['keyearn'],
         'incentives' => ['keyearn'],
         'incentive-ledger' => ['keyearn'],
