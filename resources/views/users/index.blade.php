@@ -75,7 +75,7 @@
         <button type="button" class="kp-fact" data-quick="active"><div class="l">Active</div><div class="v">{{ $counts['active'] }}</div><div class="s">people working now</div></button>
         <button type="button" class="kp-fact" data-quick="probation"><div class="l">On probation</div><div class="v">{{ $counts['probation'] }}</div><div class="s">not yet confirmed</div></button>
         <div class="kp-fact"><div class="l">New joiners</div><div class="v">{{ $counts['joined'] }}</div><div class="s">this and last 2 months</div></div>
-        <button type="button" class="kp-fact" data-quick="exited"><div class="l">Exited</div><div class="v">{{ $counts['exited'] }}</div><div class="s">have left</div></button>
+        <button type="button" class="kp-fact" data-quick="exited"><div class="l">Exited</div><div class="v">{{ $counts['exited'] }}</div><div class="s">have left{{ $counts['inactive'] ? ' · '.$counts['inactive'].' inactive' : '' }}</div></button>
     </div>
 
     <div class="ul-search">
@@ -93,6 +93,7 @@
                 <select id="status" name="status" class="form-select raw-select">
                     <option value="">Everyone</option>
                     <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>
                     <option value="Exited">Exited</option>
                 </select>
             </div>

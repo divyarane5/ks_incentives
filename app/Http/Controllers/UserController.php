@@ -168,6 +168,7 @@ class UserController extends Controller
             'probation' => User::where('status', 'Active')->where('employment_status', 'probation')->count(),
             'joined' => User::where('status', 'Active')->where('joining_date', '>=', now()->startOfMonth()->subMonths(2))->count(),
             'exited' => User::where('status', 'Exited')->count(),
+            'inactive' => User::where('status', 'Inactive')->count(),
         ];
         return view('users.index', compact('locations', 'departments', 'designations', 'roles','businessUnits','reportingUsers','counts'));
     }
