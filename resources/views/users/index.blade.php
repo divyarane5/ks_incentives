@@ -33,6 +33,8 @@
     #user-datatable { margin: 0 !important; }
     #user-datatable td { vertical-align: middle; white-space: normal; }
     #user-datatable td.ul-col-person { min-width: 260px; }
+    /* Code, designation, department, location and status already show in the person cell; those columns stay hidden (still in the Excel export). */
+    #user-datatable td:nth-child(3) { max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .kp-panel .dataTables_wrapper .row { margin: 0; padding: 8px 12px; align-items: center; }
     .kp-panel .dataTables_filter { display: none; }
     .kp-panel .dataTables_length select { min-height: 36px; border-radius: 8px; }
@@ -204,15 +206,15 @@ $(document).ready(function () {
         },
         columns: [
             {data: 'person', name: 'users.name', className: 'ul-col-person', searchable: false},
-            {data: 'employee_code', name: 'users.employee_code'},
+            {data: 'employee_code', name: 'users.employee_code', visible: false},
             {data: 'name', name: 'users.name', visible: false},
             {data: 'role', name: 'roles.name', sortable: false, searchable: false},
             {data: 'email', name: 'users.email'},
-            {data: 'designation', name: 'designations.name', sortable: false},
-            {data: 'department', name: 'departments.name', sortable: false},
-            {data: 'location', name: 'locations.name', sortable: false},
+            {data: 'designation', name: 'designations.name', sortable: false, visible: false},
+            {data: 'department', name: 'departments.name', sortable: false, visible: false},
+            {data: 'location', name: 'locations.name', sortable: false, visible: false},
             {data: 'company', name: 'users.entity'},
-            {data: 'status_badge', name: 'users.status', searchable: false},
+            {data: 'status_badge', name: 'users.status', searchable: false, visible: false},
             {data: 'action', className: 'ul-col-action text-end', sortable: false, searchable: false},
         ],
         order: [[0, 'asc']],
