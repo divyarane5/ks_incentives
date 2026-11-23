@@ -7,7 +7,7 @@
     .ul-top h4 { margin: 0; }
     .ul-top .btns { display: flex; gap: 8px; flex-wrap: wrap; }
     .ul-top .btn { min-height: 42px; border-radius: 10px; font-weight: 600; }
-    .ul-tiles { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 14px; }
+    .ul-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 14px; }
     .ul-tiles button { text-align: left; cursor: pointer; }
     .ul-tiles button.on { outline: 2px solid var(--kp-gold); }
     .ul-tiles .v { font-size: 1.35rem !important; }
@@ -55,7 +55,7 @@
         .kp-panel .dataTables_length { margin-bottom: 4px; }
     }
     @media (min-width: 768px) {
-        .ul-tiles { grid-template-columns: repeat(4, 1fr); }
+        .ul-tiles { grid-template-columns: repeat(6, 1fr); }
         .ul-call { display: none; }
     }
 </style>
@@ -74,10 +74,12 @@
     </div>
 
     <div class="ul-tiles">
+        <button type="button" class="kp-fact" data-quick="all"><div class="l">All</div><div class="v">{{ $counts['all'] }}</div><div class="s">newest first</div></button>
         <button type="button" class="kp-fact" data-quick="active"><div class="l">Active</div><div class="v">{{ $counts['active'] }}</div><div class="s">people working now</div></button>
         <button type="button" class="kp-fact" data-quick="probation"><div class="l">On probation</div><div class="v">{{ $counts['probation'] }}</div><div class="s">not yet confirmed</div></button>
         <div class="kp-fact"><div class="l">New joiners</div><div class="v">{{ $counts['joined'] }}</div><div class="s">this and last 2 months</div></div>
-        <button type="button" class="kp-fact" data-quick="exited"><div class="l">Exited</div><div class="v">{{ $counts['exited'] }}</div><div class="s">have left{{ $counts['inactive'] ? ' · '.$counts['inactive'].' inactive' : '' }}</div></button>
+        <button type="button" class="kp-fact" data-quick="inactive"><div class="l">Inactive</div><div class="v">{{ $counts['inactive'] }}</div><div class="s">left, not closed</div></button>
+        <button type="button" class="kp-fact" data-quick="exited"><div class="l">Exited</div><div class="v">{{ $counts['exited'] }}</div><div class="s">have left</div></button>
     </div>
 
     <div class="ul-search">
@@ -175,6 +177,7 @@
                         <th>Company</th>
                         <th>Status</th>
                         <th></th>
+                        <th>Added</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
@@ -193,8 +196,7 @@
 <script type="text/javascript">
 $(document).ready(function () {
     var filterIds = ['status', 'employment_status', 'business_unit_id', 'department_id', 'designation_id', 'role_id', 'reporting_manager_id'];
-    try { var saved = JSON.parse(localStorage.getItem('kpUserFilters') || '{}'); filterIds.forEach(function (id) { if (saved[id]) $('#' + id).val(saved[id]); }); } catch (e) {}
-    if (!$('#status').val() && !localStorage.getItem('kpUserFilters')) $('#status').val('Active');
+    try { var saved = JSON.parse(localStorage.getItem('kpUserFilters2') || '{}'); filterIds.forEach(function (id) { if (saved[id]) $('#' + id).val(saved[id]); }); } catch (e) {}
 
     var table = $('#user-datatable').DataTable({
         processing: true,
@@ -216,8 +218,9 @@ $(document).ready(function () {
             {data: 'company', name: 'users.entity'},
             {data: 'status_badge', name: 'users.status', searchable: false, visible: false},
             {data: 'action', className: 'ul-col-action text-end', sortable: false, searchable: false},
+            {data: 'id', name: 'users.id', searchable: false, visible: false},
         ],
-        order: [[0, 'asc']],
+        order: [[11, 'desc']],
         pageLength: 25,
         lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, 'All']],
         language: { lengthMenu: 'Show _MENU_', info: '_START_–_END_ of _TOTAL_', infoEmpty: 'Nobody found', zeroRecords: 'Nobody matches. Try clearing the filters.', processing: 'Loading…' }
@@ -230,12 +233,14 @@ $(document).ready(function () {
         var n = filterIds.filter(function (id) { return $('#' + id).val(); }).length;
         $('#ulFilterCount').text(n).toggle(n > 0);
         var o = {}; filterIds.forEach(function (id) { o[id] = $('#' + id).val(); });
-        try { localStorage.setItem('kpUserFilters', JSON.stringify(o)); } catch (e) {}
+        try { localStorage.setItem('kpUserFilters2', JSON.stringify(o)); } catch (e) {}
         var st = $('#status').val(), em = $('#employment_status').val();
         $('[data-quick]').removeClass('on');
         if (st === 'Active' && em === 'Probation') $('[data-quick="probation"]').addClass('on');
         else if (st === 'Active' && !em) $('[data-quick="active"]').addClass('on');
         else if (st === 'Exited') $('[data-quick="exited"]').addClass('on');
+        else if (st === 'Inactive') $('[data-quick="inactive"]').addClass('on');
+        else if (!st && !em) $('[data-quick="all"]').addClass('on');
     }
     countFilters();
 
@@ -249,7 +254,7 @@ $(document).ready(function () {
     });
     $('[data-quick]').on('click', function () {
         var q = $(this).data('quick');
-        $('#status').val(q === 'exited' ? 'Exited' : 'Active');
+        $('#status').val({all: '', active: 'Active', probation: 'Active', inactive: 'Inactive', exited: 'Exited'}[q]);
         $('#employment_status').val(q === 'probation' ? 'Probation' : '');
         countFilters(); table.ajax.reload();
     });

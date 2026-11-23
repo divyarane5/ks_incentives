@@ -164,6 +164,7 @@ class UserController extends Controller
         $businessUnits = BusinessUnit::where('status', 1)->pluck('name', 'id');
         // Head-count tiles at the top of the list.
         $counts = [
+            'all' => User::count(),
             'active' => User::where('status', 'Active')->count(),
             'probation' => User::where('status', 'Active')->where('employment_status', 'probation')->count(),
             'joined' => User::where('status', 'Active')->where('joining_date', '>=', now()->startOfMonth()->subMonths(2))->count(),

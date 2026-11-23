@@ -178,6 +178,7 @@ $(document).ready(function () {
 
             }   
         },
+        order: [[0, 'desc']],
         columns: [
             { data: 'id', name: 'b.id' },
             { data: 'booking_date', name: 'b.booking_date' },
