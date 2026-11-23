@@ -21,6 +21,11 @@
     .sign { margin-top: 36px; width: 100%; }
     .sign td { vertical-align: bottom; width: 50%; }
     .line { border-top: 1px solid #1f2a3d; width: 180px; padding-top: 4px; margin-top: 44px; }
+    .signed { margin-top: 6px; height: 78px; position: relative; }
+    .signed .sig { height: 62px; max-width: 210px; margin-top: 10px; }
+    .signed .stamp { position: absolute; left: 120px; top: -6px; height: 84px; max-width: 120px; opacity: .9; }
+    .who { border-top: 1px solid #1f2a3d; width: 200px; padding-top: 4px; }
+    .who b { color: #011e48; }
     .foot { position: fixed; bottom: -30px; left: 0; right: 0; text-align: center; font-size: 8.5px; color: #8a94a6; }
 </style>
 </head>
@@ -52,7 +57,19 @@
     <table class="sign"><tr>
         <td>
             For <b>{{ $company }}</b>
-            <div class="line">Authorised signatory</div>
+            @if(! empty($signatory) && ($signImg ?? null))
+                <div class="signed">
+                    <img class="sig" src="{{ $signImg }}" alt="">
+                    @if($stampImg ?? null)<img class="stamp" src="{{ $stampImg }}" alt="">@endif
+                </div>
+                <div class="who">
+                    <b>{{ $signatory->name }}</b><br>
+                    @if($signatory->designation){{ $signatory->designation }}<br>@endif
+                    Authorised signatory
+                </div>
+            @else
+                <div class="line">Authorised signatory</div>
+            @endif
         </td>
         <td style="text-align:right">
             @if(in_array($l->type, ['offer', 'appointment'], true))

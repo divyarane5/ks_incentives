@@ -2,6 +2,12 @@
 
 @section('content')
 @include('hr.partials.hr-styles')
+<style>
+    .hr-signed { background: #f6f8fb; border-radius: 10px; padding: 10px 12px; margin: -4px 0 10px; }
+    .hr-sig-thumb { width: 86px; height: 46px; background: #fff; border: 1px solid var(--kp-line); border-radius: 8px; position: relative; flex-shrink: 0; display: flex; align-items: center; padding: 3px; }
+    .hr-sig-thumb img { max-width: 60px; max-height: 38px; }
+    .hr-sig-thumb img.st { position: absolute; right: 3px; top: 3px; max-width: 34px; max-height: 38px; opacity: .85; }
+</style>
 <div class="container-xxl flex-grow-1 container-p-y kp" style="max-width:1300px">
     <div class="kp-crumb"><a href="{{ route('users.index') }}">KeyPeople</a> <i class="bx bx-chevron-right"></i> <span>Letters</span></div>
     <div class="hr-head">
@@ -30,11 +36,32 @@
                                 <div class="m"><a href="{{ route('users.show', $l->user_id) }}">{{ $l->user?->name }}</a> · {{ $l->letter_date->format('d M Y') }} · {{ $l->reference }}</div>
                                 <div class="m">Issued by {{ $l->issuer?->name ?? '—' }}</div>
                             </div>
-                            <div class="r d-flex gap-1">
+                            <div class="r d-flex gap-1 flex-wrap justify-content-end">
                                 <a class="btn btn-sm btn-outline-primary" target="_blank" href="{{ route('letters.pdf', $l) }}">PDF</a>
+                                <button type="button" class="btn btn-sm {{ $l->signed_pdf ? 'btn-success' : 'btn-outline-secondary' }}" data-bs-toggle="collapse" data-bs-target="#signed{{ $l->id }}" title="Signed with the USB token (DSC)">
+                                    <i class="bx {{ $l->signed_pdf ? 'bx-check-shield' : 'bx-shield' }}"></i>
+                                </button>
                                 <form method="POST" action="{{ route('letters.destroy', $l) }}" onsubmit="return confirm('Remove this letter? The person will no longer see it.')">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger"><i class="bx bx-trash"></i></button></form>
                             </div>
                         </li></ul>
+                        <div class="collapse" id="signed{{ $l->id }}">
+                            <div class="hr-signed">
+                                @if($l->signed_pdf)
+                                    <div class="small mb-2"><i class="bx bx-check-shield text-success"></i> The person sees the copy signed with the token.
+                                        <a target="_blank" href="{{ route('letters.pdf', ['letter' => $l, 'unsigned' => 1]) }}">App copy</a></div>
+                                @else
+                                    <div class="small mb-2">Signing with the USB token (DSC)? <a href="{{ route('letters.pdf', ['letter' => $l, 'download' => 1, 'unsigned' => 1]) }}">Download the unsigned PDF</a>, sign it on your computer (Adobe Reader or emSigner), then upload it here.</div>
+                                @endif
+                                <form method="POST" action="{{ route('letters.signed', $l) }}" enctype="multipart/form-data" class="d-flex gap-2 flex-wrap align-items-center">
+                                    @csrf
+                                    <input type="file" name="signed_pdf" accept="application/pdf" class="form-control form-control-sm" style="max-width:260px" required>
+                                    <button class="btn btn-sm btn-primary">{{ $l->signed_pdf ? 'Replace' : 'Upload signed PDF' }}</button>
+                                </form>
+                                @if($l->signed_pdf)
+                                    <form method="POST" action="{{ route('letters.signed', $l) }}" class="mt-1">@csrf<input type="hidden" name="remove" value="1"><button class="btn btn-link btn-sm p-0 text-danger">Remove signed copy</button></form>
+                                @endif
+                            </div>
+                        </div>
                     @empty
                         <div class="kp-empty">No letters issued yet.</div>
                     @endforelse
@@ -43,6 +70,29 @@
             </div>
         </div>
         <div class="col-12 col-lg-5">
+            <div class="kp-panel">
+                <div class="kp-panel-h"><h2><i class="bx bx-pen"></i>Signature and stamp</h2><a href="{{ route('letters.signatory.edit') }}" class="btn btn-sm btn-outline-primary">Add</a></div>
+                <div class="kp-panel-b">
+                    @forelse($signatories as $s)
+                        <ul class="kp-list"><li>
+                            <div class="hr-sig-thumb">
+                                @if($s->url('signature'))<img src="{{ $s->url('signature') }}" alt="">@endif
+                                @if($s->url('stamp'))<img src="{{ $s->url('stamp') }}" alt="" class="st">@endif
+                            </div>
+                            <div class="bd">
+                                <div class="t">{{ $s->name }}
+                                    @if($s->is_default)<span class="hr-status approved">Default</span>@endif
+                                    @unless($s->active)<span class="hr-status cancelled">Off</span>@endunless
+                                </div>
+                                <div class="m">{{ $s->designation ?: 'Authorised signatory' }} · {{ $s->company ?: 'All companies' }}</div>
+                            </div>
+                            <div class="r"><a href="{{ route('letters.signatory.edit', $s) }}" class="btn btn-sm btn-outline-secondary">Edit</a></div>
+                        </li></ul>
+                    @empty
+                        <div class="kp-empty">No signature yet. <a href="{{ route('letters.signatory.edit') }}">Add the authorised signatory's signature</a> and every new letter PDF is signed automatically.</div>
+                    @endforelse
+                </div>
+            </div>
             <div class="kp-panel">
                 <div class="kp-panel-h"><h2><i class="bx bx-layout"></i>Templates</h2><a href="{{ route('letters.template.edit') }}" class="btn btn-sm btn-outline-primary">New</a></div>
                 <div class="kp-panel-b">

@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Hr;
 
 use App\Http\Controllers\Controller;
 use App\Models\IssuedLetter;
+use App\Models\LetterSignatory;
 use App\Models\LetterTemplate;
 use App\Models\User;
 use App\Services\LeaveService;
 use App\Support\LetterText;
+use App\Support\SignatureImage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
 /** HR letters: templates with fill-ins, issue to a person, PDF. People see their own letters. */
@@ -25,8 +29,9 @@ class LetterController extends Controller
         }
         $letters = $q->paginate(25)->withQueryString();
         $people = User::orderByRaw("status = 'Active' desc")->orderBy('name')->get(['id', 'name', 'employee_code', 'status']);
+        $signatories = Schema::hasTable('letter_signatories') ? LetterSignatory::orderByDesc('active')->orderByDesc('is_default')->orderBy('name')->get() : collect();
 
-        return view('hr.letters.index', compact('templates', 'letters', 'people'));
+        return view('hr.letters.index', compact('templates', 'letters', 'people', 'signatories'));
     }
 
     public function editTemplate(Request $request, ?LetterTemplate $template = null)
@@ -69,8 +74,10 @@ class LetterController extends Controller
             ];
             $blanks = LetterText::blanks($template->subject."\n".$template->body, $person);
         }
+        $signatories = Schema::hasTable('letter_signatories') ? LetterSignatory::where('active', true)->orderBy('name')->get() : collect();
+        $suggested = $person ? LetterSignatory::forCompany(self::companyOf($person)) : null;
 
-        return view('hr.letters.create', compact('templates', 'people', 'person', 'template', 'filled', 'blanks'));
+        return view('hr.letters.create', compact('templates', 'people', 'person', 'template', 'filled', 'blanks', 'signatories', 'suggested'));
     }
 
     public function store(Request $request)
@@ -83,7 +90,14 @@ class LetterController extends Controller
             'body' => 'required|string|max:20000',
             'letter_date' => 'required|date',
             'reference' => 'nullable|string|max:60',
+            'signatory' => 'nullable|string|max:20', // signatory id, or "none"
         ]);
+        $sign = $data['signatory'] ?? null;
+        unset($data['signatory']);
+        if (Schema::hasColumn('issued_letters', 'letter_signatory_id')) {
+            $data['no_signature'] = $sign === 'none';
+            $data['letter_signatory_id'] = ctype_digit((string) $sign) ? (int) $sign : null;
+        }
         $template = ! empty($data['letter_template_id']) ? LetterTemplate::find($data['letter_template_id']) : null;
         $letter = IssuedLetter::create($data + ['type' => $template?->type ?? 'other', 'issued_by' => $me->id]);
         if (empty($letter->reference)) {
@@ -99,10 +113,105 @@ class LetterController extends Controller
         $me = $request->user();
         abort_unless((int) $letter->user_id === (int) $me->id || LeaveService::isHr($me), 403);
         $letter->load(['user.designation', 'user.businessUnit']);
-        $pdf = Pdf::loadView('hr.letters.pdf', ['l' => $letter, 'u' => $letter->user, 'html' => LetterText::html($letter->body)])->setPaper('a4');
         $file = Str::slug(($letter->subject ?: 'letter').'-'.$letter->user->name).'.pdf';
 
+        // A copy signed with the DSC token (uploaded back by HR) wins over the generated one, unless HR asks for the unsigned copy.
+        if ($letter->signed_pdf && ! $request->boolean('unsigned') && Storage::disk('public')->exists($letter->signed_pdf)) {
+            return Storage::disk('public')->response($letter->signed_pdf, $file, ['Content-Type' => 'application/pdf'],
+                $request->boolean('download') ? 'attachment' : 'inline');
+        }
+
+        $signatory = null;
+        if (! $letter->no_signature && ! $request->boolean('unsigned')) {
+            $signatory = $letter->signatory ?? LetterSignatory::forCompany(self::companyOf($letter->user));
+        }
+        $pdf = Pdf::loadView('hr.letters.pdf', [
+            'l' => $letter, 'u' => $letter->user, 'html' => LetterText::html($letter->body),
+            'signatory' => $signatory,
+            'signImg' => $signatory?->dataUri('signature'),
+            'stampImg' => $signatory?->dataUri('stamp'),
+        ])->setPaper('a4');
+
         return $request->boolean('download') ? $pdf->download($file) : $pdf->stream($file);
+    }
+
+    /** Upload the copy signed outside the app (USB token / DSC), or remove it. */
+    public function uploadSigned(Request $request, IssuedLetter $letter)
+    {
+        $this->hrOnly($request);
+        if ($request->boolean('remove')) {
+            if ($letter->signed_pdf) {
+                Storage::disk('public')->delete($letter->signed_pdf);
+            }
+            $letter->update(['signed_pdf' => null]);
+
+            return back()->with('success', 'Signed copy removed. The letter shows the app copy again.');
+        }
+        $request->validate(['signed_pdf' => 'required|file|mimes:pdf|max:10240']);
+        if ($letter->signed_pdf) {
+            Storage::disk('public')->delete($letter->signed_pdf);
+        }
+        $letter->update(['signed_pdf' => $request->file('signed_pdf')->store('letters-signed', 'public')]);
+
+        return back()->with('success', 'Signed copy saved. The person now sees the signed PDF.');
+    }
+
+    public function editSignatory(Request $request, ?LetterSignatory $signatory = null)
+    {
+        $this->hrOnly($request);
+        $signatory ??= new LetterSignatory(['active' => true]);
+        $companies = User::query()->whereNotNull('entity')->where('entity', '!=', '')->distinct()->orderBy('entity')->pluck('entity');
+
+        return view('hr.letters.signatory', compact('signatory', 'companies'));
+    }
+
+    public function saveSignatory(Request $request, ?LetterSignatory $signatory = null)
+    {
+        $this->hrOnly($request);
+        $signatory ??= new LetterSignatory;
+        $data = $request->validate([
+            'name' => 'required|string|max:120',
+            'designation' => 'nullable|string|max:120',
+            'company' => 'nullable|string|max:190',
+            'signature' => ($signatory->exists ? 'nullable' : 'required').'|image|max:5120',
+            'stamp' => 'nullable|image|max:5120',
+        ]);
+        foreach (['signature', 'stamp'] as $f) {
+            unset($data[$f]);
+            if ($request->hasFile($f)) {
+                if ($signatory->{$f}) {
+                    Storage::disk('public')->delete($signatory->{$f});
+                }
+                $data[$f] = SignatureImage::store($request->file($f));
+            } elseif ($f === 'stamp' && $request->boolean('remove_stamp') && $signatory->stamp) {
+                Storage::disk('public')->delete($signatory->stamp);
+                $data['stamp'] = null;
+            }
+        }
+        $data['active'] = $request->boolean('active');
+        $data['is_default'] = $request->boolean('is_default');
+        $signatory->fill($data)->save();
+        if ($signatory->is_default) {
+            LetterSignatory::where('id', '!=', $signatory->id)->update(['is_default' => false]);
+        }
+
+        return redirect()->route('letters.index')->with('success', 'Signature saved. New letters will carry it.');
+    }
+
+    public function deleteSignatory(Request $request, LetterSignatory $signatory)
+    {
+        $this->hrOnly($request);
+        // Letters already issued keep looking the same, so only hide it.
+        $signatory->update(['active' => false, 'is_default' => false]);
+
+        return back()->with('success', 'Signature turned off for new letters.');
+    }
+
+    private static function companyOf(User $u): string
+    {
+        $u->loadMissing('businessUnit');
+
+        return (string) ($u->entity ?: ($u->businessUnit?->name ?? config('app.name')));
     }
 
     public function destroy(Request $request, IssuedLetter $letter)

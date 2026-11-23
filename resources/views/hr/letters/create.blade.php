@@ -43,6 +43,16 @@
                     @endif
                     <div class="col-6 col-md-4"><label class="form-label">Letter date</label><input type="date" name="letter_date" class="form-control" value="{{ old('letter_date', today()->toDateString()) }}" required></div>
                     <div class="col-6 col-md-8"><label class="form-label">Reference (optional)</label><input name="reference" class="form-control" value="{{ old('reference') }}" placeholder="Made for you if left empty"></div>
+                    <div class="col-12">
+                        <label class="form-label">Signature</label>
+                        <select name="signatory" class="form-select raw-select">
+                            @foreach($signatories as $s)
+                                <option value="{{ $s->id }}" @selected(old('signatory', $suggested?->id) == $s->id)>{{ $s->name }}{{ $s->designation ? ', '.$s->designation : '' }}{{ $s->company ? ' ('.$s->company.')' : '' }}</option>
+                            @endforeach
+                            <option value="none" @selected(old('signatory') === 'none' || ! $suggested)>No signature (sign by hand or with the USB token)</option>
+                        </select>
+                        @if($signatories->isEmpty())<div class="form-text">No signature set up yet. <a href="{{ route('letters.signatory.edit') }}">Add one</a> to sign letters automatically.</div>@endif
+                    </div>
                     <div class="col-12"><label class="form-label">Subject</label><input name="subject" class="form-control" value="{{ old('subject', $filled['subject']) }}"></div>
                     <div class="col-12"><label class="form-label">Letter text</label><textarea name="body" class="form-control" rows="16" style="line-height:1.5" required>{{ old('body', $filled['body']) }}</textarea></div>
                 </div>
