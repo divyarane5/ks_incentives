@@ -121,10 +121,8 @@ class LetterController extends Controller
                 $request->boolean('download') ? 'attachment' : 'inline');
         }
 
+        // Letters are signed with the DSC token, so the PDF leaves the space empty (signature images were switched off on 2026-11-24).
         $signatory = null;
-        if (! $letter->no_signature && ! $request->boolean('unsigned')) {
-            $signatory = $letter->signatory ?? LetterSignatory::forCompany(self::companyOf($letter->user));
-        }
         $company = self::companyOf($letter->user);
         $signImg = $signatory?->dataUri('signature');
         $stampImg = $signatory?->dataUri('stamp');
@@ -169,6 +167,7 @@ class LetterController extends Controller
 
     public function editSignatory(Request $request, ?LetterSignatory $signatory = null)
     {
+        abort(404); // signature images switched off: letters are signed with the DSC token
         $this->hrOnly($request);
         $signatory ??= new LetterSignatory(['active' => true]);
         $companies = User::query()->whereNotNull('entity')->where('entity', '!=', '')->distinct()->orderBy('entity')->pluck('entity');
@@ -178,6 +177,7 @@ class LetterController extends Controller
 
     public function saveSignatory(Request $request, ?LetterSignatory $signatory = null)
     {
+        abort(404); // signature images switched off: letters are signed with the DSC token
         $this->hrOnly($request);
         $signatory ??= new LetterSignatory;
         $data = $request->validate([
@@ -211,6 +211,7 @@ class LetterController extends Controller
 
     public function deleteSignatory(Request $request, LetterSignatory $signatory)
     {
+        abort(404); // signature images switched off: letters are signed with the DSC token
         $this->hrOnly($request);
         // Letters already issued keep looking the same, so only hide it.
         $signatory->update(['active' => false, 'is_default' => false]);

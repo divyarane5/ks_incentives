@@ -71,26 +71,13 @@
         </div>
         <div class="col-12 col-lg-5">
             <div class="kp-panel">
-                <div class="kp-panel-h"><h2><i class="bx bx-pen"></i>Signature and stamp</h2><a href="{{ route('letters.signatory.edit') }}" class="btn btn-sm btn-outline-primary">Add</a></div>
-                <div class="kp-panel-b">
-                    @forelse($signatories as $s)
-                        <ul class="kp-list"><li>
-                            <div class="hr-sig-thumb">
-                                @if($s->url('signature'))<img src="{{ $s->url('signature') }}" alt="">@endif
-                                @if($s->url('stamp'))<img src="{{ $s->url('stamp') }}" alt="" class="st">@endif
-                            </div>
-                            <div class="bd">
-                                <div class="t">{{ $s->name }}
-                                    @if($s->is_default)<span class="hr-status approved">Default</span>@endif
-                                    @unless($s->active)<span class="hr-status cancelled">Off</span>@endunless
-                                </div>
-                                <div class="m">{{ $s->designation ?: 'Authorised signatory' }} · {{ $s->company ?: 'All companies' }}</div>
-                            </div>
-                            <div class="r"><a href="{{ route('letters.signatory.edit', $s) }}" class="btn btn-sm btn-outline-secondary">Edit</a></div>
-                        </li></ul>
-                    @empty
-                        <div class="kp-empty">No signature yet. <a href="{{ route('letters.signatory.edit') }}">Add the authorised signatory's signature</a> and every new letter PDF is signed automatically.</div>
-                    @endforelse
+                <div class="kp-panel-h"><h2><i class="bx bx-shield-quarter"></i>Signing with the DSC token</h2></div>
+                <div class="kp-panel-b" style="font-size:.85rem">
+                    <ol class="mb-0 ps-3">
+                        <li>Issue the letter and download its PDF.</li>
+                        <li>Open it in Adobe Reader with the token plugged in: All tools &gt; Use a certificate &gt; Digitally sign, and draw the box in the empty space under "For …".</li>
+                        <li>Upload the signed copy on that letter here. Employees then see the signed version.</li>
+                    </ol>
                 </div>
             </div>
             <div class="kp-panel">
