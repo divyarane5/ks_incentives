@@ -36,7 +36,7 @@ class LetterText
 
         return [
             '{title}' => $title ?: (strcasecmp((string) $user->gender, 'female') === 0 ? 'Ms.' : 'Mr.'),
-            '{name}' => trim(implode(' ', array_filter([$user->first_name, $user->middle_name, $user->last_name]))) ?: (string) $user->name,
+            '{name}' => preg_replace('/^(mr|ms|mrs|miss|dr)\.?\s+/i', '', trim(implode(' ', array_filter([$user->first_name, $user->middle_name, $user->last_name]))) ?: (string) $user->name),
             '{first_name}' => (string) ($user->first_name ?: $user->name),
             '{employee_code}' => (string) $user->employee_code,
             '{designation}' => (string) ($user->designation?->name ?? ''),
@@ -63,7 +63,14 @@ class LetterText
 
     public static function fill(?string $text, User $user): string
     {
-        $text = strtr((string) $text, self::values($user));
+        // An empty fill-in shows as "[… missing]" so HR spots it before issuing, instead of a silent gap.
+        $values = self::values($user);
+        foreach ($values as $k => $v) {
+            if ($v === '' && ! in_array($k, ['{address}'], true)) {
+                $values[$k] = '['.(self::FIELDS[$k] ?? trim($k, '{}')).' missing]';
+            }
+        }
+        $text = strtr((string) $text, $values);
 
         return str_replace('[[salary-table]]', self::salaryTable($user), $text);
     }

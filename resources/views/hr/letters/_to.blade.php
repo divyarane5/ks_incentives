@@ -2,7 +2,12 @@
     <td class="to">
         @unless($l->type === 'experience')
             To,<br>
-            <b>{{ trim(($u->title ? $u->title.' ' : '').$u->name) }}</b>@if($letterhead)<b>,</b>@endif<br>
+            @php
+                $t = trim((string) $u->title);
+                $nm = trim((string) $u->name);
+                $hasTitle = $t !== '' && stripos(rtrim($nm, '.').' ', rtrim($t, '.')) === 0;
+            @endphp
+            <b>{{ $t && ! $hasTitle && ! preg_match('/^(mr|ms|mrs|miss|dr)\.?\s/i', $nm) ? $t.' '.$nm : $nm }}</b>@if($letterhead)<b>,</b>@endif<br>
             @if($letterhead)
                 @if($u->location?->name)<b>{{ $u->location->name }}.</b>@endif
             @else
