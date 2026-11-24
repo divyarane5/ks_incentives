@@ -12,6 +12,8 @@ class VerifyCsrfToken extends Middleware
      * @var array<int, string>
      */
     protected $except = [
-        //
+        // KeyLeads: website forms on other sites and the Facebook webhook post here.
+        'api/capture/*',
+        'api/facebook/leads',
     ];
 }

@@ -95,13 +95,13 @@ class IndentConfigurationController extends Controller
     {
         $users = User::select(['id', 'name'])->orderBy('name', 'asc')->get();
         $expenses = Expense::select(['id', 'name'])->orderBy('name', 'asc')->get();
-        $intendConfiguration = IndentConfiguration::find($id);
+        $intendConfiguration = IndentConfiguration::findOrFail($id);
         return view('indent_configuration.edit', compact('users', 'expenses', 'intendConfiguration', 'id'));
     }
 
     public function update(IndentConfigurationRequest $request, $id)
     {
-        $indentConfiguration = IndentConfiguration::find($id);
+        $indentConfiguration = IndentConfiguration::findOrFail($id);
         $indentConfiguration->user_id = $request->input('user_id');
         $indentConfiguration->expense_id = $request->input('expense_id');
         $indentConfiguration->approver1 = !empty($request->input('approver1')) ? implode(",", $request->input('approver1')) : '';

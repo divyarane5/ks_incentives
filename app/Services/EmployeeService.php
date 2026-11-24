@@ -57,19 +57,7 @@ class EmployeeService
     {
         DB::transaction(function () use ($user, $newManagerId, $remarks) {
 
-            // Close current manager
-            EmployeeReportingManagerHistory::where('user_id', $user->id)
-                ->whereNull('effective_to')
-                ->update(['effective_to' => now()]);
-
-            // Add new manager
-            EmployeeReportingManagerHistory::create([
-                'user_id'              => $user->id,
-                'reporting_manager_id' => $newManagerId,
-                'effective_from'       => now(),
-                'changed_by'           => auth()->id(),
-                'remarks'              => $remarks,
-            ]);
+            EmployeeReportingManagerHistory::record($user, $newManagerId, now(), $remarks);
 
             // Optional snapshot update (for fast access)
             $user->update([
@@ -123,7 +111,7 @@ class EmployeeService
                 'joining_date'             => $joiningDate,
                 'probation_period_days'    => $probationDays,
                 'confirm_date'             => $probationDays
-                    ? $joiningDate->copy()->addDays($probationDays)
+                    ? $joiningDate->copy()->addDays((int) $probationDays)
                     : null,
                 'employment_status'        => 'Probation',
                 'leaving_date'             => null,

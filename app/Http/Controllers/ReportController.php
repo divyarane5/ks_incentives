@@ -23,19 +23,19 @@ class ReportController extends Controller
                 $indents = $indents->where('indents.created_by', auth()->user()->id);
             }
 
-            if ($indentRequest['location_id'] != "") {
+            if (($indentRequest['location_id'] ?? '') != "") {
                 $indents = $indents->where('indents.location_id', $indentRequest['location_id']);
             }
 
-            if ($indentRequest['bill_mode'] != "") {
+            if (($indentRequest['bill_mode'] ?? '') != "") {
                 $indents = $indents->where('bill_mode', $indentRequest['bill_mode']);
             }
 
-            if ($indentRequest['business_unit_id'] != "") {
+            if (($indentRequest['business_unit_id'] ?? '') != "") {
                 $indents = $indents->where('business_unit_id', $indentRequest['business_unit_id']);
             }
 
-            if ($indentRequest['status'] != "") {
+            if (($indentRequest['status'] ?? '') != "") {
                 $indents = $indents->where('indents.status', $indentRequest['status']);
             }
 
@@ -66,7 +66,7 @@ class ReportController extends Controller
             if (!auth()->user()->can('reimbursement-view-all') && !auth()->user()->can('reimbursement-settlement') && auth()->user()->can('reimbursement-view-own')) {
                 $reimbursements = $reimbursements->where(function($query) {
                                     $query = $query->where('reimbursements.created_by', auth()->user()->id)
-                                        ->orWhere('created_by_user.reporting_manager_id ', auth()->user()->id);
+                                        ->orWhere('created_by_user.reporting_manager_id', auth()->user()->id);
                                 });
             }
             $reimbursements = $reimbursements->where('reimbursements.status', 'settled')->where('reimbursement_logs.status', 'settled')->get();

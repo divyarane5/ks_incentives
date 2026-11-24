@@ -81,7 +81,7 @@ class JoiningFormController extends Controller
 
     public function show($id)
     {
-        $joiningForm = JoiningForm::where('candidate_id', $id)->latest()->first();
+        $joiningForm = JoiningForm::where('candidate_id', $id)->latest()->firstOrFail();
         return view('joining_form.show', compact('joiningForm'));
     }
 
@@ -97,7 +97,7 @@ class JoiningFormController extends Controller
 
     public function edit($candidateId)
     {
-        $joiningForm = JoiningForm::where('candidate_id', $candidateId)->latest()->first();
+        $joiningForm = JoiningForm::where('candidate_id', $candidateId)->latest()->firstOrFail();
         return view('joining_form.edit', compact('joiningForm'));
     }
 
@@ -142,7 +142,7 @@ class JoiningFormController extends Controller
 
         JoiningForm::where('id', $id)->update($data);
 
-        $joiningForm = JoiningForm::find($id);
+        $joiningForm = JoiningForm::findOrFail($id);
 
         //profile photo
         if ($request->has('photo')) {
@@ -158,7 +158,7 @@ class JoiningFormController extends Controller
     public function downloadPdf($id)
     {
         $pdf = true;
-        $joiningForm = JoiningForm::where('candidate_id', $id)->latest()->first();
+        $joiningForm = JoiningForm::where('candidate_id', $id)->latest()->firstOrFail();
         $pdf = PDF::loadView('joining_form.show', compact('joiningForm', 'pdf'));
         $pdf->setOptions(['isHTML5ParserEnabled' => true, 'isRemoteEnabled' => true]);
         $fileName = 'joining_form_'.str_replace(" ", "-", $joiningForm->first_name.'-'.$joiningForm->last_name).'.pdf';

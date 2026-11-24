@@ -16,6 +16,18 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         // $schedule->command('inspire')->hourly();
+
+        // KeyLeads: morning follow-up summary in everyone's bell.
+        $schedule->command('keyleads:daily-summary')->dailyAt('09:30');
+
+        // Shared hosting has no always-running queue worker, so the every-minute cron
+        // (schedule:run) starts one that works through waiting jobs (lead imports,
+        // Facebook leads) and then exits. Only one runs at a time.
+        if (config('queue.default') !== 'sync') {
+            $schedule->command('queue:work --stop-when-empty --max-time=50 --timeout=600')
+                ->everyMinute()
+                ->withoutOverlapping(15);
+        }
     }
 
     /**

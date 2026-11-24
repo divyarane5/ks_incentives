@@ -154,6 +154,38 @@
                         </select>
                     </div>
 
+                    {{-- Team at the time of booking (used for manager incentives) --}}
+                    <div class="col-md-12 mt-2">
+                        <h6 class="mb-1">Team at the time of booking</h6>
+                        <small class="text-muted">
+                            Used for TL, Sr. TL and Cluster Head incentives.
+                            @if ($booking->team_source === 'manual')
+                                Set by hand.
+                            @else
+                                Filled automatically from the reporting chain on the booking date.
+                            @endif
+                        </small>
+                    </div>
+                    @foreach (['tl_user_id' => 'TL', 'sr_tl_user_id' => 'Sr. TL', 'ch_user_id' => 'CH'] as $field => $role)
+                        <div class="mb-3 col-md-4">
+                            <label class="form-label">{{ $role === 'CH' ? 'Cluster Head' : $role }}</label>
+                            <select name="{{ $field }}" class="form-control">
+                                <option value="">None</option>
+                                @foreach ($teamOptions[$role] as $person)
+                                    <option value="{{ $person->id }}" {{ (string) old($field, $booking->$field) === (string) $person->id ? 'selected' : '' }}>
+                                        {{ $person->name }}{{ $person->status === 'Exited' ? ' (left)' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endforeach
+                    <div class="mb-3 col-md-12">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="team_auto" value="1" id="team_auto">
+                            <label class="form-check-label" for="team_auto">Fill the team again automatically from the reporting chain</label>
+                        </div>
+                    </div>
+
                     {{-- Remarks --}}
                     <div class="mb-3 col-md-12">
                         <label class="form-label">Remarks</label>

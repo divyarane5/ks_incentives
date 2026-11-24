@@ -6,17 +6,20 @@
         <div class="card-body">
         <!-- Logo -->
         <div class="app-brand justify-content-center">
-            <img src="{{ asset("assets/img/logo/ks-logos.webp") }}" class="logo">
+            <img src="{{ asset('assets/img/logo/realtysuite.svg') }}" class="logo" alt="RealtySuite">
         </div>
         <!-- /Logo -->
-        <h4 class="mb-2">Welcome to Realty Suite 👋</h4>
-        <p class="mb-4">Please login to your account</p>
+        <h4 class="mb-1 text-center">Sign in to RealtySuite</h4>
+        <p class="mb-4 text-center text-muted">Use your employee ID, email or mobile number</p>
 
+        @if (session('status'))
+            <div class="alert alert-success py-2 small" role="alert">{{ session('status') }}</div>
+        @endif
         <form id="formAuthentication" class="mb-3" action="{{ route('login') }}" method="POST">
             @csrf
             <div class="mb-3">
-                <label for="email" class="form-label">{{ __('Email Address') }}</label>
-                <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email" placeholder="Enter your email or username" autofocus>
+                <label for="email" class="form-label">Email, employee ID or mobile</label>
+                <input id="email" type="text" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="username" placeholder="Email, employee ID or mobile" autofocus>
                 @error('email')
                     <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>
@@ -27,7 +30,7 @@
                 <div class="d-flex justify-content-between">
                     <label class="form-label" for="password">{{ __('Password') }}</label>
                     <a href="{{ route('password.request') }}">
-                    <small>{{ __('Forgot Your Password?') }}</small>
+                    <small>Forgot password?</small>
                     </a>
                 </div>
                 <div class="input-group input-group-merge">
@@ -52,6 +55,9 @@
             <button class="btn btn-primary d-grid w-100" type="submit">{{ __('Login') }}</button>
             </div>
         </form>
+        <div class="rs-modules">
+            <span>KeyLeads</span><span>KeyBookings</span><span>KeyAccounts</span><span>KeyPeople</span><span>KeyEarn</span>
+        </div>
         </div>
     </div>
     <!-- /Register -->

@@ -447,7 +447,6 @@
 @endsection
 
 @section('script')
-<script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
 

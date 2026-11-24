@@ -95,7 +95,7 @@ class ExpenseController extends Controller
 
     public function edit($id)
     {
-        $expense = Expense::find($id);
+        $expense = Expense::findOrFail($id);
         $vendors = Vendor::orderBy('name', 'asc')->get();
         $expenseVendors = ExpenseVendorMapping::select('vendor_id')->where('expense_id', $id)->get()->pluck('vendor_id')->toArray();
         return view('expense.edit', compact('id', 'expense', 'vendors', 'expenseVendors'));
@@ -104,7 +104,7 @@ class ExpenseController extends Controller
     public function update(ExpenseRequest $request, $id)
     {
         try {
-            $expense = Expense::find($id);
+            $expense = Expense::findOrFail($id);
             $expense->name = $request->input('name');
             $expense->save();
 

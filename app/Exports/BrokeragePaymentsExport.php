@@ -15,7 +15,7 @@ class BrokeragePaymentsExport implements FromCollection, WithHeadings
         $this->filters = $filters;
     }
 
-    public function collection()
+    public function collection(): \Illuminate\Support\Enumerable
     {
         $query = BookingBrokeragePayment::with([
             'booking.project',

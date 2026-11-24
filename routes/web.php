@@ -13,7 +13,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Auth::routes();
+Auth::routes(['reset' => false]);
+
+// Forgot password: a 6-digit code to the official email (replaces the old reset-link emails).
+Route::get('password/reset', [App\Http\Controllers\Auth\PasswordOtpController::class, 'request'])->name('password.request');
+Route::post('password/email', [App\Http\Controllers\Auth\PasswordOtpController::class, 'send'])->name('password.email')->middleware('throttle:20,1');
+Route::get('password/code', [App\Http\Controllers\Auth\PasswordOtpController::class, 'form'])->name('password.otp');
+Route::post('password/code', [App\Http\Controllers\Auth\PasswordOtpController::class, 'verify'])->name('password.otp.verify')->middleware('throttle:20,1');
+Route::post('password/code/resend', [App\Http\Controllers\Auth\PasswordOtpController::class, 'resend'])->name('password.otp.resend')->middleware('throttle:10,1');
 
 /*
 |--------------------------------------------------------------------------
@@ -112,6 +119,12 @@ Route::group(['middleware' => 'auth'], function () {
     // Dashboard
     Route::get('/dashboard', [App\Http\Controllers\DashboardController::class, 'index'])
         ->name('dashboard');
+
+    // RealtySuite: who can open which module (KeyPeople), and a person's own incentive (KeyEarn)
+    Route::get('/module-access', [App\Http\Controllers\ModuleAccessController::class, 'index'])->name('module-access.index');
+    Route::post('/module-access/roles', [App\Http\Controllers\ModuleAccessController::class, 'updateRoles'])->name('module-access.roles');
+    Route::post('/module-access/user', [App\Http\Controllers\ModuleAccessController::class, 'updateUser'])->name('module-access.user');
+    Route::get('/my-incentive', [App\Http\Controllers\MyIncentiveController::class, 'show'])->name('my-incentive');
     Route::match(['get','post'],'/incentive-dashboard-view',[App\Http\Controllers\DashboardController::class,'dashboardTwo']);
     Route::get('/incentive-dashboard-view-reset',[App\Http\Controllers\DashboardController::class,'resetDashboard']);
 
@@ -137,7 +150,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('users/{user}/salary', [App\Http\Controllers\UserSalaryController::class, 'store'])
         ->name('users.salary.store');
     
-    Route::post('/update-password', [App\Http\Controllers\UserController::class, 'updatePassword'])
+    Route::post('/update-password', [App\Http\Controllers\Hr\PasswordController::class, 'update'])
     ->name('update_password')
     ->middleware('auth');
     /*
@@ -146,14 +159,14 @@ Route::group(['middleware' => 'auth'], function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('location', App\Http\Controllers\LocationController::class);
-    Route::resource('project', App\Http\Controllers\ProjectController::class);
-    Route::resource('developer', App\Http\Controllers\DeveloperController::class);
-    Route::resource('company-bank',  App\Http\Controllers\CompanyBankAccountController::class);
-    Route::resource('department', App\Http\Controllers\DepartmentController::class);
-    Route::resource('designation', App\Http\Controllers\DesignationController::class);
-    Route::resource('business_unit', App\Http\Controllers\BusinessUnitController::class);
-    Route::resource('mandate_projects', App\Http\Controllers\MandateProjectController::class);
+    Route::resource('location', App\Http\Controllers\LocationController::class)->except(['show']); // no detail page
+    Route::resource('project', App\Http\Controllers\ProjectController::class)->except(['show']); // no detail page
+    Route::resource('developer', App\Http\Controllers\DeveloperController::class)->except(['show']); // no detail page
+    Route::resource('company-bank',  App\Http\Controllers\CompanyBankAccountController::class)->except(['show']); // no detail page
+    Route::resource('department', App\Http\Controllers\DepartmentController::class)->except(['show']); // no detail page
+    Route::resource('designation', App\Http\Controllers\DesignationController::class)->except(['show']); // no detail page
+    Route::resource('business_unit', App\Http\Controllers\BusinessUnitController::class)->except(['show']); // no detail page
+    Route::resource('mandate_projects', App\Http\Controllers\MandateProjectController::class)->except(['show']); // no detail page
 
     /*
     |--------------------------------------------------------------------------
@@ -161,7 +174,7 @@ Route::group(['middleware' => 'auth'], function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('channel_partners', App\Http\Controllers\ChannelPartnerController::class);
+    Route::resource('channel_partners', App\Http\Controllers\ChannelPartnerController::class)->except(['show']); // no detail page
 
     Route::post('channel-partners/quick-store', [
         App\Http\Controllers\ChannelPartnerController::class,
@@ -315,6 +328,18 @@ Route::group(['middleware' => 'auth'], function () {
         [App\Http\Controllers\BookingBrokeragePaymentController::class,'update']
     )->name('booking.payment.update');
 
+    Route::get(
+        'developer-billing/{developer}',
+        [App\Http\Controllers\BookingBrokeragePaymentController::class,
+        'getDeveloperBillingEntities']
+    );
+
+    Route::get(
+        'company-bank-accounts',
+        [App\Http\Controllers\BookingBrokeragePaymentController::class,
+        'getCompanyBankAccounts']
+    );
+
     /*
     |--------------------------------------------------------------------------
     | AJAX dropdown routes (IMPORTANT: must be before resource)
@@ -344,7 +369,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::resource(
         'brokerage-payments',
         App\Http\Controllers\BookingBrokeragePaymentController::class
-    );
+    )->except(['show']);
     Route::get(
         'brokerage-payments-aging',
         [App\Http\Controllers\BookingBrokeragePaymentController::class,'agingReport']
@@ -372,10 +397,16 @@ Route::group(['middleware' => 'auth'], function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('invoice', App\Http\Controllers\InvoiceController::class);
+    Route::resource('invoice', App\Http\Controllers\InvoiceController::class)->except(['show']); // no detail page
 
 
-    Route::resource('incentive-slabs',App\Http\Controllers\IncentiveSlabController::class);
+    Route::resource('incentive-slabs',App\Http\Controllers\IncentiveSlabController::class)->except(['show']); // no detail page
+
+    // Quarterly incentives on the year so far, with freeze
+    Route::get('incentive-ledger', [App\Http\Controllers\IncentiveLedgerController::class, 'index'])->name('incentive-ledger.index');
+    Route::post('incentive-ledger/freeze', [App\Http\Controllers\IncentiveLedgerController::class, 'freeze'])->name('incentive-ledger.freeze');
+    Route::post('incentive-ledger/unfreeze', [App\Http\Controllers\IncentiveLedgerController::class, 'unfreeze'])->name('incentive-ledger.unfreeze');
+    Route::get('incentive-ledger/export', [App\Http\Controllers\IncentiveLedgerController::class, 'export'])->name('incentive-ledger.export');
 
     Route::prefix('incentives')->group(function () {
 
@@ -416,7 +447,7 @@ Route::group(['middleware' => 'auth'], function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('expense', App\Http\Controllers\ExpenseController::class);
+    Route::resource('expense', App\Http\Controllers\ExpenseController::class)->except(['show']); // no detail page
 
     Route::post('expense/ajax/store', [
         App\Http\Controllers\ExpenseController::class,
@@ -459,7 +490,7 @@ Route::group(['middleware' => 'auth'], function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('payment_method', App\Http\Controllers\PaymentMethodController::class);
+    Route::resource('payment_method', App\Http\Controllers\PaymentMethodController::class)->except(['show']); // no detail page
 
     /*
     |--------------------------------------------------------------------------
@@ -488,7 +519,7 @@ Route::group(['middleware' => 'auth'], function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('client_response', App\Http\Controllers\ReferralClientController::class);
+    Route::resource('client_response', App\Http\Controllers\ReferralClientController::class)->only(['index', 'show', 'update']); // responses come from the public form
 
     Route::get('client_response_service', [
         App\Http\Controllers\ReferralClientController::class,
@@ -582,7 +613,7 @@ Route::group(['middleware' => 'auth'], function () {
     */
 
     Route::resource('joining_form', App\Http\Controllers\JoiningFormController::class)
-        ->except(['create', 'store']);
+        ->except(['index', 'create', 'store', 'destroy']);
 
     Route::get('joining_form/download_pdf/{id}', [
         App\Http\Controllers\JoiningFormController::class,
@@ -595,7 +626,7 @@ Route::group(['middleware' => 'auth'], function () {
     |--------------------------------------------------------------------------
     */
 
-    Route::resource('candidate', App\Http\Controllers\CandidateController::class);
+    Route::resource('candidate', App\Http\Controllers\CandidateController::class)->except(['show']); // no detail page
 
     Route::get('send_joining_form/{id}', [
         App\Http\Controllers\CandidateController::class,
@@ -633,3 +664,6 @@ Route::get('already_responded_joining_form', [
     App\Http\Controllers\JoiningFormController::class,
     'alreadyResponded'
 ])->name('joining_form.already_responded');
+
+// KeyPeople: leave, payslips, letters
+require __DIR__.'/hr.php';

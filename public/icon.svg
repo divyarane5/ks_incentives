@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="112" fill="#ffffff"/>
+  <!-- KeyLeads "K": navy stem and upper arm, gold lower leg -->
+  <path d="M128 104h76v150l132-150h92L128 418z" fill="#072041"/>
+  <path d="M268 300l46-46 128 164h-92z" fill="#C0852A"/>
+</svg>

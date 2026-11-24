@@ -19,7 +19,7 @@ class ImportUser implements ToCollection
     private $userMap = [];
     private $managerMap = [];
 
-    public function collection(Collection $rows)
+    public function collection(Collection $rows): void
     {
         $header = $rows->first()->map(fn($item) => strtolower(trim($item)));
         $rows = $rows->slice(1);
@@ -192,8 +192,18 @@ class ImportUser implements ToCollection
                 $managerId = $this->userMap[$managerName] ?? null;
 
                 if ($managerId) {
-                    User::where('id', $map['user_id'])
-                        ->update(['reporting_manager_id' => $managerId]);
+                    $user = User::find($map['user_id']);
+                    if ($user && (int) $user->reporting_manager_id !== (int) $managerId) {
+                        $user->update(['reporting_manager_id' => $managerId]);
+                    }
+                    // Keep the manager history in step (does nothing if unchanged).
+                    if ($user) {
+                        \App\Models\EmployeeReportingManagerHistory::record(
+                            $user, (int) $managerId,
+                            $user->reportingManagerHistories()->exists() ? now() : ($user->joining_date ?: now()),
+                            'Excel import'
+                        );
+                    }
 
                     unset($this->managerMap[$key]);
                 }

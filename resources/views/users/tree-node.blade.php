@@ -1,32 +1,22 @@
-<li>
-    <div class="org-card" onclick="toggleNode({{ $user->id }})">
-
-        <div class="card-inner">
-            <div class="avatar"></div>
-            <div>
-                <div class="emp-name">{{ $user->name }}</div>
-                <div class="emp-role">
-                    {{ optional($user->designation)->name }}
-                </div>
-                <div class="emp-role">
-                    Emp ID: {{ $user->employee_code }}
-                </div>
-            </div>
-        </div>
-
-        @if($user->subordinates->count())
-            <div class="team-count">
-                👥 {{ $user->subordinates->count() }}
-            </div>
-        @endif
-
-    </div>
-
-    @if($user->subordinates->count())
-        <ul id="child-{{ $user->id }}" class="hidden">
-            @foreach($user->subordinates as $child)
-                @include('users.tree-node', ['user' => $child])
-            @endforeach
-        </ul>
+@php
+    $u = $byId[$id];
+    $kids = $children[$id] ?? [];
+    $words = preg_split('/\s+/', trim(preg_replace('/^(mr|ms|mrs|dr)\.?\s+/i', '', $u->name)));
+    $initials = strtoupper(substr($words[0] ?? '', 0, 1).substr(count($words) > 1 ? end($words) : '', 0, 1));
+    $search = strtolower($u->name.' '.$u->employee_code.' '.optional($u->designation)->name);
+    $note = $note ?? null;
+@endphp
+<li data-search="{{ $search }}">
+    @if(count($kids))
+        <details {{ $depth < 1 ? 'open' : '' }}>
+            <summary>@include('users.tree-card', ['u' => $u, 'initials' => $initials, 'kids' => $kids, 'caret' => true, 'note' => $note])</summary>
+            <ul>
+                @foreach($kids as $kid)
+                    @include('users.tree-node', ['id' => $kid, 'depth' => $depth + 1, 'note' => null])
+                @endforeach
+            </ul>
+        </details>
+    @else
+        @include('users.tree-card', ['u' => $u, 'initials' => $initials, 'kids' => $kids, 'caret' => false, 'note' => $note])
     @endif
 </li>

@@ -2,6 +2,7 @@
 
 @section('content')
 <div class="container-xxl flex-grow-1 container-p-y">
+    @include('include.modules')
 
     <h4 class="fw-bold mb-4">Mandate Dashboard</h4>
 
@@ -112,7 +113,7 @@
                         <div class="card-body">
                         <div class="card-title d-flex align-items-start justify-content-between">
                             <div class="avatar flex-shrink-0">
-                                <img src="http://localhost/ks_incentives/public/assets/img/dashboard_icons/total.png" alt="chart success" class="rounded">
+                                <img src="{{ asset('assets/img/dashboard_icons/total.png') }}" alt="chart success" class="rounded">
                             </div>
                         </div>
                         <span class="fw-semibold d-block mb-1">Total Indent</span>
@@ -125,7 +126,7 @@
                         <div class="card-body">
                         <div class="card-title d-flex align-items-start justify-content-between">
                             <div class="avatar flex-shrink-0">
-                                <img src="http://localhost/ks_incentives/public/assets/img/dashboard_icons/pending.png" alt="chart success" class="rounded">
+                                <img src="{{ asset('assets/img/dashboard_icons/pending.png') }}" alt="chart success" class="rounded">
                             </div>
                         </div>
                         <span class="fw-semibold d-block mb-1">Pending Indent</span>
@@ -138,7 +139,7 @@
                         <div class="card-body">
                         <div class="card-title d-flex align-items-start justify-content-between">
                             <div class="avatar flex-shrink-0">
-                                <img src="http://localhost/ks_incentives/public/assets/img/dashboard_icons/approved.png" alt="chart success" class="rounded">
+                                <img src="{{ asset('assets/img/dashboard_icons/approved.png') }}" alt="chart success" class="rounded">
                             </div>
                         </div>
                         <span class="fw-semibold d-block mb-1">Approved Indent</span>
@@ -151,7 +152,7 @@
                         <div class="card-body">
                         <div class="card-title d-flex align-items-start justify-content-between">
                             <div class="avatar flex-shrink-0">
-                                <img src="http://localhost/ks_incentives/public/assets/img/dashboard_icons/partial-approved.png" alt="chart success" class="rounded">
+                                <img src="{{ asset('assets/img/dashboard_icons/partial-approved.png') }}" alt="chart success" class="rounded">
                             </div>
                         </div>
                         <span class="fw-semibold d-block mb-1">Partial Approved Indent</span>
@@ -164,7 +165,7 @@
                         <div class="card-body">
                         <div class="card-title d-flex align-items-start justify-content-between">
                             <div class="avatar flex-shrink-0">
-                                <img src="http://localhost/ks_incentives/public/assets/img/dashboard_icons/rejected.png" alt="chart success" class="rounded">
+                                <img src="{{ asset('assets/img/dashboard_icons/rejected.png') }}" alt="chart success" class="rounded">
                             </div>
                         </div>
                         <span class="fw-semibold d-block mb-1">Rejected Indent</span>
@@ -177,7 +178,7 @@
                         <div class="card-body">
                         <div class="card-title d-flex align-items-start justify-content-between">
                             <div class="avatar flex-shrink-0">
-                                <img src="http://localhost/ks_incentives/public/assets/img/dashboard_icons/closed.png" alt="chart success" class="rounded">
+                                <img src="{{ asset('assets/img/dashboard_icons/closed.png') }}" alt="chart success" class="rounded">
                             </div>
                         </div>
                         <span class="fw-semibold d-block mb-1">Closed Indent</span>

@@ -5,6 +5,13 @@
 
     RewriteEngine On
 
+    # Keep private files private. The site is served from the app's own folder, so
+    # without these lines anyone could download .env (passwords), the code, logs
+    # and the uploaded employee files in storage/.
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|stubs|tests|vendor|node_modules)(/|$) - [F,L,NC]
+    RewriteRule ^(artisan|composer\.(json|lock)|package(-lock)?\.json|phpunit\.xml|webpack\.mix\.js|vite\.config\.js|error_log)$ - [F,L,NC]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

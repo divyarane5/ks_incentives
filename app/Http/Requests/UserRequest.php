@@ -32,6 +32,7 @@ class UserRequest extends FormRequest
             'last_name'  => 'required|regex:/^[\pL\s\-]+$/u',
             'employee_code' => 'required|unique:users,employee_code,' . $userId,
             'email' => 'nullable|email|unique:users,email,' . $userId,
+            'official_email' => 'nullable|email|unique:users,official_email,' . $userId,
             'entity' => 'required',
             'work_location_id' => 'required',
             
@@ -68,6 +69,7 @@ class UserRequest extends FormRequest
             'employee_code.unique' => 'The employee code has already been taken.',
             'email.email' => 'The email must be a valid email address.',
             'email.unique' => 'The email has already been taken.',
+            'official_email.unique' => 'This official email is already used by another employee.',
             'entity.required' => 'The company field is required.',
             'work_location_id.required' => 'The location field is required.',
             'department_id.required' => 'The department field is required.',

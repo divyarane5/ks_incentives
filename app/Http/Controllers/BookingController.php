@@ -27,7 +27,8 @@ class BookingController extends Controller
     use UserHierarchyTrait; // ✅ MUST ADD THIS
     function __construct()
     {
-        $this->middleware('permission:booking-view', ['only' => ['index']]);
+        $this->middleware('permission:booking-view', ['only' => ['index', 'show']]);
+        $this->middleware('permission:booking-send-mail', ['only' => ['sendBookingMail']]);
         $this->middleware('permission:booking-create', ['only' => ['create','store']]);
         $this->middleware('permission:booking-edit', ['only' => ['edit','update']]);
         $this->middleware('permission:booking-delete', ['only' => ['destroy']]);
@@ -492,8 +493,11 @@ class BookingController extends Controller
 
         $booking->save();
 
-        // Recalculate ladders
+        // Recalculate Site Ladder
         $service->recalculateAll($booking->project_id);
+        
+        // Recalculate Developer AOP
+        $service->recalculateDeveloperAop($booking->developer_id);
 
         return redirect()
             ->route('booking.index')
@@ -508,41 +512,110 @@ class BookingController extends Controller
         $project_name   = Project::all();
         $salesManagers  = User::all();   // <-- FIXED
 
+        // People who can be picked as TL / Sr. TL / CH on this booking
+        $teamOptions = [];
+        foreach (['TL' => 'TL', 'Sr. TL' => 'Sr. TL', 'CH' => 'CH'] as $key => $role) {
+            $teamOptions[$key] = User::role($role)->orderBy('name')->get(['id', 'name', 'status']);
+        }
+
         return view('booking.edit', compact(
             'booking',
             'developer_name',
             'project_name',
-            'salesManagers'
+            'salesManagers',
+            'teamOptions'
         ));
     }
-    public function update(BookingRequest $request, $id, BrokerageCalculationService $service)
-    {
+    public function update(
+        BookingRequest $request,
+        $id,
+        BrokerageCalculationService $service
+        ) {
         $booking = Booking::findOrFail($id);
-
+    
+        // Store old values before updating
+        $oldProjectId   = $booking->project_id;
+        $oldDeveloperId = $booking->developer_id;
+    
         $booking->update([
-            'project_id'        => $request->project_id,
-            'developer_id'      => $request->developer_id,
-            'client_name'       => $request->client_name,
-            'booking_date'      => $request->booking_date,
-            'client_contact'    => $request->client_contact,
-            'lead_source'       => $request->lead_source,
-            'tower' => $request->tower ?? '',
-            'wing' => $request->wing ?? '',
-            'flat_no' => $request->flat_no ?? '',
-            'configuration' => $request->configuration ?? '',
-            'booking_amount'    => $request->booking_amount,
-            'agreement_value'   => $request->agreement_value,
-            'passback'          => $request->passback,
-            'additional_kicker' => $request->additional_kicker,
-            'registration_date' => $request->registration_date,
-            'sales_user_id'     => $request->sales_user_id,
-            'remark'            => $request->remark,
+            'project_id'         => $request->project_id,
+            'developer_id'       => $request->developer_id,
+            'client_name'        => $request->client_name,
+            'booking_date'       => $request->booking_date,
+            'client_contact'     => $request->client_contact,
+            'lead_source'        => $request->lead_source,
+            'tower'              => $request->tower ?? '',
+            'wing'               => $request->wing ?? '',
+            'flat_no'            => $request->flat_no ?? '',
+            'configuration'      => $request->configuration ?? '',
+            'booking_amount'     => $request->booking_amount,
+            'agreement_value'    => $request->agreement_value,
+            'passback'           => $request->passback,
+            'additional_kicker'  => $request->additional_kicker,
+            'registration_date'  => $request->registration_date,
+            'sales_user_id'      => $request->sales_user_id,
+            'remark'             => $request->remark,
         ]);
-        $service = new BrokerageCalculationService();
+
+        // Team at the time of booking: refill from the reporting chain, or keep what was picked by hand.
+        if ($request->boolean('team_auto')) {
+            $booking->team_source = null; // the model refills it on save
+            $booking->save();
+        } elseif ($request->hasAny(['tl_user_id', 'sr_tl_user_id', 'ch_user_id'])) {
+            $picked = [
+                'tl_user_id' => $request->input('tl_user_id') ?: null,
+                'sr_tl_user_id' => $request->input('sr_tl_user_id') ?: null,
+                'ch_user_id' => $request->input('ch_user_id') ?: null,
+            ];
+            $current = [
+                'tl_user_id' => $booking->tl_user_id,
+                'sr_tl_user_id' => $booking->sr_tl_user_id,
+                'ch_user_id' => $booking->ch_user_id,
+            ];
+            if (array_map('intval', $picked) != array_map('intval', $current)) {
+                $booking->fill($picked);
+                $booking->team_source = 'manual';
+                $booking->save();
+            }
+        }
+
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Recalculate OLD project
+        |--------------------------------------------------------------------------
+        */
+    
+        if ($oldProjectId != $booking->project_id) {
+            $service->recalculateAll($oldProjectId);
+        }
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Recalculate NEW project
+        |--------------------------------------------------------------------------
+        */
+    
         $service->recalculateAll($booking->project_id);
-        //dd($booking->project_id);
-       // dd(Booking::where('project_id',$booking->project_id)->count());
-       
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Recalculate OLD developer AOP
+        |--------------------------------------------------------------------------
+        */
+    
+        if ($oldDeveloperId != $booking->developer_id) {
+            $service->recalculateDeveloperAop($oldDeveloperId);
+        }
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Recalculate NEW developer AOP
+        |--------------------------------------------------------------------------
+        */
+    
+        $service->recalculateDeveloperAop($booking->developer_id);
+    
         return redirect()
             ->route('booking.index')
             ->with('success', 'Booking Updated Successfully');
@@ -556,6 +629,13 @@ class BookingController extends Controller
             'user.reportingManager.reportingManager.reportingManager',
             'brokeragePayments'
         ])->findOrFail($id);
+
+        // Same rule as the list: sales people only open their own team's bookings.
+        $viewer = auth()->user();
+        if (! $viewer->hasAnyRole(['Superadmin', 'Super Admin', 'Admin', 'CRM', 'Accounts'])
+            && ! in_array($booking->sales_user_id, $this->getAccessibleUserIds($viewer))) {
+            abort(403, 'This booking belongs to another team.');
+        }
 
         $pdf = Pdf::loadView('booking.pdf', compact('booking'))
             ->setPaper('a4', 'portrait');
@@ -583,23 +663,11 @@ class BookingController extends Controller
         return view('booking.show', compact('booking', 'timeline', 'payments'));
     }
 
-    public function sendBookingMail($id){
-        $booking = Booking::find($id);
-        //echo $booking->created_by; exit;
-        $user = DB::table('users')
-                    ->select('users.name as u_name','users.id as u_id','users.email as u_email','designations.name as d_name','users.mobile')
-                   ->join('designations', 'users.designation_id','=','designations.id','left')
-	               ->where('users.id',$booking->created_by)
-	               ->first();
-                //   print_r($user); exit;
-        $arr = [
-            'id' => $id,
-            'booking' => $booking,
-            'user' => $user
-        ];
-        
-        Mail::to('keystonedivya@gmail.com')->send(new BookingMail($arr)); //$approvalTo->email
-        return redirect()->route('booking.index')->with('success', 'Mail Sent Successfully');
+    public function sendBookingMail($id)
+    {
+        // The old version mailed the whole booking page to a fixed test address. Not linked
+        // from any screen; switched off until booking emails get a proper template.
+        return redirect()->route('booking.index')->with('error', 'Booking emails are not set up yet.');
     }
 
     public function updateStatus(Request $request)
@@ -628,16 +696,26 @@ class BookingController extends Controller
         $booking->save();
 
         if ($request->booking_confirm === 'approved') {
-
+        
+            // Recalculate Site Ladder
             app(\App\Services\BrokerageCalculationService::class)
                 ->recalculateAll($booking->project_id);
-
+        
+            // Recalculate Developer AOP
+            app(\App\Services\BrokerageCalculationService::class)
+                ->recalculateDeveloperAop($booking->developer_id);
+        
         } else {
-
+        
             $this->resetBrokerage($booking);
-
+        
+            // Recalculate Site Ladder
             app(\App\Services\BrokerageCalculationService::class)
                 ->recalculateAll($booking->project_id);
+        
+            // Recalculate Developer AOP
+            app(\App\Services\BrokerageCalculationService::class)
+                ->recalculateDeveloperAop($booking->developer_id);
         }
 
         return response()->json([

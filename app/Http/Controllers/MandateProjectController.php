@@ -12,6 +12,14 @@ use DataTables;
 
 class MandateProjectController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:mandate_project-view', ['only' => ['index']]);
+        $this->middleware('permission:mandate_project-create', ['only' => ['create', 'store']]);
+        $this->middleware('permission:mandate_project-edit', ['only' => ['edit', 'update']]);
+        $this->middleware('permission:mandate_project-delete', ['only' => ['destroy']]);
+    }
+
     public function index(Request $request)
     {
         if ($request->ajax()) {
@@ -84,12 +92,12 @@ class MandateProjectController extends Controller
                 ->addColumn('action', function ($row) {
                     $actions = '';
 
-                    if (auth()->user()->can('mandate_projects-edit')) {
+                    if (auth()->user()->can('mandate_project-edit')) {
                         $actions .= '<a class="dropdown-item" href="'.route('mandate_projects.edit', $row->id).'">
                                         <i class="bx bx-edit-alt me-1"></i> Edit</a>';
                     }
 
-                    if (auth()->user()->can('mandate_projects-delete')) {
+                    if (auth()->user()->can('mandate_project-delete')) {
                         $actions .= '<button class="dropdown-item" onclick="deleteMandateProject('.$row->id.')">
                                         <i class="bx bx-trash me-1"></i> Delete</button>
                                     <form id="'.$row->id.'" action="'.route('mandate_projects.destroy', $row->id).'" method="POST" class="d-none">

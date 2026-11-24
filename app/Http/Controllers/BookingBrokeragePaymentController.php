@@ -197,8 +197,9 @@ class BookingBrokeragePaymentController extends Controller
                             </span>';
                 }
 
-                $days = \Carbon\Carbon::parse($row->invoice_date)
-                    ->diffInDays(now());
+                // Carbon 3 returns a signed decimal; keep whole days as before
+                $days = (int) abs(\Carbon\Carbon::parse($row->invoice_date)
+                    ->startOfDay()->diffInDays(now()->startOfDay()));
 
                 if ($days <= 30) {
 
@@ -797,9 +798,10 @@ class BookingBrokeragePaymentController extends Controller
                 continue;
             }
 
-            $days = $today->diffInDays(
-                $payment->invoice_date
-            );
+            // Carbon 3 returns a signed decimal; keep whole days as before
+            $days = (int) abs(\Carbon\Carbon::parse($today)->startOfDay()->diffInDays(
+                \Carbon\Carbon::parse($payment->invoice_date)->startOfDay()
+            ));
 
             $amount =
                 $payment->invoice_amount -
@@ -830,5 +832,16 @@ class BookingBrokeragePaymentController extends Controller
             'aging90' => $aging90,
             'aging90plus' => $aging90plus,
         ]);
+    }
+    public function getDeveloperBillingEntities($developerId)
+    {
+        return \App\Models\DeveloperBillingEntity::where(
+            'developer_id',
+            $developerId
+        )->get();
+    }
+    public function getCompanyBankAccounts()
+    {
+        return \App\Models\CompanyBankAccount::all();
     }
 }

@@ -151,6 +151,7 @@ function openHistory(id) {
                     d.closing_manager_id = $('#closing_manager_id').val();
                 }
             },
+            order: [[0, 'desc']],
             columns: [
                 {data: 'id', name: 'client_enquiries.id'},
                 { data: 'project_name', name: 'mandate_projects.project_name' },

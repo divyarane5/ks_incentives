@@ -26,13 +26,13 @@ class ReimbursementController extends Controller
     public function index(Request $request)
     {
         if ($request->ajax()) {
-            $reimbursements = Reimbursement::select(['reimbursements.*', 'attended_of.name as visit_attended_of_user', 'created_by_user.name as visit_attended_by', 'created_by_user.reporting_manager_id ', 'reimbursement_date'])
+            $reimbursements = Reimbursement::select(['reimbursements.*', 'attended_of.name as visit_attended_of_user', 'created_by_user.name as visit_attended_by', 'created_by_user.reporting_manager_id', 'reimbursement_date'])
                                 ->join('users as attended_of', 'reimbursements.visit_attended_of_id', '=', 'attended_of.id')
                                 ->join('users as created_by_user', 'reimbursements.created_by', '=', 'created_by_user.id');
             if (!auth()->user()->can('reimbursement-view-all') && auth()->user()->can('reimbursement-view-own')) {
                 $reimbursements = $reimbursements->where(function($query) {
                     $query = $query->where('reimbursements.created_by', auth()->user()->id)
-                        ->orWhere('created_by_user.reporting_manager_id ', auth()->user()->id);
+                        ->orWhere('created_by_user.reporting_manager_id', auth()->user()->id);
                     if (auth()->user()->can('reimbursement-settlement')) {
                         $query = $query->orWhere('reimbursements.status', 'approved');
                     }
@@ -177,13 +177,13 @@ class ReimbursementController extends Controller
     public function edit($id)
     {
         $users = User::select(['id', 'name'])->get();
-        $reimbursement = Reimbursement::find($id);
+        $reimbursement = Reimbursement::findOrFail($id);
         return view('reimbursement.edit', compact('users', 'reimbursement'));
     }
 
     public function update(ReimbursementRequest $request, $id)
     {
-        $reimbursement = Reimbursement::find($id);
+        $reimbursement = Reimbursement::findOrFail($id);
         $reimbursement->client_name = $request->input('client_name');
         $reimbursement->project_name = $request->input('project_name');
         $reimbursement->visit_attended_of_id = $request->input('visit_attended_of_id');
@@ -210,7 +210,7 @@ class ReimbursementController extends Controller
 
     public function show($id)
     {
-        $reimbursement = Reimbursement::select(["reimbursements.*", "created_by_user.reporting_manager_id "])
+        $reimbursement = Reimbursement::select(["reimbursements.*", "created_by_user.reporting_manager_id"])
                             ->join('users as created_by_user', 'reimbursements.created_by', '=', 'created_by_user.id')
                             ->where('reimbursements.id', $id)
                             ->first();
@@ -220,7 +220,7 @@ class ReimbursementController extends Controller
 
     public function destroy($id)
     {
-        $reimbursement = Reimbursement::find($id);
+        $reimbursement = Reimbursement::findOrFail($id);
         if ($reimbursement->file_path != "") {
             unlink(storage_path('app/'.$reimbursement->file_path));
         }
@@ -242,7 +242,7 @@ class ReimbursementController extends Controller
         $ids = $request->input('reimbursement_approval');
         if (!empty($ids)) {
             foreach ($ids as $id) {
-                $reimbursement = Reimbursement::find($id);
+                $reimbursement = Reimbursement::findOrFail($id);
                 $this->reimbursementRepository->updateReimbursementStatus($reimbursement, $status, $request);
             }
         }

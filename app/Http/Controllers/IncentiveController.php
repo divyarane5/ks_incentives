@@ -14,11 +14,13 @@ class IncentiveController extends Controller
 {
     public function preview()
     {
+        abort_unless(auth()->user()->can('incentive-calculation-view'), 403);
         return view('incentives.preview');
     }
 
     public function previewData(Request $request)
     {
+        abort_unless($request->user()->can('incentive-calculation-view'), 403);
         $fy = $request->financial_year;
 
         $role = $request->role;
@@ -459,6 +461,7 @@ class IncentiveController extends Controller
 
     public function save(Request $request)
     {
+        abort_unless($request->user()->can('incentive-calculation-create'), 403);
         $fy = $request->financial_year;
 
         $role = $request->role;
@@ -564,6 +567,8 @@ class IncentiveController extends Controller
 
     public function show(User $user)
     {
+        // Everyone's incentive needs the calculation permission; anyone may see their own.
+        abort_unless(auth()->id() === $user->id || auth()->user()->can('incentive-calculation-view'), 403);
         $fy = request('fy', '2025-26');
 
         /*

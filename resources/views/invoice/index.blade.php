@@ -54,6 +54,7 @@
             processing: true,
             serverSide: true,
             ajax: "{{ route('invoice.index') }}",
+            order: [[0, 'desc']],
             columns: [
                 {data: 'booking_id', name: 'invoices.booking_id'},
                 {data: 'total_brokerage'},

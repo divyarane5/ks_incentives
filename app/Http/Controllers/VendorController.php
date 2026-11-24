@@ -93,13 +93,13 @@ class VendorController extends Controller
 
     public function edit($id)
     {
-        $vendor = Vendor::find($id);
+        $vendor = Vendor::findOrFail($id);
         return view('vendor.edit', compact('id', 'vendor'));
     }
 
     public function update(VendorRequest $request, $id)
     {
-        $vendor = Vendor::find($id);
+        $vendor = Vendor::findOrFail($id);
         $vendor->name = $request->input('name');
         $vendor->tds_percentage = !empty($request->input('tds_percentage')) ? $request->input('tds_percentage') : 0;
         $vendor->save();
@@ -117,7 +117,7 @@ class VendorController extends Controller
     {
         $str = '<option value="">Select Vendor</option>';
         if ($expenseId != "") {
-            $vendors = Expense::find($expenseId)->vendors;
+            $vendors = Expense::find($expenseId)?->vendors ?? [];
             if (!empty($vendors)) {
                 foreach ($vendors as $vendor) {
                     $str .= '<option value="'.$vendor->id.'" data-tds-percentage="'.$vendor->tds_percentage.'" >'.$vendor->name.'</option>';
