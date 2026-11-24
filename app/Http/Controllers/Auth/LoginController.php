@@ -64,12 +64,6 @@ class LoginController extends Controller
             ->get(['id', 'email'])->first();
     }
 
-    /** The email of whoever is signing in, for messages. */
-    private function loginEmail(Request $request): ?string
-    {
-        return $this->loginUser($request)?->email ?? trim((string) $request->email);
-    }
-
     /** Email, employee ID or a 10-digit mobile number. */
     protected function validateLogin(Request $request)
     {
@@ -91,15 +85,18 @@ class LoginController extends Controller
 
     protected function sendFailedLoginResponse(Request $request)
     {
-        $user = \App\Models\User::where('email', $this->loginEmail($request))->first();
+        // Right password but not Active (Exited / Inactive): say so plainly. Wrong password: the usual message.
+        $blocked = \App\Support\AccountAccess::find((string) $request->email)->take(5)
+            ->first(fn ($u) => ! \App\Support\AccountAccess::canSignIn($u)
+                && $u->password && \Illuminate\Support\Facades\Hash::check((string) $request->password, $u->password));
 
-        if ($user && $user->status === 'inactive') {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'email' => ['Your account is inactive. Please contact admin.'],
+        if ($blocked) {
+            throw ValidationException::withMessages([
+                'email' => [\App\Support\AccountAccess::blockedMessage($blocked)],
             ]);
         }
 
-        throw \Illuminate\Validation\ValidationException::withMessages([
+        throw ValidationException::withMessages([
             'email' => [trans('auth.failed')],
         ]);
     }

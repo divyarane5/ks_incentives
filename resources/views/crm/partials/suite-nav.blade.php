@@ -44,6 +44,11 @@
             $u->can('incentive-ledger-view') ? ['Ledger & freeze', route('incentive-ledger.index'), false] : null,
         ]));
     }
+    $groups['KeyMe'] = [
+        ['My dashboard', route('me.dashboard'), $r === 'me.dashboard'],
+        ['My leave', route('leave.my'), $r === 'leave.my'],
+        ['Change password', route('me.password'), $r === 'me.password'],
+    ];
     $logo = asset('assets/img/logo/realtysuite-white.svg');
 @endphp
 <div class="flex h-full flex-col overflow-y-auto bg-[var(--rs-theme)] text-white">

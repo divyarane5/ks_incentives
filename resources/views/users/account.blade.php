@@ -85,26 +85,8 @@
                 <h5 class="card-header">Change Password</h5>
 
                 <div class="card-body">
-                    <form method="POST" action="{{ route('update_password') }}">
-                        @csrf
-
-                        <div class="mb-3">
-                            <label>Current Password</label>
-                            <input type="password" name="current_password" class="form-control" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label>New Password</label>
-                            <input type="password" name="new_password" class="form-control" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label>Confirm Password</label>
-                            <input type="password" name="new_password_confirmation" class="form-control" required>
-                        </div>
-
-                        <button class="btn btn-primary">Update Password</button>
-                    </form>
+                    <p class="mb-3">Change the password you use to sign in to RealtySuite.</p>
+                    <a href="{{ route('me.password') }}" class="btn btn-primary">Change password</a>
                 </div>
 
             </div>
