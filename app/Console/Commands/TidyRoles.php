@@ -11,7 +11,8 @@ use Spatie\Permission\PermissionRegistrar;
 
 /**
  * Merges job-title roles into access roles (agreed 2026-11-24):
- *   Marketing <- Marketing Head, SEO, Comm, Content Writer, Graphic Designer, Anchor, Vidographer
+ *   Marketing <- Marketing Head (both open KeyLeads)
+ *   Content   <- SEO, Comm, Content Writer, Graphic Designer, Anchor, Vidographer (no KeyLeads)
  *   Backend   <- Office Asst., Front Desk
  * and removes the unused "User" role.
  * Nobody loses access: the new role gets every permission the old ones had, and each person's
@@ -21,10 +22,11 @@ class TidyRoles extends Command
 {
     protected $signature = 'roles:tidy {--apply : Make the changes (without it, only shows what would happen)}';
 
-    protected $description = 'Merge Marketing and Backend job-title roles into single access roles';
+    protected $description = 'Merge Marketing, Content and Backend job-title roles into single access roles';
 
     private const MERGE = [
-        'Marketing' => ['Marketing Head', 'SEO', 'Comm', 'Content Writer', 'Graphic Designer', 'Anchor', 'Vidographer', 'Videographer'],
+        'Marketing' => ['Marketing Head'],
+        'Content' => ['SEO', 'Comm', 'Content Writer', 'Graphic Designer', 'Anchor', 'Vidographer', 'Videographer'],
         'Backend' => ['Office Asst.', 'Front Desk'],
     ];
 
