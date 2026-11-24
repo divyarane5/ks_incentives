@@ -7,6 +7,7 @@
 */
 
 use App\Http\Controllers\Hr\CelebrationController;
+use App\Http\Controllers\Hr\HrDashboardController;
 use App\Http\Controllers\Hr\LeaveController;
 use App\Http\Controllers\Hr\LetterController;
 use App\Http\Controllers\Hr\PayslipController;
@@ -30,6 +31,7 @@ Route::middleware('auth')->group(function () {
 
     // HR (KeyPeople module)
     Route::prefix('hr')->group(function () {
+        Route::get('dashboard', [HrDashboardController::class, 'index'])->name('hr.dashboard');
         Route::get('leave', [LeaveController::class, 'hr'])->name('leave.hr');
         Route::post('leave/adjust', [LeaveController::class, 'adjust'])->name('leave.adjust');
         Route::get('leave-setup', [LeaveController::class, 'setup'])->name('leave.setup');

@@ -112,7 +112,7 @@
             }
 
             if ($key === 'keypeople' && $d) {
-                $open = route('users.index');
+                $open = route('hr.dashboard');
                 $groups[''] = [
                     $tile('Active employees', number_format($d['active']), route('users.index')),
                     $tile('Joined this month', number_format($d['joined']), route('users.index'), 'good'),
