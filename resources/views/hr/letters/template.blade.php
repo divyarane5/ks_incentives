@@ -26,7 +26,7 @@
                     <div class="col-12">
                         <label class="form-label">Letter text</label>
                         <textarea name="body" id="body" class="form-control" rows="18" style="font-family:inherit;line-height:1.5" required>{{ old('body', $template->body) }}</textarea>
-                        <div class="form-text">Leave an empty line between paragraphs. Start a line with "- " for a bullet. Put **two stars** around words for bold. Date, address and signature are added automatically.</div>
+                        <div class="form-text">Leave an empty line between paragraphs. Start a line with "- " for a bullet. Put **two stars** around words for bold. Start a line with "# " for a centred heading or "## " for a clause heading. Date, address and signature are added automatically, unless you place them yourself with the blocks on the right.</div>
                     </div>
                 </div></div>
             </div>
@@ -37,6 +37,9 @@
                         <ul class="kp-list">
                             @foreach($fields as $code => $label)
                                 <li style="padding:6px 0;cursor:pointer" onclick="insertField('{{ $code }}')"><div class="bd"><div class="t" style="font-family:monospace;font-size:.85rem">{{ $code }}</div><div class="m">{{ $label }}</div></div></li>
+                            @endforeach
+                            @foreach(\App\Support\LetterText::BLOCKS as $code => $label)
+                                <li style="padding:6px 0;cursor:pointer" onclick="insertField('\n{{ $code }}\n')"><div class="bd"><div class="t" style="font-family:monospace;font-size:.85rem">{{ $code }}</div><div class="m">{{ $label }}</div></div></li>
                             @endforeach
                         </ul>
                     </div>

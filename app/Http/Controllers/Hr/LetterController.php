@@ -49,7 +49,7 @@ class LetterController extends Controller
             'name' => 'required|string|max:100',
             'type' => 'required|in:'.implode(',', array_keys(LetterTemplate::TYPES)),
             'subject' => 'nullable|string|max:190',
-            'body' => 'required|string|max:20000',
+            'body' => 'required|string|max:200000',
         ]);
         $data['active'] = $request->boolean('active');
         $template && $template->exists ? $template->update($data) : LetterTemplate::create($data);
@@ -87,7 +87,7 @@ class LetterController extends Controller
             'user_id' => 'required|exists:users,id',
             'letter_template_id' => 'nullable|exists:letter_templates,id',
             'subject' => 'nullable|string|max:190',
-            'body' => 'required|string|max:20000',
+            'body' => 'required|string|max:200000',
             'letter_date' => 'required|date',
             'reference' => 'nullable|string|max:60',
             'signatory' => 'nullable|string|max:20', // signatory id, or "none"
@@ -125,12 +125,23 @@ class LetterController extends Controller
         if (! $letter->no_signature && ! $request->boolean('unsigned')) {
             $signatory = $letter->signatory ?? LetterSignatory::forCompany(self::companyOf($letter->user));
         }
-        $pdf = Pdf::loadView('hr.letters.pdf', [
-            'l' => $letter, 'u' => $letter->user, 'html' => LetterText::html($letter->body),
-            'signatory' => $signatory,
-            'signImg' => $signatory?->dataUri('signature'),
-            'stampImg' => $signatory?->dataUri('stamp'),
-        ])->setPaper('a4');
+        $company = self::companyOf($letter->user);
+        $signImg = $signatory?->dataUri('signature');
+        $stampImg = $signatory?->dataUri('stamp');
+        $view = [
+            'l' => $letter, 'u' => $letter->user, 'company' => $company,
+            'signatory' => $signatory, 'signImg' => $signImg, 'stampImg' => $stampImg,
+            'letterhead' => self::letterhead($company),
+        ];
+        // Blocks the template places itself: the "To" part, and a signature space (left blank for the DSC token).
+        $blocks = [
+            '[[to]]' => view('hr.letters._to', $view)->render(),
+            '[[company-sign]]' => view('hr.letters._company_sign', $view)->render(),
+        ];
+        $view['html'] = LetterText::html($letter->body, $blocks);
+        $view['ownTo'] = str_contains((string) $letter->body, '[[to]]');
+        $view['ownSign'] = str_contains((string) $letter->body, '[[company-sign]]');
+        $pdf = Pdf::loadView('hr.letters.pdf', $view)->setPaper('a4');
 
         return $request->boolean('download') ? $pdf->download($file) : $pdf->stream($file);
     }
@@ -205,6 +216,19 @@ class LetterController extends Controller
         $signatory->update(['active' => false, 'is_default' => false]);
 
         return back()->with('success', 'Signature turned off for new letters.');
+    }
+
+    /** Printed letterhead (header and footer images) for companies that have one. */
+    private static function letterhead(string $company): ?array
+    {
+        if (! \App\Services\CelebrationService::isKeystone($company)) {
+            return null;
+        }
+        $img = fn ($f) => is_file($p = public_path('assets/letters/'.$f)) ? 'data:image/jpeg;base64,'.base64_encode(file_get_contents($p)) : null;
+        $head = $img('keystone-header.jpg');
+        $foot = $img('keystone-footer.jpg');
+
+        return $head && $foot ? ['header' => $head, 'footer' => $foot] : null;
     }
 
     private static function companyOf(User $u): string

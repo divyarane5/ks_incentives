@@ -1,4 +1,7 @@
-@php $company = $u->entity ?: ($u->businessUnit?->name ?? config('app.name')); @endphp
+@php
+    $company ??= $u->entity ?: ($u->businessUnit?->name ?? config('app.name'));
+    $letterhead ??= null; $ownTo ??= false; $ownSign ??= false;
+@endphp
 <!DOCTYPE html>
 <html>
 <head>
@@ -27,33 +30,45 @@
     .who { border-top: 1px solid #1f2a3d; width: 200px; padding-top: 4px; }
     .who b { color: #011e48; }
     .foot { position: fixed; bottom: -30px; left: 0; right: 0; text-align: center; font-size: 8.5px; color: #8a94a6; }
+    h1 { text-align: center; font-size: 12.5px; color: #0b4f9c; margin: 0 0 10px; }
+    h2 { font-size: 11.5px; color: #1f2a3d; margin: 14px 0 6px; }
+    .pb { page-break-after: always; }
+    table.lt { width: 78%; margin: 6px auto 14px; border-collapse: collapse; }
+    table.lt td { border: 1px solid #1f2a3d; padding: 3px 8px; text-align: center; }
+    table.lt td.n { width: 22%; }
+    .dsc-space { height: 70px; }
+    .keep { page-break-inside: avoid; margin: 6px 0 12px; }
+    @if($letterhead)
+        @page { margin: 200pt 46pt 122pt; }
+        body { font-family: Arial, Helvetica, "DejaVu Sans", sans-serif; text-align: justify; font-size: 10.5pt; line-height: 1.45; }
+        h1 { font-size: 11pt; } h2 { font-size: 10.5pt; }
+        p { margin: 0 0 9pt; }
+        * { font-family: Arial, Helvetica, "DejaVu Sans", sans-serif; }
+        .lh-head { position: fixed; top: -200pt; left: -46pt; right: -46pt; height: 198pt; }
+        .lh-foot { position: fixed; bottom: -122pt; left: -46pt; right: -46pt; height: 114pt; }
+        .lh-head img, .lh-foot img { width: 100%; }
+        .subject { text-align: center; text-decoration: none; font-size: 10.5pt; }
+    @endif
 </style>
 </head>
 <body>
-    <div class="head">
-        <div class="co">{{ $company }}</div>
-        @if($u->businessUnit?->name && $u->businessUnit->name !== $company)<div class="unit">{{ $u->businessUnit->name }}</div>@endif
-    </div>
+    @if($letterhead)
+        <div class="lh-head"><img src="{{ $letterhead['header'] }}" alt=""></div>
+        <div class="lh-foot"><img src="{{ $letterhead['footer'] }}" alt=""></div>
+    @else
+        <div class="head">
+            <div class="co">{{ $company }}</div>
+            @if($u->businessUnit?->name && $u->businessUnit->name !== $company)<div class="unit">{{ $u->businessUnit->name }}</div>@endif
+        </div>
+    @endif
 
-    <table class="meta"><tr>
-        <td class="to">
-            @unless($l->type === 'experience')
-                To,<br>
-                <b>{{ trim(($u->title ? $u->title.' ' : '').$u->name) }}</b><br>
-                @if($u->designation?->name){{ $u->designation->name }}<br>@endif
-                @if($u->communication_address){!! nl2br(e($u->communication_address)) !!}@endif
-            @endunless
-        </td>
-        <td style="text-align:right;white-space:nowrap">
-            Date: {{ $l->letter_date->format('d F Y') }}<br>
-            @if($l->reference)Ref: {{ $l->reference }}@endif
-        </td>
-    </tr></table>
-
-    @if($l->subject)<div class="subject">Subject: {{ $l->subject }}</div>@endif
+    @unless($ownTo)
+        @include('hr.letters._to')
+    @endunless
 
     {!! $html !!}
 
+@unless($ownSign)
     <table class="sign"><tr>
         <td>
             For <b>{{ $company }}</b>
@@ -79,6 +94,8 @@
         </td>
     </tr></table>
 
-    <div class="foot">{{ $company }} · {{ $l->reference }}</div>
+@endunless
+
+    @unless($letterhead)<div class="foot">{{ $company }} · {{ $l->reference }}</div>@endunless
 </body>
 </html>
