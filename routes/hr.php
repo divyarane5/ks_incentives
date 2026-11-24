@@ -9,12 +9,14 @@
 use App\Http\Controllers\Hr\CelebrationController;
 use App\Http\Controllers\Hr\HrDashboardController;
 use App\Http\Controllers\Hr\LeaveController;
+use App\Http\Controllers\Hr\MeController;
 use App\Http\Controllers\Hr\LetterController;
 use App\Http\Controllers\Hr\PayslipController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function () {
     // Everyone
+    Route::get('me', [MeController::class, 'index'])->name('me.dashboard');
     Route::get('me/leave', [LeaveController::class, 'my'])->name('leave.my');
     Route::post('me/leave', [LeaveController::class, 'store'])->name('leave.store');
     Route::get('me/leave/count', [LeaveController::class, 'count'])->name('leave.count');

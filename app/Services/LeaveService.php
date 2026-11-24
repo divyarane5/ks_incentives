@@ -36,6 +36,12 @@ class LeaveService
         return $user && $user->can('module-keypeople') && $user->can('user-edit');
     }
 
+    /** HR dashboard: HR (KeyPeople + edit employees), Admin and Super Admin. Everyone else gets KeyMe. */
+    public static function canSeeHrDashboard(?User $user): bool
+    {
+        return $user && (self::isHr($user) || $user->hasRole(config('roles.SUPER_ADMIN')) || $user->hasRole(config('roles.ADMIN')));
+    }
+
     /** Who approves this person's leave: their current manager (if still working), else HR. */
     public static function approverFor(User $user): ?int
     {

@@ -21,7 +21,7 @@ class HrDashboardController extends Controller
     public function index(Request $request)
     {
         $me = $request->user();
-        abort_unless($me->can('module-keypeople') && ($me->can('user-view') || $me->can('user-edit')), 403);
+        abort_unless(LeaveService::canSeeHrDashboard($me), 403);
         $today = now()->startOfDay();
         $mStart = $today->copy()->startOfMonth()->toDateString();
         $mEnd = $today->copy()->endOfMonth()->toDateString();

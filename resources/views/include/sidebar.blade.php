@@ -154,6 +154,9 @@
             $isManager = $teamLeavePending > 0 || \App\Models\User::where('reporting_manager_id', auth()->id())->where('status', 'Active')->exists();
         @endphp
         <li class="menu-header small text-uppercase"><span class="menu-header-text">KeyMe</span></li>
+        <li class="menu-item {{ Request::is('me') ? 'active' : '' }}">
+            <a href="{{ route('me.dashboard') }}" class="menu-link"><i class="menu-icon tf-icons bx bx-home-heart"></i><div>My dashboard</div></a>
+        </li>
         <li class="menu-item {{ Request::is('me/leave*') ? 'active' : '' }}">
             <a href="{{ route('leave.my') }}" class="menu-link"><i class="menu-icon tf-icons bx bx-calendar-event"></i><div>My leave</div></a>
         </li>
@@ -174,10 +177,12 @@
         {{-- ================= KeyPeople ================= --}}
         @can('module-keypeople')
         <li class="menu-header small text-uppercase"><span class="menu-header-text">KeyPeople</span></li>
-        @can('user-view')
+        @if(\App\Services\LeaveService::canSeeHrDashboard(auth()->user()))
         <li class="menu-item {{ Request::is('hr/dashboard') ? 'active' : '' }}">
             <a href="{{ route('hr.dashboard') }}" class="menu-link"><i class="menu-icon tf-icons bx bx-grid-alt"></i><div>HR dashboard</div></a>
         </li>
+        @endif
+        @can('user-view')
         <li class="menu-item {{ (Request::segment(1) == 'users') ? 'active': '' }}">
             <a href="{{ route('users.index') }}" class="menu-link">
                 <i class="menu-icon tf-icons bx bx-user"></i>

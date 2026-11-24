@@ -48,6 +48,51 @@
 
     @include('hr.celebrations._dashboard')
 
+    {{-- KeyMe: everyone's own leave and payslips --}}
+    @php
+        $meTiles = [];
+        try {
+            if (\Illuminate\Support\Facades\Schema::hasTable('leave_requests')) {
+                $bal = collect(\App\Services\LeaveService::balances($u))->filter(fn ($b) => $b['type']->is_paid);
+                $fmt = fn ($n) => rtrim(rtrim(number_format((float) $n, 1), '0'), '.');
+                $meTiles[] = $tile('Leave left this year', $fmt($bal->sum('available')) . ' days', route('leave.my'));
+                $waiting = \App\Models\LeaveRequest::where('user_id', $u->id)->where('status', 'pending')->count();
+                $meTiles[] = $tile('My leave waiting', number_format($waiting), route('leave.my'), $waiting ? 'warn' : '');
+                $toApprove = \App\Models\LeaveRequest::where('approver_id', $u->id)->where('status', 'pending')->count();
+                if ($toApprove) {
+                    $meTiles[] = $tile('Team leave to approve', number_format($toApprove), route('leave.team'), 'warn');
+                }
+            }
+            $lastPay = \App\Models\UserSalary::where('user_id', $u->id)->where('salary_credited', '>', 0)
+                ->orderByDesc('financial_year')->orderByRaw('CASE WHEN month >= 4 THEN month - 4 ELSE month + 8 END DESC')->first();
+            $meTiles[] = $tile('Latest payslip', $lastPay ? \Carbon\Carbon::create(2000, (int) $lastPay->month, 1)->format('M') . ' ' . ((int) $lastPay->month >= 4 ? substr($lastPay->financial_year, 0, 4) : (int) substr($lastPay->financial_year, 0, 4) + 1) : 'None yet', route('payslip.mine'));
+        } catch (\Throwable $e) {
+            $meTiles = [];
+        }
+    @endphp
+    <div class="rs-sec">
+        <div class="rs-sec-head">
+            <i class="bx bx-home-heart"></i>
+            <div>
+                <h5>KeyMe</h5>
+                <div class="rs-sub">Your leave, payslips and letters</div>
+            </div>
+            <a class="rs-open" href="{{ route('me.dashboard') }}">Open <i class="bx bx-right-arrow-alt align-middle"></i></a>
+        </div>
+        @if (count($meTiles))
+            <div class="row g-3 mb-3">
+                @foreach ($meTiles as $t)
+                    <div class="col-6 col-md-4 col-xl">
+                        <a href="{{ $t['href'] }}" class="card rs-tile text-body"><div class="card-body">
+                            <div class="rs-label">{{ $t['label'] }}</div>
+                            <div class="rs-value {{ $t['tone'] }}">{{ $t['value'] }}</div>
+                        </div></a>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+
     @if (! count($mods))
         <div class="card"><div class="card-body text-muted">
             You don't have any modules yet. Ask your admin to give you access.
@@ -112,7 +157,7 @@
             }
 
             if ($key === 'keypeople' && $d) {
-                $open = route('hr.dashboard');
+                $open = \App\Services\LeaveService::canSeeHrDashboard($u) ? route('hr.dashboard') : route('users.index');
                 $groups[''] = [
                     $tile('Active employees', number_format($d['active']), route('users.index')),
                     $tile('Joined this month', number_format($d['joined']), route('users.index'), 'good'),
