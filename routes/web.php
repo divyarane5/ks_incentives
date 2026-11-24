@@ -13,7 +13,14 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Auth::routes();
+Auth::routes(['reset' => false]);
+
+// Forgot password: a 6-digit code to the official email (replaces the old reset-link emails).
+Route::get('password/reset', [App\Http\Controllers\Auth\PasswordOtpController::class, 'request'])->name('password.request');
+Route::post('password/email', [App\Http\Controllers\Auth\PasswordOtpController::class, 'send'])->name('password.email')->middleware('throttle:20,1');
+Route::get('password/code', [App\Http\Controllers\Auth\PasswordOtpController::class, 'form'])->name('password.otp');
+Route::post('password/code', [App\Http\Controllers\Auth\PasswordOtpController::class, 'verify'])->name('password.otp.verify')->middleware('throttle:20,1');
+Route::post('password/code/resend', [App\Http\Controllers\Auth\PasswordOtpController::class, 'resend'])->name('password.otp.resend')->middleware('throttle:10,1');
 
 /*
 |--------------------------------------------------------------------------
@@ -143,7 +150,7 @@ Route::group(['middleware' => 'auth'], function () {
     Route::post('users/{user}/salary', [App\Http\Controllers\UserSalaryController::class, 'store'])
         ->name('users.salary.store');
     
-    Route::post('/update-password', [App\Http\Controllers\UserController::class, 'updatePassword'])
+    Route::post('/update-password', [App\Http\Controllers\Hr\PasswordController::class, 'update'])
     ->name('update_password')
     ->middleware('auth');
     /*

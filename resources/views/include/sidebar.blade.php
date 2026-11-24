@@ -173,6 +173,9 @@
         <li class="menu-item {{ Request::is('me/letters*') ? 'active' : '' }}">
             <a href="{{ route('letters.mine') }}" class="menu-link"><i class="menu-icon tf-icons bx bx-envelope"></i><div>My letters</div></a>
         </li>
+        <li class="menu-item {{ Request::is('me/password') ? 'active' : '' }}">
+            <a href="{{ route('me.password') }}" class="menu-link"><i class="menu-icon tf-icons bx bx-lock-alt"></i><div>Change password</div></a>
+        </li>
 
         {{-- ================= KeyPeople ================= --}}
         @can('module-keypeople')

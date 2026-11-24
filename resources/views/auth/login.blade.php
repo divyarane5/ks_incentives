@@ -12,6 +12,9 @@
         <h4 class="mb-1 text-center">Sign in to RealtySuite</h4>
         <p class="mb-4 text-center text-muted">Use your employee ID, email or mobile number</p>
 
+        @if (session('status'))
+            <div class="alert alert-success py-2 small" role="alert">{{ session('status') }}</div>
+        @endif
         <form id="formAuthentication" class="mb-3" action="{{ route('login') }}" method="POST">
             @csrf
             <div class="mb-3">
@@ -27,7 +30,7 @@
                 <div class="d-flex justify-content-between">
                     <label class="form-label" for="password">{{ __('Password') }}</label>
                     <a href="{{ route('password.request') }}">
-                    <small>{{ __('Forgot Your Password?') }}</small>
+                    <small>Forgot password?</small>
                     </a>
                 </div>
                 <div class="input-group input-group-merge">
