@@ -20,6 +20,9 @@ class Kernel extends ConsoleKernel
         // KeyLeads: morning follow-up summary in everyone's bell.
         $schedule->command('keyleads:daily-summary')->dailyAt('09:30');
 
+        // KeyPeople: birthday and work-anniversary wishes by email, every morning.
+        $schedule->command('celebrations:email')->dailyAt('09:00');
+
         // Shared hosting has no always-running queue worker, so the every-minute cron
         // (schedule:run) starts one that works through waiting jobs (lead imports,
         // Facebook leads) and then exits. Only one runs at a time.

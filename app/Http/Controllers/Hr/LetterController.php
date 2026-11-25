@@ -13,6 +13,7 @@ use App\Support\SignatureImage;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -121,17 +122,30 @@ class LetterController extends Controller
                 $request->boolean('download') ? 'attachment' : 'inline');
         }
 
-        // Letters are signed with the DSC token, so the PDF leaves the space empty (signature images were switched off on 2026-11-24).
+        $pdf = $this->buildPdf($letter, $request->boolean('unsigned'));
+
+        return $request->boolean('download') ? $pdf->download($file) : $pdf->stream($file);
+    }
+
+    /** Upload the copy signed outside the app (USB token / DSC), or remove it. */
+    /**
+     * The app's PDF of a letter. With a signature image chosen (or the company's default), it is printed;
+     * with "DSC token" the space is left empty for signing on the computer.
+     */
+    private function buildPdf(IssuedLetter $letter, bool $unsigned = false)
+    {
+        $letter->loadMissing(['user.designation', 'user.businessUnit']);
         $signatory = null;
+        if (! $letter->no_signature && ! $unsigned && Schema::hasTable('letter_signatories')) {
+            $signatory = $letter->signatory ?? LetterSignatory::forCompany(self::companyOf($letter->user));
+        }
         $company = self::companyOf($letter->user);
-        $signImg = $signatory?->dataUri('signature');
-        $stampImg = $signatory?->dataUri('stamp');
         $view = [
             'l' => $letter, 'u' => $letter->user, 'company' => $company,
-            'signatory' => $signatory, 'signImg' => $signImg, 'stampImg' => $stampImg,
+            'signatory' => $signatory, 'signImg' => $signatory?->dataUri('signature'), 'stampImg' => $signatory?->dataUri('stamp'),
             'letterhead' => self::letterhead($company),
         ];
-        // Blocks the template places itself: the "To" part, and a signature space (left blank for the DSC token).
+        // Blocks the template places itself: the "To" part, and the signature (image, or space for the DSC token).
         $blocks = [
             '[[to]]' => view('hr.letters._to', $view)->render(),
             '[[company-sign]]' => view('hr.letters._company_sign', $view)->render(),
@@ -139,12 +153,38 @@ class LetterController extends Controller
         $view['html'] = LetterText::html($letter->body, $blocks);
         $view['ownTo'] = str_contains((string) $letter->body, '[[to]]');
         $view['ownSign'] = str_contains((string) $letter->body, '[[company-sign]]');
-        $pdf = Pdf::loadView('hr.letters.pdf', $view)->setPaper('a4');
 
-        return $request->boolean('download') ? $pdf->download($file) : $pdf->stream($file);
+        return Pdf::loadView('hr.letters.pdf', $view)->setPaper('a4');
     }
 
-    /** Upload the copy signed outside the app (USB token / DSC), or remove it. */
+    /** Email the letter (the token-signed copy if uploaded, else the app's PDF) to the employee. */
+    public function email(Request $request, IssuedLetter $letter)
+    {
+        $me = $this->hrOnly($request);
+        $letter->loadMissing('user');
+        $u = $letter->user;
+        $to = trim((string) $request->input('to')) ?: ($u->official_email ?: ($u->personal_email ?: $u->email));
+        if (! $to || ! filter_var($to, FILTER_VALIDATE_EMAIL)) {
+            return back()->with('error', 'No email address for '.$u->name.'. Add their official email on the profile first.');
+        }
+        $file = Str::slug(($letter->subject ?: 'letter').'-'.$u->name).'.pdf';
+        if ($letter->signed_pdf && Storage::disk('public')->exists($letter->signed_pdf)) {
+            $bytes = Storage::disk('public')->get($letter->signed_pdf);
+        } else {
+            $bytes = $this->buildPdf($letter)->output();
+        }
+        try {
+            Mail::to($to)->send(new \App\Mail\LetterMail($letter, $bytes, $file, self::companyOf($u), $me));
+        } catch (\Throwable $e) {
+            return back()->with('error', 'The email could not be sent: '.$e->getMessage());
+        }
+        if (Schema::hasColumn('issued_letters', 'emailed_at')) {
+            $letter->update(['emailed_at' => now(), 'emailed_to' => $to]);
+        }
+
+        return back()->with('success', 'Letter emailed to '.$u->name.' ('.$to.').');
+    }
+
     public function uploadSigned(Request $request, IssuedLetter $letter)
     {
         $this->hrOnly($request);
@@ -167,7 +207,6 @@ class LetterController extends Controller
 
     public function editSignatory(Request $request, ?LetterSignatory $signatory = null)
     {
-        abort(404); // signature images switched off: letters are signed with the DSC token
         $this->hrOnly($request);
         $signatory ??= new LetterSignatory(['active' => true]);
         $companies = User::query()->whereNotNull('entity')->where('entity', '!=', '')->distinct()->orderBy('entity')->pluck('entity');
@@ -177,7 +216,6 @@ class LetterController extends Controller
 
     public function saveSignatory(Request $request, ?LetterSignatory $signatory = null)
     {
-        abort(404); // signature images switched off: letters are signed with the DSC token
         $this->hrOnly($request);
         $signatory ??= new LetterSignatory;
         $data = $request->validate([
@@ -211,7 +249,6 @@ class LetterController extends Controller
 
     public function deleteSignatory(Request $request, LetterSignatory $signatory)
     {
-        abort(404); // signature images switched off: letters are signed with the DSC token
         $this->hrOnly($request);
         // Letters already issued keep looking the same, so only hide it.
         $signatory->update(['active' => false, 'is_default' => false]);

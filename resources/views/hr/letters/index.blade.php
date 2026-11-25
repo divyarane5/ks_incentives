@@ -34,13 +34,16 @@
                             <div class="bd">
                                 <div class="t">{{ $l->subject ?: ucfirst($l->type).' letter' }}</div>
                                 <div class="m"><a href="{{ route('users.show', $l->user_id) }}">{{ $l->user?->name }}</a> · {{ $l->letter_date->format('d M Y') }} · {{ $l->reference }}</div>
-                                <div class="m">Issued by {{ $l->issuer?->name ?? '—' }}</div>
+                                <div class="m">Issued by {{ $l->issuer?->name ?? '—' }}@if($l->signed_pdf) · <span class="text-success">Signed</span>@endif @if($l->emailed_at) · Emailed {{ $l->emailed_at->format('d M') }}@endif</div>
                             </div>
                             <div class="r d-flex gap-1 flex-wrap justify-content-end">
                                 <a class="btn btn-sm btn-outline-primary" target="_blank" href="{{ route('letters.pdf', $l) }}">PDF</a>
                                 <button type="button" class="btn btn-sm {{ $l->signed_pdf ? 'btn-success' : 'btn-outline-secondary' }}" data-bs-toggle="collapse" data-bs-target="#signed{{ $l->id }}" title="Signed with the USB token (DSC)">
                                     <i class="bx {{ $l->signed_pdf ? 'bx-check-shield' : 'bx-shield' }}"></i>
                                 </button>
+                                <form method="POST" action="{{ route('letters.email', $l) }}" onsubmit="return confirm('Email this letter{{ $l->signed_pdf ? ' (signed copy)' : '' }} to {{ e(addslashes($l->user?->name)) }} at {{ e(addslashes($l->user?->official_email ?: ($l->user?->personal_email ?: $l->user?->email))) }}?')">@csrf
+                                    <button class="btn btn-sm {{ $l->emailed_at ? 'btn-outline-success' : 'btn-outline-primary' }}" title="{{ $l->emailed_at ? 'Emailed '.$l->emailed_at->format('d M, h:i A').' to '.$l->emailed_to : 'Email to the employee' }}"><i class="bx {{ $l->emailed_at ? 'bx-mail-send' : 'bx-envelope' }}"></i></button>
+                                </form>
                                 <form method="POST" action="{{ route('letters.destroy', $l) }}" onsubmit="return confirm('Remove this letter? The person will no longer see it.')">@csrf @method('DELETE')<button class="btn btn-sm btn-outline-danger"><i class="bx bx-trash"></i></button></form>
                             </div>
                         </li></ul>
@@ -76,8 +79,33 @@
                     <ol class="mb-0 ps-3">
                         <li>Issue the letter and download its PDF.</li>
                         <li>Open it in Adobe Reader with the token plugged in: All tools &gt; Use a certificate &gt; Digitally sign, and draw the box in the empty space under "For …".</li>
-                        <li>Upload the signed copy on that letter here. Employees then see the signed version.</li>
+                        <li>Upload the signed copy on that letter here (<i class="bx bx-shield"></i>). Employees then see the signed version.</li>
+                        <li>Press <i class="bx bx-envelope"></i> to email it to the employee.</li>
                     </ol>
+                </div>
+            </div>
+            <div class="kp-panel">
+                <div class="kp-panel-h"><h2><i class="bx bx-pen"></i>Signature image</h2><a href="{{ route('letters.signatory.edit') }}" class="btn btn-sm btn-outline-primary">Add</a></div>
+                <div class="kp-panel-b">
+                    <div class="small text-muted mb-2">Optional. Upload the HR or director signature (and stamp) once, and letters can be issued already signed, without the token.</div>
+                    @forelse($signatories as $s)
+                        <ul class="kp-list"><li>
+                            <div class="hr-sig-thumb">
+                                @if($s->url('signature'))<img src="{{ $s->url('signature') }}" alt="">@endif
+                                @if($s->url('stamp'))<img src="{{ $s->url('stamp') }}" alt="" class="st">@endif
+                            </div>
+                            <div class="bd">
+                                <div class="t">{{ $s->name }}
+                                    @if($s->is_default)<span class="hr-status approved">Default</span>@endif
+                                    @unless($s->active)<span class="hr-status cancelled">Off</span>@endunless
+                                </div>
+                                <div class="m">{{ $s->designation ?: 'Authorised signatory' }} · {{ $s->company ?: 'All companies' }}</div>
+                            </div>
+                            <div class="r"><a href="{{ route('letters.signatory.edit', $s) }}" class="btn btn-sm btn-outline-secondary">Edit</a></div>
+                        </li></ul>
+                    @empty
+                        <div class="kp-empty">No signature image yet.</div>
+                    @endforelse
                 </div>
             </div>
             <div class="kp-panel">

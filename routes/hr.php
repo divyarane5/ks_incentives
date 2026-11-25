@@ -51,6 +51,7 @@ Route::middleware('auth')->group(function () {
         Route::post('letters', [LetterController::class, 'store'])->name('letters.store');
         Route::delete('letters/{letter}', [LetterController::class, 'destroy'])->name('letters.destroy');
         Route::post('letters/{letter}/signed', [LetterController::class, 'uploadSigned'])->name('letters.signed');
+        Route::post('letters/{letter}/email', [LetterController::class, 'email'])->name('letters.email');
         Route::get('letter-signatories/{signatory?}', [LetterController::class, 'editSignatory'])->name('letters.signatory.edit');
         Route::post('letter-signatories/{signatory?}', [LetterController::class, 'saveSignatory'])->name('letters.signatory.save');
         Route::delete('letter-signatories/{signatory}', [LetterController::class, 'deleteSignatory'])->name('letters.signatory.delete');

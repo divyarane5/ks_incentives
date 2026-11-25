@@ -112,6 +112,87 @@ class LeaveService
     }
 
     /** Yearly quota for this person in this FY, cut down for people who joined during the year. */
+    /** Leave types that need 12 months of service (as in the appointment letter). */
+    public const AFTER_A_YEAR = ['ML', 'PTL'];
+
+    /** Paid leave (EL) can only be taken once confirmed, and at most this many days in a month. */
+    public const PAID_LEAVE_CODE = 'EL';
+    public const PAID_LEAVE_MONTH_CAP = 7;
+
+    /** Maternity leave is for women, paternity leave for men; everything else is for everyone. */
+    public static function eligible(User $user, LeaveType $type): bool
+    {
+        $g = strtolower((string) $user->gender);
+
+        return match ($type->code) {
+            'ML' => $g === 'female',
+            'PTL' => $g === 'male',
+            default => true,
+        };
+    }
+
+    /** Active leave types this person can see and apply for. */
+    public static function typesFor(User $user)
+    {
+        return LeaveType::active()->get()->filter(fn ($t) => self::eligible($user, $t))->values();
+    }
+
+    public static function isConfirmed(User $user, $on = null): bool
+    {
+        $on = $on ? Carbon::parse($on) : now();
+        if (strtolower((string) $user->employment_status) === 'confirmed') {
+            return true;
+        }
+
+        return $user->confirm_date && Carbon::parse($user->confirm_date)->lte($on);
+    }
+
+    /**
+     * Rules from the appointment letter. Returns a message when the request breaks one, else null.
+     * Paid leave only after confirmation, and at most 7 paid-leave days in one calendar month.
+     */
+    public static function ruleProblem(User $user, LeaveType $type, Carbon $from, Carbon $to, float $days): ?string
+    {
+        if (! self::eligible($user, $type)) {
+            return "{$type->name} isn't available for this employee.";
+        }
+        if (in_array($type->code, self::AFTER_A_YEAR, true)
+            && (! $user->joining_date || Carbon::parse($user->joining_date)->addMonths(12)->gt($from))) {
+            return "{$type->name} can be taken after completing 12 months with the company.";
+        }
+        if ($type->code === self::PAID_LEAVE_CODE) {
+            if (! self::isConfirmed($user, $from)) {
+                return 'Paid leave can be taken only after confirmation. Use Casual / sick leave or Unpaid leave.';
+            }
+            // Days per month: this request's days are split across the months it covers.
+            $offs = self::weeklyOffs($user);
+            $holidays = self::holidays($user, $from, $to);
+            $perMonth = [];
+            for ($d = $from->copy(); $d->lte($to); $d->addDay()) {
+                $key = $d->format('Y-m');
+                if (in_array($d->dayOfWeek, $offs, true) || isset($holidays[$d->toDateString()])) {
+                    continue;
+                }
+                $perMonth[$key] = ($perMonth[$key] ?? 0) + 1;
+            }
+            if ($days < 1 && $perMonth) {
+                $perMonth[array_key_first($perMonth)] = $days; // half day
+            }
+            foreach ($perMonth as $month => $n) {
+                $mStart = Carbon::parse($month.'-01');
+                $already = (float) LeaveRequest::where('user_id', $user->id)->where('leave_type_id', $type->id)
+                    ->whereIn('status', ['pending', 'approved'])
+                    ->whereBetween('from_date', [$mStart->toDateString(), $mStart->copy()->endOfMonth()->toDateString()])
+                    ->sum('days');
+                if ($already + $n > self::PAID_LEAVE_MONTH_CAP) {
+                    return 'At most '.self::PAID_LEAVE_MONTH_CAP.' days of Paid leave in a month. '.$mStart->format('F').' already has '.rtrim(rtrim(number_format($already, 1), '0'), '.').'.';
+                }
+            }
+        }
+
+        return null;
+    }
+
     public static function quota(User $user, LeaveType $type, string $fy): float
     {
         if (! $type->is_paid) {
@@ -119,6 +200,15 @@ class LeaveService
         }
         [$start, $end] = self::fyRange($fy);
         $quota = (float) $type->yearly_quota;
+        if (in_array($type->code, self::AFTER_A_YEAR, true)) {
+            // Maternity / paternity: the full quota, once they have completed 12 months.
+            if (! self::eligible($user, $type)) {
+                return 0;
+            }
+            $joined = $user->joining_date ? Carbon::parse($user->joining_date) : null;
+
+            return $joined && $joined->copy()->addMonths(12)->lte($end) ? $quota : 0;
+        }
         if ($user->joining_date) {
             $join = Carbon::parse($user->joining_date)->startOfMonth();
             if ($join->gt($end)) {
@@ -154,6 +244,9 @@ class LeaveService
 
         $rows = [];
         foreach ($types as $type) {
+            if (! self::eligible($user, $type)) {
+                continue;
+            }
             $used = (float) $taken->where('leave_type_id', $type->id)->where('status', 'approved')->sum('d');
             $pending = (float) $taken->where('leave_type_id', $type->id)->where('status', 'pending')->sum('d');
             $quota = self::quota($user, $type, $fy);

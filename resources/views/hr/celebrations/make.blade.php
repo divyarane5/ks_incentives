@@ -67,6 +67,7 @@
                     <div class="cel-preview-tools">
                         <button type="button" class="btn btn-outline-primary bg-white" id="cel-preview"><i class="bx bx-fullscreen"></i> Full preview</button>
                         <button type="button" class="btn btn-outline-primary bg-white" id="cel-dl"><i class="bx bx-download"></i> Download</button>
+                        <button type="button" class="btn btn-outline-success bg-white" id="cel-share"><i class="bx bxl-whatsapp"></i> Share</button>
                     </div>
                 </div>
             </div>
@@ -274,6 +275,9 @@
     document.getElementById('cel-pv-dl').addEventListener('click', function () { window.celDownload(active(), this); });
     document.getElementById('cel-pv-post').addEventListener('click', function () { document.getElementById('cel-submit').click(); });
     document.getElementById('cel-dl').addEventListener('click', function () { window.celDownload(active(), this); });
+    document.getElementById('cel-share').addEventListener('click', function () {
+        window.celShare(active(), this, @json(($type === 'birthday' ? 'Happy birthday, ' : 'Happy work anniversary, ').($person->name ?? '').'!'));
+    });
 
     apply();
 })();

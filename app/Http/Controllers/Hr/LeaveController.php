@@ -23,7 +23,7 @@ class LeaveController extends Controller
         $me = $request->user();
         $fy = $this->pickFy($request);
         $balances = L::balances($me, $fy);
-        $types = LeaveType::active()->get();
+        $types = L::typesFor($me);
         [$start, $end] = L::fyRange($fy);
         $requests = LeaveRequest::with(['type', 'approver', 'decider'])->where('user_id', $me->id)
             ->where('to_date', '>=', $start->toDateString())->where('from_date', '<=', $end->toDateString())
@@ -77,6 +77,10 @@ class LeaveController extends Controller
             ->where('from_date', '<=', $to->toDateString())->where('to_date', '>=', $from->toDateString())->exists();
         if ($overlap) {
             return back()->withInput()->withErrors(['from_date' => 'There is already a leave on some of these dates.']);
+        }
+
+        if ($problem = L::ruleProblem($forUser, $type, $from, $to, (float) $days)) {
+            return back()->withInput()->withErrors(['leave_type_id' => $problem]);
         }
 
         if ($type->is_paid) {

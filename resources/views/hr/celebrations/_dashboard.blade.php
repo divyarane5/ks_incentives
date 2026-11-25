@@ -41,8 +41,12 @@
                             <i class="bx bxl-whatsapp"></i> Send wishes
                         </a>
                     @endif
-                    <button type="button" class="btn btn-sm btn-outline-primary flex-fill" onclick="celDownload(this.closest('.col-12').querySelector('.cel-card'), this)">
-                        <i class="bx bx-download"></i> Download
+                    @php $shareText = $p->type === 'birthday' ? 'Happy birthday, '.$p->user->name.'! 🎂' : 'Happy work anniversary, '.$p->user->name.'! 🏆'; @endphp
+                    <button type="button" class="btn btn-sm btn-outline-success flex-fill" title="Share the picture on WhatsApp" onclick="celShare(this.closest('.col-12').querySelector('.cel-card'), this, {{ json_encode($shareText) }})">
+                        <i class="bx bx-share-alt"></i> Share
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" title="Download" onclick="celDownload(this.closest('.col-12').querySelector('.cel-card'), this)">
+                        <i class="bx bx-download"></i>
                     </button>
                 </div>
             </div>

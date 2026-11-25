@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class IssuedLetter extends Model
 {
-    protected $fillable = ['user_id', 'letter_template_id', 'type', 'subject', 'body', 'letter_date', 'reference', 'issued_by', 'letter_signatory_id', 'no_signature', 'signed_pdf'];
+    protected $fillable = ['user_id', 'letter_template_id', 'type', 'subject', 'body', 'letter_date', 'reference', 'issued_by', 'letter_signatory_id', 'no_signature', 'signed_pdf', 'emailed_at', 'emailed_to'];
 
-    protected $casts = ['letter_date' => 'date', 'no_signature' => 'boolean'];
+    protected $casts = ['letter_date' => 'date', 'no_signature' => 'boolean', 'emailed_at' => 'datetime'];
 
     public function user()
     {
