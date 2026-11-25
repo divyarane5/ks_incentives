@@ -181,10 +181,19 @@ class UserController extends Controller
         $locations = Location::select(['id', 'name'])->orderBy('name')->get();
         $departments = Department::select(['id', 'name'])->orderBy('name')->get();
         $designations = Designation::select(['id', 'name'])->orderBy('name')->get();
-        $reportingUsers = User::select(['id', 'name'])->orderBy('name')->get();
+        $reportingUsers = User::select(['id', 'name'])->where('status', 'Active')->orderBy('name')->get();
         $roles = Role::select(['id', 'name'])->orderBy('name')->get();
         $businessUnits = BusinessUnit::where('status', 1)->pluck('name', 'id');
-        return view('users.create', compact('locations', 'departments', 'designations', 'reportingUsers', 'roles','businessUnits'));
+        // Next free employee code in the most common pattern (e.g. KRE123 -> KRE124), as a suggestion.
+        $suggestedCode = null;
+        $parsed = User::whereNotNull('employee_code')->pluck('employee_code')
+            ->map(fn ($c) => preg_match('/^([A-Z]+)(\d+)$/', strtoupper(trim($c)), $m) ? ['p' => $m[1], 'd' => $m[2]] : null)->filter();
+        if ($parsed->count()) {
+            $prefix = $parsed->countBy('p')->sortDesc()->keys()->first();
+            $same = $parsed->where('p', $prefix);
+            $suggestedCode = $prefix.str_pad((string) ($same->max(fn ($x) => (int) $x['d']) + 1), $same->max(fn ($x) => strlen($x['d'])), '0', STR_PAD_LEFT);
+        }
+        return view('users.create', compact('locations', 'departments', 'designations', 'reportingUsers', 'roles', 'businessUnits', 'suggestedCode'));
     }
 
    public function store(Request $request)
@@ -195,7 +204,7 @@ class UserController extends Controller
             return redirect()->back()->withErrors($errors)->withInput();
         }
 
-        DB::transaction(function() use ($request) {
+        $newUser = DB::transaction(function() use ($request) {
 
             // -------------------------
             // Handle file uploads
@@ -339,6 +348,9 @@ class UserController extends Controller
             // Assets & Misc
             $user->work_off = $request->work_off;
             $user->additional_comments = $request->additional_comments;
+            $user->laptop_desktop = $request->laptop_desktop;
+            $user->company_phone = $request->company_phone;
+            $user->company_sim = $request->company_sim;
 
             // Default password
             $user->password = \Hash::make('Welcome@123');
@@ -407,9 +419,11 @@ class UserController extends Controller
                 ]);
             }
 
+            return $user;
         }); // End Transaction
 
-        return redirect()->route('users.index')->with('success','User created successfully!');
+        return redirect()->route('users.show', $newUser->id)
+            ->with('success', $newUser->name.' added. They sign in with their employee code or official email and the password Welcome@123, and are asked to change it.');
     }
 
 

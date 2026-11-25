@@ -5,33 +5,27 @@ if (!function_exists('validateUserForm')) {
     {
         $errors = [];
 
-        // Required Text Fields
-        $requiredFields = [
-            'first_name', 'last_name', 'employee_code', 'entity', 
-            'role_id', 'joining_date', 'annual_ctc', 'official_email'
+        // Required fields (keyed by field, so the form can point at each one).
+        $required = [
+            'employee_code' => 'Employee code', 'first_name' => 'First name', 'last_name' => 'Last name',
+            'entity' => 'Company', 'department_id' => 'Department', 'designation_id' => 'Designation',
+            'work_location_id' => 'Work location', 'role_id' => 'System role', 'joining_date' => 'Joining date',
+            'probation_period_days' => 'Probation (days)', 'annual_ctc' => 'Annual CTC', 'official_email' => 'Official email',
         ];
-
-        foreach ($requiredFields as $field) {
-            if (!$request->filled($field)) {
-                $errors[] = "$field is required";
+        foreach ($required as $field => $label) {
+            if (! $request->filled($field)) {
+                $errors[$field] = "$label is required.";
             }
         }
 
         // Employee ID and official email sign people in, so they must be unique.
         if ($request->filled('employee_code')
             && \App\Models\User::whereRaw('UPPER(TRIM(employee_code)) = ?', [strtoupper(trim($request->employee_code))])->exists()) {
-            $errors[] = "Employee code {$request->employee_code} is already used by another employee";
+            $errors['employee_code'] = "Employee code {$request->employee_code} is already used by another employee.";
         }
         if ($request->filled('official_email')
             && \App\Models\User::where('email', trim($request->official_email))->orWhere('official_email', trim($request->official_email))->exists()) {
-            $errors[] = "Official email {$request->official_email} is already used by another employee";
-        }
-
-        // Probation & Confirmation Dates
-        if (!$request->filled('probation_period_days')) {
-            $errors[] = "Probation period is required";
-        } elseif (!$request->filled('confirm_date')) {
-            $errors[] = "Confirmation date is required";
+            $errors['official_email'] = "Official email {$request->official_email} is already used by another employee.";
         }
 
         // Leaving date & notice
